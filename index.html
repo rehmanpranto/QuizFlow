@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Additional smooth scrolling for all elements */
+        * {
+            scroll-behavior: smooth;
+        }
+
+        /* Smooth transitions for form changes */
+        .transition-all {
+            transition: all 0.3s ease-in-out;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        h1, h2, h3, h4, h5, h6, .font-playfair {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+        .btn {
+            font-family: 'Roboto', sans-serif;
+            transition: background-color 0.2s ease-in-out, box-shadow 0.1s ease-out, transform 0.1s ease-out;
+            border-radius: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            letter-spacing: 0.025em;
+        }
+        .btn-primary { background-color: #3b82f6; color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: #2563eb; }
+        .btn-primary:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        .btn-secondary { background-color: #e5e7eb; color: #1f2937; }
+        .btn-secondary:hover { background-color: #d1d5db; }
+        .btn:active:not(:disabled) { transform: scale(0.98); box-shadow: inset 0 1px 2px rgba(0,0,0,0.07); }
+        .input-field {
+            font-family: 'Roboto', sans-serif;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.875rem 1rem;
+            width: 100%;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
+        .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05); padding: 2rem; }
+        .option-label input[type="radio"]:focus-visible + .option-content { outline: 2px solid #3b82f6; outline-offset: 2px; border-radius: 0.375rem; }
+        .option-label input[type="radio"]:checked + .option-content { font-weight: 500; color: #1e40af; }
+        .option-label.selected .option-content { background-color: #eff6ff; border-color: #60a5fa; }
+        .option-content { font-family: 'Roboto', sans-serif; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out; }
+        .option-label:hover .option-content { background-color: #f9fafb; border-color: #9ca3af; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 3px;}
+        ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 3px;}
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        @keyframes modal-pop-in { 0% { transform: translateY(20px) scale(0.98); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        .animate-modal-pop-in { animation: modal-pop-in 0.25s ease-out forwards; }
+        .auth-toggle-link { font-family: 'Roboto', sans-serif; color: #3b82f6; font-weight: 500; cursor: pointer; }
+        .auth-toggle-link:hover { text-decoration: underline; color: #2563eb; }
+        #progress-bar-fill { transition: width 0.3s ease-in-out; }
+        .text-3xl.font-extrabold, .text-2xl.font-bold, .text-3xl.font-bold, .text-xl.font-semibold { font-family: 'Playfair Display', serif; }
+        #result-section h2.font-bold { font-family: 'Playfair Display', serif; font-weight: 700; }
+        .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 selection:bg-blue-500 selection:text-white">
+
+    <div class="container w-full max-w-xl mx-auto">
+
+        <div id="login-section" class="card space-y-6">
+            <div class="text-center mb-6">
+                <svg class="w-16 h-16 mx-auto text-blue-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <h1 class="text-3xl font-extrabold text-slate-900">QuizFlow Login</h1>
+                <p class="text-slate-500 mt-1.5 text-base">Please sign in to begin.</p>
+            </div>
+            <div>
+                <label for="login-name" class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Full Name (If Registering)</label>
+                <input type="text" id="login-name" placeholder="Enter your full name" class="input-field">
+            </div>
+            <div>
+                <label for="login-email" class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Email Address</label>
+                <input type="email" id="login-email" placeholder="Enter your email" class="input-field">
+            </div>
+            <div>
+                <label for="login-password" class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Password</label>
+                <input type="password" id="login-password" placeholder="Enter your password" class="input-field">
+            </div>
+            <button onclick="login()" id="login-button" class="w-full btn btn-primary">Login & Start Quiz</button>
+            <button id="view-past-submissions-btn" style="display:none;" onclick="showPastSubmissionsView()" class="w-full btn btn-secondary mt-3">
+                View My Past Quizzes
+            </button>
+            <p class="text-center text-sm text-slate-600 mt-4">
+                Don't have an account? <span onclick="toggleAuthView('register')" class="auth-toggle-link">Register here</span>
+            </p>
+        </div>
+
+        <div id="register-section" style="display: none;" class="card space-y-6">
+            <div class="text-center mb-6">
+                 <svg class="w-16 h-16 mx-auto text-blue-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="17" y1="11" x2="23" y2="11"></line></svg>
+                <h1 class="text-3xl font-extrabold text-slate-900">Create Account</h1>
+                <p class="text-slate-500 mt-1.5 text-base">Join QuizFlow today!</p>
+            </div>
+            <div>
+                <label for="register-name" class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Full Name</label>
+                <input type="text" id="register-name" placeholder="Enter your full name" class="input-field">
+            </div>
+            <div>
+                <label for="register-email" class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Email Address</label>
+                <input type="email" id="register-email" placeholder="Enter your email" class="input-field">
+            </div>
+            <div>
+                <label for="register-password" class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Password</label>
+                <input type="password" id="register-password" placeholder="Choose a password (min. 6 characters)" class="input-field">
+            </div>
+            <div>
+                <label for="register-confirm-password" class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Confirm Password</label>
+                <input type="password" id="register-confirm-password" placeholder="Confirm your password" class="input-field">
+            </div>
+            <button onclick="register()" id="register-button" class="w-full btn btn-primary">Register</button>
+            <p class="text-center text-sm text-slate-600">Already have an account? <span onclick="toggleAuthView('login')" class="auth-toggle-link">Login here</span></p>
+        </div>
+
+        <div id="quiz-section" style="display: none;" class="card">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 pb-4 border-b border-slate-200">
+                <h2 id="quiz-title" class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 sm:mb-0">Quiz Time!</h2>
+                <div class="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0">
+                    <div id="timer" class="text-lg sm:text-xl font-semibold text-red-600 bg-red-100 px-3 py-1 sm:px-4 sm:py-1.5 rounded-md font-roboto">00:00</div>
+                    <div id="progress-bar-container" class="w-28 sm:w-40">
+                        <div class="text-xs text-slate-500 mb-0.5 text-right font-roboto">Progress: <span id="progress-text">0%</span></div>
+                        <div class="w-full bg-slate-200 rounded-full h-2 sm:h-2.5"><div id="progress-bar-fill" class="bg-blue-600 h-2 sm:h-2.5 rounded-full" style="width: 0%;"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-5 p-3 bg-yellow-50 border border-yellow-300 text-yellow-700 rounded-md text-sm">
+                <div class="flex items-center"><svg class="h-5 w-5 text-yellow-500 mr-2 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg><p>Stay focused. Navigating away may end the quiz.</p></div>
+            </div>
+            <div id="question-container" class="space-y-8"></div>
+            <button onclick="submitQuizConfirm()" id="submit-quiz-button" class="w-full mt-10 btn btn-primary bg-green-600 hover:bg-green-700">Submit Quiz</button>
+        </div>
+
+        <div id="result-section" style="display: none;" class="card text-center space-y-6">
+            <h2 id="result-section-title" class="text-3xl font-bold text-slate-900">Quiz Result</h2>
+            <div id="result-details" class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                <p id="user-email-result" class="text-xl font-playfair font-semibold text-slate-700 mb-3"></p>
+                <p id="result-score" class="text-4xl font-playfair font-extrabold text-blue-600 mb-1"></p>
+                <p id="result-percentage" class="text-lg text-slate-500 mb-4"></p>
+                <div id="feedback-message" class="text-base font-medium p-3 rounded-md"></div>
+            </div>
+            <div id="detailed-quiz-results" class="mt-6 text-left"></div>
+            <div class="flex flex-col sm:flex-row justify-center sm:space-x-3 space-y-3 sm:space-y-0 mt-6">
+                <button onclick="printResults()" id="print-results-button" class="w-full sm:w-auto btn btn-secondary">Print Results</button>
+                <button onclick="logoutAndRestart()" class="w-full sm:w-auto btn btn-primary">Logout</button>
+            </div>
+        </div>
+
+        <div id="past-submissions-section" style="display: none;" class="card space-y-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">My Past Quizzes</h2>
+                <button onclick="showMainLoginOrQuizView()" class="btn btn-secondary text-sm py-2 px-3">Back to Main</button>
+            </div>
+            <div id="submissions-list-container" class="space-y-4">
+                <p id="loading-submissions-message" class="text-slate-600">Loading your submissions...</p>
+            </div>
+        </div>
+
+        <div id="submission-detail-section" style="display: none;" class="card space-y-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="submission-detail-quiz-title" class="text-2xl sm:text-3xl font-bold text-slate-900">Detailed Quiz Result</h2>
+                 <button onclick="showPastSubmissionsView(true)" class="btn btn-secondary text-sm py-2 px-3">Back to List</button>
+            </div>
+            <div id="submission-detail-summary" class="bg-slate-50 p-4 sm:p-6 rounded-lg border border-slate-200 mb-6 text-sm sm:text-base"></div>
+            <h3 class="text-xl sm:text-2xl font-semibold text-slate-800 mt-6 mb-3">Question Breakdown:</h3>
+            <div id="submission-detail-questions" class="space-y-4"></div>
+        </div>
+
+        <div id="message-modal" style="display: none;" class="fixed inset-0 bg-slate-800 bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
+            <div class="bg-white p-7 rounded-lg shadow-xl max-w-md w-full mx-auto transform transition-all duration-300 ease-out scale-95 opacity-0 animate-modal-pop-in">
+                <h3 id="modal-title-element" class="text-xl font-playfair font-semibold mb-4 text-slate-800">Notification</h3>
+                <div id="modal-message-element" class="text-slate-600 mb-6 text-sm leading-relaxed"></div>
+                <div class="flex justify-end space-x-3">
+                    <button id="modal-cancel-button" style="display:none;" onclick="closeModal()" class="btn btn-secondary text-sm py-2 px-4">Cancel</button>
+                    <button id="modal-ok-button" onclick="closeModal()" class="btn btn-primary text-sm py-2 px-4">OK</button>
+                    <button id="modal-confirm-button" style="display:none;" class="btn btn-primary bg-red-600 hover:bg-red-700 text-sm py-2 px-4">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let quizDataStore = [];
+        let quizTimeLimit = 1200; // Default, will be updated from API
+        let quizTimerInterval;
+        let currentUserEmailGlobal = "";
+        let currentUserIdGlobal = null; // To store user ID from login
+        let quizActive = false;
+        let userFocusLossCount = 0;
+        const MAX_USER_FOCUS_LOSS = 2;
+        window.latestQuizResultForPrinting = null;
+        let answeredQuestionsCount = 0;
+
+        // DOM Elements
+        const loginSection = document.getElementById("login-section");
+        const registerSection = document.getElementById("register-section");
+        const quizSection = document.getElementById("quiz-section");
+        const resultSection = document.getElementById("result-section");
+        const pastSubmissionsSection = document.getElementById("past-submissions-section");
+        const submissionDetailSection = document.getElementById("submission-detail-section");
+        
+        const questionContainer = document.getElementById("question-container");
+        const timerDisplay = document.getElementById("timer");
+        const progressBarFill = document.getElementById("progress-bar-fill");
+        const progressText = document.getElementById("progress-text");
+
+        const loginNameInput = document.getElementById("login-name"); // Used for registration toggle convenience
+        const loginNameLabel = document.querySelector('label[for="login-name"]'); // Get the label too
+        const loginEmailInput = document.getElementById("login-email");
+        const loginPasswordInput = document.getElementById("login-password");
+        const loginButton = document.getElementById("login-button");
+        const viewPastSubmissionsBtn = document.getElementById("view-past-submissions-btn");
+
+        const registerNameInput = document.getElementById("register-name");
+        const registerEmailInput = document.getElementById("register-email");
+        const registerPasswordInput = document.getElementById("register-password");
+        const registerConfirmPasswordInput = document.getElementById("register-confirm-password");
+        const registerButton = document.getElementById("register-button");
+
+        const resultScoreDisplay = document.getElementById("result-score");
+        const resultPercentageDisplay = document.getElementById("result-percentage");
+        const userEmailResultDisplay = document.getElementById("user-email-result");
+        const feedbackMessageDisplay = document.getElementById("feedback-message");
+        const quizTitleDisplay = document.getElementById("quiz-title"); // For quiz section title
+        const resultSectionTitle = document.getElementById("result-section-title"); // For result section title
+        const submitQuizButton = document.getElementById("submit-quiz-button");
+
+        const messageModal = document.getElementById("message-modal");
+        const modalTitleElement = document.getElementById("modal-title-element");
+        const modalMessageElement = document.getElementById("modal-message-element");
+        const modalOkButton = document.getElementById("modal-ok-button");
+        const modalConfirmButton = document.getElementById("modal-confirm-button");
+        const modalCancelButton = document.getElementById("modal-cancel-button");
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleAuthView('login'); // Start with the login view
+        });
+
+        function hideAllSections() {
+            loginSection.style.display = "none";
+            registerSection.style.display = "none";
+            quizSection.style.display = "none";
+            resultSection.style.display = "none";
+            pastSubmissionsSection.style.display = "none";
+            submissionDetailSection.style.display = "none";
+            if (!currentUserEmailGlobal && viewPastSubmissionsBtn) {
+                viewPastSubmissionsBtn.style.display = 'none';
+            }
+        }
+
+        function toggleAuthView(view) {
+            hideAllSections();
+            if (view === 'register') {
+                registerSection.style.display = "block";
+                // If loginNameInput and its label exist, hide them or manage their relevance
+                if(loginNameInput) loginNameInput.style.display = 'none'; 
+                if(loginNameLabel) loginNameLabel.style.display = 'none';
+                
+                // Pre-fill name for registration if user typed it in the login form's name field
+                if(loginNameInput && registerNameInput) registerNameInput.value = loginNameInput.value;
+                registerEmailInput.value = loginEmailInput.value; // Pre-fill email
+                registerNameInput.focus();
+            } else { // 'login' view
+                loginSection.style.display = "block";
+                if(loginNameInput) loginNameInput.style.display = 'block'; // This field is now primarily for register convenience
+                if(loginNameLabel) loginNameLabel.style.display = 'block';
+                loginEmailInput.focus();
+            }
+            if (viewPastSubmissionsBtn) {
+                 viewPastSubmissionsBtn.style.display = currentUserEmailGlobal ? 'block' : 'none';
+            }
+        }
+
+        function showModal(title, message, type = "alert", onConfirm = null, onCancel = null) {
+            modalTitleElement.textContent = title;
+            modalMessageElement.innerHTML = message;
+            messageModal.style.display = "flex";
+            const modalContent = messageModal.firstElementChild;
+            modalContent.classList.remove('animate-modal-pop-in');
+            void modalContent.offsetWidth; // Trigger reflow to restart animation
+            modalContent.classList.add('animate-modal-pop-in');
+            modalOkButton.style.display = (type === "alert") ? "inline-block" : "none";
+            modalConfirmButton.style.display = (type === "confirm") ? "inline-block" : "none";
+            modalCancelButton.style.display = (type === "confirm") ? "inline-block" : "none";
+            if (type === "confirm") {
+                modalConfirmButton.onclick = () => { closeModal(); if (onConfirm) onConfirm(); };
+                modalCancelButton.onclick = () => { closeModal(); if (onCancel) onCancel(); };
+                modalConfirmButton.focus();
+            } else {
+                modalOkButton.onclick = () => { closeModal(); if (onConfirm) onConfirm(); };
+                modalOkButton.focus();
+            }
+        }
+        function closeModal() { messageModal.style.display = "none"; }
+
+        // --- Anti-Cheating Listeners (Keep as is) ---
+        function handleVisibilityChange() {
+            if (!quizActive || !document.hidden) return;
+            userFocusLossCount++;
+            let msg = `Warning ${userFocusLossCount}/${MAX_USER_FOCUS_LOSS}: You've navigated away from the quiz. <br>Please remain on this tab to avoid quiz termination.`;
+            if (userFocusLossCount >= MAX_USER_FOCUS_LOSS) {
+                msg += "<br>The quiz will be submitted automatically if you navigate away again or after this warning.";
+                showModal("Final Warning!", msg, "alert", () => { if (userFocusLossCount > MAX_USER_FOCUS_LOSS && quizActive) submitQuiz(); });
+                if (userFocusLossCount > MAX_USER_FOCUS_LOSS && quizActive) submitQuiz();
+            } else {
+                showModal("Warning!", msg);
+            }
+        }
+        function setupAntiCheatingListeners() { document.addEventListener("visibilitychange", handleVisibilityChange); }
+        function removeAntiCheatingListeners() { document.removeEventListener("visibilitychange", handleVisibilityChange); }
+        
+        // --- Auth Functions ---
+        async function register() {
+            const name = registerNameInput.value.trim();
+            const email = registerEmailInput.value.trim();
+            const password = registerPasswordInput.value;
+            const confirmPassword = registerConfirmPasswordInput.value;
+
+            if (!name || !email || !password || !confirmPassword) { 
+                showModal("Input Required", "Please fill in all registration fields (Name, Email, Password, Confirm Password)."); 
+                return; 
+            }
+            if (!/\S+@\S+\.\S+/.test(email)) { 
+                showModal("Invalid Email", "Please enter a valid email address."); 
+                return; 
+            }
+            if (password.length < 6) { 
+                showModal("Password Too Short", "Password must be at least 6 characters long."); 
+                return; 
+            }
+            if (password !== confirmPassword) { 
+                showModal("Password Mismatch", "Passwords do not match. Please re-enter.");
+                registerConfirmPasswordInput.value = ""; 
+                registerConfirmPasswordInput.focus(); 
+                return; 
+            }
+
+            registerButton.disabled = true; 
+            registerButton.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Registering...`;
+            
+            try {
+                const response = await fetch('/api/auth/register', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ name, email, password }) // name IS included
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showModal("Registration Successful!", result.message || "You can now log in.", "alert", () => {
+                        toggleAuthView('login'); 
+                        loginEmailInput.value = email; 
+                        loginNameInput.value = name; // Pre-fill name on login form too
+                        loginPasswordInput.value = ""; 
+                        registerNameInput.value = ""; registerEmailInput.value = ""; 
+                        registerPasswordInput.value = ""; registerConfirmPasswordInput.value = "";
+                        loginPasswordInput.focus();
+                    });
+                } else { 
+                    showModal("Registration Failed", result.message || "Could not register. Email might already be in use."); 
+                }
+            } catch (error) { 
+                console.error("Registration API error:", error); 
+                showModal("Registration Error", "Service unavailable. Please try again later.");
+            } finally { 
+                registerButton.disabled = false; 
+                registerButton.textContent = "Register"; 
+            }
+        }
+
+        async function login() {
+            const email = loginEmailInput.value.trim();
+            const password = loginPasswordInput.value;
+            // Name from login form is not used for login API call, only for convenience if toggling to register
+            if (!email || !password) { 
+                showModal("Input Required", "Please enter both email and password."); 
+                return; 
+            }
+            loginButton.disabled = true; 
+            loginButton.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Authenticating...`;
+
+            try {
+                const response = await fetch('/api/auth/login', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ email, password }) // Only email and password for login
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    currentUserEmailGlobal = result.email;
+                    currentUserIdGlobal = result.user_id; 
+                    if (viewPastSubmissionsBtn) viewPastSubmissionsBtn.style.display = 'block';
+
+                    if (result.quiz_already_taken && result.past_results) {
+                        hideAllSections();
+                        resultSection.style.display = "block";
+                        const past = result.past_results;
+                        window.latestQuizResultForPrinting = { email: currentUserEmailGlobal, score: past.score, totalQuestions: past.totalQuestions, percentage: past.percentage, feedback: past.feedback, title: past.quizTitle || "Quiz Results", detailed_results: [] };
+                        resultSectionTitle.textContent = past.quizTitle || "Previous Quiz Results";
+                        displayResults(past.score, past.totalQuestions, past.percentage, past.feedback, []);
+                        userEmailResultDisplay.textContent = `Welcome back, ${currentUserEmailGlobal.split('@')[0]}! Results for "${past.quizTitle || 'the quiz'}":`;
+                        showModal("Previous Results Loaded", result.message || "Displayed your previous results for this quiz.");
+                    } else {
+                        hideAllSections(); // Ensure only quiz section is shown
+                        await startQuizFlow();
+                    }
+                } else {
+                    showModal("Login Failed", result.message || "Invalid email or password.");
+                    loginPasswordInput.value = ""; 
+                    loginPasswordInput.focus(); // Keep focus on password for re-entry
+                }
+            } catch (error) { 
+                console.error("Login API error:", error); 
+                showModal("Login Error", "Service unavailable. Please try again later.");
+            } finally { 
+                loginButton.disabled = false; 
+                loginButton.textContent = "Login & Start Quiz"; 
+            }
+        }
+
+        // --- Quiz Flow Functions ---
+        async function startQuizFlow() { 
+            hideAllSections(); // Make sure other sections are hidden
+            quizSection.style.display = "block"; 
+            resultSection.style.display = "none"; // Explicitly hide result section
+            submitQuizButton.disabled = false; 
+            quizActive = true; 
+            userFocusLossCount = 0; 
+            answeredQuestionsCount = 0;
+            await fetchQuizData();
+            if (quizDataStore.length > 0) { 
+                updateProgress(); 
+                loadQuiz(); 
+                startTimer(); 
+                setupAntiCheatingListeners(); 
+            }
+            else { 
+                showModal("Error Loading Quiz", "Could not load quiz data. Please try logging out and back in, or contact support."); 
+                quizActive = false; 
+                removeAntiCheatingListeners(); 
+                showMainLoginOrQuizView(); // Go back to a stable view
+            }
+        }
+
+        async function fetchQuizData() { 
+            try {
+                const response = await fetch('/api/quiz'); 
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({ message: "Failed to parse error from server."}));
+                    throw new Error(errData.message || `HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if(data.success){ // Assuming backend sends a success flag
+                    quizDataStore = data.questions || []; 
+                    quizTimeLimit = data.timeLimit || 1200; 
+                    quizTitleDisplay.textContent = data.title || "Quiz Challenge";
+                } else {
+                    throw new Error(data.message || "Backend reported failure in fetching quiz data.");
+                }
+            } catch (error) { 
+                console.error("Fetch quiz data error:", error); 
+                showModal("Fetch Error", `Could not retrieve quiz questions: ${error.message}`); 
+                quizDataStore = []; // Ensure it's empty on error
+            }
+        }
+        
+        function updateProgress() { 
+            if (!quizDataStore || quizDataStore.length === 0) { 
+                progressBarFill.style.width = '0%'; 
+                progressText.textContent = '0%'; 
+                return; 
+            }
+            let count = 0; 
+            quizDataStore.forEach((q, i) => { 
+                if (document.querySelector(`input[name="q${i}"]:checked`)) count++; 
+            });
+            answeredQuestionsCount = count; 
+            const percentage = quizDataStore.length > 0 ? Math.round((answeredQuestionsCount / quizDataStore.length) * 100) : 0;
+            progressBarFill.style.width = `${percentage}%`; 
+            progressText.textContent = `${percentage}%`;
+        }
+
+        function loadQuiz() {
+            questionContainer.innerHTML = "";
+            quizDataStore.forEach((q, i) => {
+                const qDiv = document.createElement("div"); 
+                qDiv.className = "question bg-white border border-slate-200 p-6 rounded-lg";
+                const optionsHTML = Array.isArray(q.options) ? 
+                    q.options.map((opt, j) => 
+                        `<label class="option-label flex items-center cursor-pointer group" data-question-index="${i}" data-option-index="${j}">
+                            <input type="radio" name="q${i}" value="${j}" class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-400 shrink-0">
+                            <span class="option-content ml-3 text-slate-700 text-sm group-hover:border-slate-400 flex-grow">${opt}</span>
+                         </label>`
+                    ).join("") : 
+                    "<p>Error: Options not available for this question.</p>";
+                qDiv.innerHTML = `<p class="text-base font-medium text-slate-800 mb-4">${i + 1}. ${q.question}</p><div class="space-y-3">${optionsHTML}</div>`;
+                questionContainer.appendChild(qDiv);
+            });
+            document.querySelectorAll('.option-label input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    document.querySelectorAll(`input[name="${event.target.name}"]`).forEach(r => r.closest('.option-label').classList.remove('selected'));
+                    if (event.target.checked) event.target.closest('.option-label').classList.add('selected');
+                    updateProgress();
+                });
+            });
+            updateProgress(); // Initial progress after loading questions
+        }
+
+        function startTimer() {
+            let timeLeft = quizTimeLimit;
+            timerDisplay.textContent = formatTime(timeLeft);
+            quizTimerInterval = setInterval(() => {
+                if (!quizActive) {
+                    clearInterval(quizTimerInterval);
+                    return;
+                }
+                timeLeft--;
+                timerDisplay.textContent = formatTime(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(quizTimerInterval);
+                    showModal("Time's Up!", "Your time has run out. Your quiz will be submitted automatically.", "alert", submitQuiz);
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+        
+        function submitQuizConfirm() { showModal("Confirm Submission", "Are you sure you want to submit your answers?", "confirm", submitQuiz); }
+
+        async function submitQuiz() {
+            quizActive = false;
+            removeAntiCheatingListeners();
+            clearInterval(quizTimerInterval);
+            submitQuizButton.disabled = true;
+            submitQuizButton.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Submitting...`;
+
+            const userAnswers = [];
+            quizDataStore.forEach((q, i) => {
+                const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
+                userAnswers.push(selectedOption ? parseInt(selectedOption.value, 10) : null);
+            });
+
+            if (!currentUserEmailGlobal) {
+                showModal("Error", "User not logged in. Cannot submit quiz.");
+                submitQuizButton.disabled = false;
+                submitQuizButton.textContent = "Submit Quiz";
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: currentUserEmailGlobal,
+                        answers: userAnswers
+                    })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    hideAllSections();
+                    resultSection.style.display = "block";
+                    resultSectionTitle.textContent = quizTitleDisplay.textContent + " - Results";
+
+                    window.latestQuizResultForPrinting = {
+                        email: currentUserEmailGlobal,
+                        score: result.score,
+                        totalQuestions: result.totalQuestions,
+                        percentage: result.percentage,
+                        feedback: result.feedback,
+                        title: quizTitleDisplay.textContent,
+                        detailed_results: result.detailed_results
+                    };
+
+                    displayResults(result.score, result.totalQuestions, result.percentage, result.feedback, result.detailed_results);
+                } else {
+                    showModal("Submission Failed", result.message || "An error occurred while submitting.");
+                    submitQuizButton.disabled = false;
+                    submitQuizButton.textContent = "Submit Quiz";
+                    quizActive = true;
+                    setupAntiCheatingListeners();
+                }
+            } catch (error) {
+                console.error("Submission API error:", error);
+                showModal("Submission Error", "A network error occurred. Please check your connection and try again.");
+                submitQuizButton.disabled = false;
+                submitQuizButton.textContent = "Submit Quiz";
+                quizActive = true;
+                setupAntiCheatingListeners();
+            }
+        }
+
+        function displayResults(score, totalQuestions, percentage, feedback, detailed_results_list) {
+            if (!userEmailResultDisplay.textContent.includes("Welcome back") && !userEmailResultDisplay.textContent.includes("Results for")) {
+                 userEmailResultDisplay.textContent = `Well done, ${currentUserEmailGlobal.split('@')[0]}!`;
+            }
+            resultScoreDisplay.textContent = `${score} / ${totalQuestions}`;
+            resultPercentageDisplay.textContent = `Percentage: ${percentage.toFixed(1)}%`;
+            const feedbackEl = feedbackMessageDisplay; 
+            feedbackEl.textContent = feedback;
+            feedbackEl.className = 'text-base font-medium p-3 rounded-md'; // Reset classes
+            if (percentage >= 80) feedbackEl.classList.add('bg-green-100', 'text-green-700');
+            else if (percentage >= 50) feedbackEl.classList.add('bg-yellow-100', 'text-yellow-700');
+            else feedbackEl.classList.add('bg-red-100', 'text-red-700');
+
+            const detailedContainer = document.getElementById('detailed-quiz-results');
+            detailedContainer.innerHTML = '<h3 class="text-2xl font-semibold mb-4 text-slate-800 border-b pb-2">Detailed Breakdown:</h3>';
+            const ul = document.createElement('ul'); 
+            ul.className = 'space-y-4';
+            if (detailed_results_list && detailed_results_list.length > 0) {
+                detailed_results_list.forEach((item, index) => { 
+                    const li = document.createElement('li'); 
+                    li.className = 'p-4 rounded-md border border-slate-200';
+                    const symbol = item.is_correct ? '✔' : '✘'; 
+                    const correctnessClass = item.is_correct ? 'text-green-700' : 'text-red-700'; 
+                    const answerBgClass = item.is_correct ? 'bg-green-50' : 'bg-red-50';
+                    li.innerHTML = `
+                        <p class="font-medium text-slate-700 mb-2">${index + 1}. ${item.question}</p>
+                        <p class="${answerBgClass} p-3 rounded-md text-sm ${correctnessClass}">
+                            Your Answer: ${item.your_answer} <span class="font-bold text-lg ml-1">${symbol}</span>
+                        </p>
+                        ${!item.is_correct ? `<p class="bg-blue-50 p-3 rounded-md text-sm text-blue-700 mt-2">Correct Answer: ${item.correct_answer}</p>` : ''}
+                    `;
+                    ul.appendChild(li);
+                });
+            } else { 
+                ul.innerHTML = '<li>No detailed breakdown available for this summary.</li>'; 
+            }
+            detailedContainer.appendChild(ul);
+        }
+        
+        function printResults() {
+            if (!window.latestQuizResultForPrinting) {
+                showModal("Error", "No result data available to print.");
+                return;
+            }
+
+            const { title, email, score, totalQuestions, percentage, feedback, detailed_results } = window.latestQuizResultForPrinting;
+
+            const printWindow = window.open('', '_blank', 'height=800,width=800');
+            printWindow.document.write('<html><head><title>Quiz Results</title>');
+            printWindow.document.write(`
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; margin: 20px; }
+                    .container { max-width: 750px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+                    h1, h2, h3 { color: #0056b3; }
+                    h1 { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+                    .summary { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 25px; border-left: 5px solid #0056b3; }
+                    .summary p { margin: 8px 0; font-size: 1.1em;}
+                    .question-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+                    .question-item:last-child { border-bottom: none; }
+                    .correct { color: #28a745; font-weight: bold; }
+                    .incorrect { color: #dc3545; font-weight: bold; }
+                    .your-answer { font-style: italic; }
+                    .correct-answer { background-color: #e9f7ef; padding: 8px; border-radius: 4px; margin-top: 10px; border: 1px solid #c3e6cb; }
+                </style>
+            `);
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<div class="container">');
+            printWindow.document.write(`<h1>${title || 'Quiz'} - Results</h1>`);
+
+            printWindow.document.write('<div class="summary">');
+            printWindow.document.write(`<h2>Summary for ${email}</h2>`);
+            printWindow.document.write(`<p><strong>Score:</strong> ${score} / ${totalQuestions}</p>`);
+            printWindow.document.write(`<p><strong>Percentage:</strong> ${percentage.toFixed(1)}%</p>`);
+            printWindow.document.write(`<p><strong>Feedback:</strong> ${feedback}</p>`);
+            printWindow.document.write('</div>');
+
+            printWindow.document.write('<h3>Detailed Breakdown</h3>');
+            if (detailed_results && detailed_results.length > 0) {
+                detailed_results.forEach((item, index) => {
+                    printWindow.document.write('<div class="question-item">');
+                    printWindow.document.write(`<p><strong>${index + 1}. ${item.question}</strong></p>`);
+                    const correctness = item.is_correct ? '<span class="correct">Correct</span>' : '<span class="incorrect">Incorrect</span>';
+                    printWindow.document.write(`<p><span class="your-answer">Your Answer:</span> ${item.your_answer} &mdash; ${correctness}</p>`);
+                    if (!item.is_correct) {
+                        printWindow.document.write(`<div class="correct-answer"><strong>Correct Answer:</strong> ${item.correct_answer}</div>`);
+                    }
+                    printWindow.document.write('</div>');
+                });
+            } else {
+                printWindow.document.write('<p>No detailed results were available.</p>');
+            }
+
+            printWindow.document.write('</div>');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => { printWindow.print(); }, 500); // Wait for content to render
+        }
+
+        function logoutAndRestart() {
+            currentUserEmailGlobal = ""; 
+            currentUserIdGlobal = null;
+            loginEmailInput.value = ""; 
+            loginPasswordInput.value = ""; 
+            if (loginNameInput) loginNameInput.value = ""; // Clear login name field too
+            
+            if (registerNameInput) registerNameInput.value = ""; 
+            if (registerEmailInput) registerEmailInput.value = ""; 
+            if (registerPasswordInput) registerPasswordInput.value = ""; 
+            if (registerConfirmPasswordInput) registerConfirmPasswordInput.value = "";
+            
+            quizDataStore = []; 
+            clearInterval(quizTimerInterval);
+            quizActive = false; 
+            removeAntiCheatingListeners(); 
+            userFocusLossCount = 0;
+            window.latestQuizResultForPrinting = null; 
+            answeredQuestionsCount = 0;
+            if(progressBarFill) progressBarFill.style.width = '0%'; 
+            if(progressText) progressText.textContent = '0%';
+            if(viewPastSubmissionsBtn) viewPastSubmissionsBtn.style.display = 'none';
+            
+            userEmailResultDisplay.textContent = ""; 
+            resultSectionTitle.textContent = "Quiz Result";
+            
+            toggleAuthView('login'); // This hides all sections and shows the login form
+        }
+
+        // --- Functions for Past Submissions View ---
+        function showMainLoginOrQuizView() {
+            toggleAuthView('login'); // Simplest way to return to the initial login view
+                                     // toggleAuthView handles showing/hiding past submission button
+        }
+
+        function showPastSubmissionsView(calledFromBackButton = false) { // calledFromBackButton not used yet
+            if (!currentUserEmailGlobal) {
+                showModal("Login Required", "Please login to view your past submissions.", "alert", () => {
+                    showMainLoginOrQuizView();
+                });
+                return;
+            }
+            hideAllSections();
+            pastSubmissionsSection.style.display = "block";
+            const listContainer = document.getElementById('submissions-list-container');
+            listContainer.innerHTML = '<p id="loading-submissions-message" class="text-slate-600">Loading your submissions...</p>';
+            fetchUserSubmissions();
+        }
+
+        async function fetchUserSubmissions() {
+            try {
+                // Assuming backend uses email for now. For better security, use user_id with proper auth.
+                const response = await fetch(`/api/user/submissions?email=${encodeURIComponent(currentUserEmailGlobal)}`);
+                const result = await response.json();
+                const submissionsListContainer = document.getElementById('submissions-list-container');
+                if (!response.ok) throw new Error(result.message || `HTTP error ${response.status}`);
+
+                if (result.success && result.submissions && result.submissions.length > 0) {
+                    submissionsListContainer.innerHTML = ""; // Clear loading/previous
+                    result.submissions.forEach(sub => {
+                        const subDate = new Date(sub.submitted_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = "submission-item border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white";
+                        itemDiv.innerHTML = `
+                            <h3 class="text-lg sm:text-xl font-semibold text-blue-700 mb-1">${sub.quiz_title}</h3>
+                            <p class="text-sm text-slate-600">Score: <strong>${sub.score} / ${sub.total_questions_in_quiz}</strong> (${sub.percentage.toFixed(1)}%)</p>
+                            <p class="text-xs text-slate-500 mb-3">Taken on: ${subDate}</p>
+                            <button onclick="viewSubmissionDetails('${sub.submission_id}')" class="btn btn-primary btn-sm text-xs py-1.5 px-3">View Details</button>
+                        `;
+                        submissionsListContainer.appendChild(itemDiv);
+                    });
+                } else if (result.success && result.submissions && result.submissions.length === 0) {
+                    submissionsListContainer.innerHTML = "<p class='text-slate-600'>You haven't submitted any quizzes yet.</p>";
+                } else {
+                    submissionsListContainer.innerHTML = `<p class='text-red-600'>Could not load submissions: ${result.message || "Unknown error"}</p>`;
+                }
+            } catch (error) {
+                console.error("Error fetching user submissions:", error);
+                document.getElementById('submissions-list-container').innerHTML = `<p class='text-red-600'>Error fetching submissions: ${error.message}</p>`;
+            }
+        }
+
+        async function viewSubmissionDetails(submissionId) { // submissionId will be a string
+            hideAllSections();
+            submissionDetailSection.style.display = "block";
+            document.getElementById('submission-detail-quiz-title').textContent = "Loading Details...";
+            document.getElementById('submission-detail-summary').innerHTML = "<p class='text-slate-600'>Loading summary...</p>";
+            document.getElementById('submission-detail-questions').innerHTML = "<p class='text-slate-600'>Loading questions...</p>";
+
+            try {
+                const response = await fetch(`/api/submission/${submissionId}/details`);
+                const result = await response.json();
+                 if (!response.ok) throw new Error(result.message || `HTTP error ${response.status}`);
+
+                if (result.success) {
+                    const summary = result.summary;
+                    const details = result.details;
+                    document.getElementById('submission-detail-quiz-title').textContent = summary.quiz_title || "Detailed Quiz Result";
+                    const summaryContainer = document.getElementById('submission-detail-summary');
+                    const submissionDate = summary.submitted_at ? new Date(summary.submitted_at).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "N/A";
+                    summaryContainer.innerHTML = `
+                        <p><strong>User:</strong> ${summary.user_email || "N/A"}</p>
+                        <p><strong>Score:</strong> ${summary.score !== undefined ? summary.score : 'N/A'} / ${summary.total_questions_in_quiz !== undefined ? summary.total_questions_in_quiz : 'N/A'} (${summary.percentage !== undefined ? summary.percentage.toFixed(1) : 'N/A'}%)</p>
+                        <p><strong>Feedback:</strong> ${summary.feedback_text || "N/A"}</p>
+                        <p><strong>Submitted:</strong> ${submissionDate}</p>
+                    `;
+                    const questionsContainer = document.getElementById('submission-detail-questions');
+                    questionsContainer.innerHTML = ""; // Clear loading message
+                    if (details && details.length > 0) {
+                        details.forEach((q, index) => {
+                            const qDiv = document.createElement('div');
+                            qDiv.className = `detailed-question p-4 rounded-md border ${q.is_correct ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`;
+                            let answerHTML = `<p class="text-sm your-answer ${q.is_correct ? 'text-green-700' : 'text-red-700 font-semibold'}">Your Answer: ${q.user_selected_answer_text || "Not Answered"}`;
+                            answerHTML += ` <span class="${q.is_correct ? 'text-green-600' : 'text-red-600'} font-bold">${q.is_correct ? '✔ Correct' : '✘ Incorrect'}</span></p>`;
+                            if (!q.is_correct) {
+                                answerHTML += `<p class="text-sm correct-answer text-blue-700 mt-1">Correct Answer: ${q.correct_answer_text || "N/A"}</p>`;
+                            }
+                            qDiv.innerHTML = `<p class="font-medium text-slate-800 mb-2">${index + 1}. ${q.question_text || "Question text not available"}</p>${answerHTML}`;
+                            questionsContainer.appendChild(qDiv);
+                        });
+                    } else { 
+                        questionsContainer.innerHTML = "<p class='text-slate-600'>No detailed question breakdown available for this submission.</p>"; 
+                    }
+                } else {
+                    document.getElementById('submission-detail-quiz-title').textContent = "Error";
+                    document.getElementById('submission-detail-summary').innerHTML = `<p class="text-red-600">Could not load details: ${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error("Error fetching submission details:", error);
+                document.getElementById('submission-detail-quiz-title').textContent = "Error";
+                document.getElementById('submission-detail-summary').innerHTML = `<p class="text-red-600">Error loading details: ${error.message}</p>`;
+            }
+        }
+
+        let currentQuestion = 0;
+        let answers = [];
+        let timer = null;
+        const timePerQuestion = 60; // seconds
+
+        function showQuestion(index) {
+            // Display question[index] on the page
+            // ...
+            startTimer();
+        }
+
+        function startTimer() {
+            let timeLeft = timePerQuestion;
+            document.getElementById('timer').innerText = timeLeft;
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    saveAnswer(null); // No answer selected
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        function saveAnswer(selectedOption) {
+            answers[currentQuestion] = selectedOption;
+        }
+
+        function nextQuestion() {
+            clearInterval(timer);
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion(currentQuestion);
+            } else {
+                submitQuiz();
+            }
+        }
+
+        // Call showQuestion(0) to start the quiz
+    </script>
+</body>
+</html>

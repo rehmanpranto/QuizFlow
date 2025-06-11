@@ -1,0 +1,8 @@
+Flask>=2.0.0
+Flask-CORS>=3.0.0
+Werkzeug>=2.0.0
+Flask-Mail>=0.9.1
+python-dotenv
+gunicorn
+pymongo[srv]
+Flask-PyMongo
