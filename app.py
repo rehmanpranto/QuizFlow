@@ -24,13 +24,10 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 mail = Mail(app)
 
 # Embedded quiz data
-# NOTE: To truly implement difficulty, you would have multiple QUIZ_DATA structures
-# or a database that allows querying by difficulty. For this in-memory example,
-# we just include `timePerQuestion`.
 QUIZ_DATA = {
     "title": "Demand and Supply Quiz",
     "timeLimit": 1200,  # Global limit (can be ignored if using per-question)
-    "timePerQuestion": 30, # NEW: Time allowed per question in seconds
+    "timePerQuestion": 30, # Time allowed per question in seconds
     "questions": [
         {
             "id": 1,
@@ -244,7 +241,7 @@ def register_user():
     return jsonify({
         "success": True,
         "message": "User registered successfully",
-        "user_id": email  # Using email as user ID for simplicity
+        "user_id": email
     }), 201
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -263,7 +260,6 @@ def login_user():
     if user_accounts[email]["password"] != password:
         return jsonify({"success": False, "message": "Invalid email or password"}), 401
 
-    # Check if user has already taken the quiz
     if email in user_submissions:
         submission = user_submissions[email]
         return jsonify({
@@ -278,25 +274,21 @@ def login_user():
                 "score": submission["score"],
                 "totalQuestions": submission["total_questions"],
                 "percentage": submission["percentage"],
-                "feedback": submission["feedback"]
+                "feedback": submission["feedback"],
+                "detailed_results": submission["detailed_results"] # Pass detailed results for past quizzes too
             }
         }), 200
     else:
         return jsonify({"success": True, "message": "Login successful. You can start the quiz.", "email": email, "user_id": email}), 200
 
-# Modified /api/quiz to accept a 'difficulty' parameter
 @app.route('/api/quiz', methods=['GET'])
 def get_quiz():
-    # In a real app, you'd load different QUIZ_DATA based on 'difficulty'
-    # For this in-memory example, it just acknowledges the parameter
-    difficulty = request.args.get('difficulty', 'normal') # Default to 'normal'
-
     try:
         return jsonify({
             "success": True,
             "title": QUIZ_DATA["title"],
-            "timeLimit": QUIZ_DATA["timeLimit"], # Global limit, frontend can choose to ignore
-            "timePerQuestion": QUIZ_DATA["timePerQuestion"], # NEW: Pass time per question
+            "timeLimit": QUIZ_DATA["timeLimit"],
+            "timePerQuestion": QUIZ_DATA["timePerQuestion"], # Pass time per question
             "questions": [
                 {
                     "id": q["id"],
@@ -313,7 +305,7 @@ def get_quiz():
 def submit_quiz():
     data = request.get_json()
     user_email = data.get('email') if data else None
-    user_answers_indices = data.get('answers', []) if data else [] # This will be perQuestionAnswers from frontend
+    user_answers_indices = data.get('answers', []) if data else []
 
     if not data or not user_email or not isinstance(user_answers_indices, list):
         return jsonify({"success": False, "message": "User email and answers list are required."}), 400
@@ -377,7 +369,7 @@ def submit_quiz():
             "percentage": percentage,
             "feedback": feedback_text,
             "submitted_at": datetime.now(timezone.utc),
-            "detailed_results": detailed_results_for_frontend
+            "detailed_results": detailed_results_for_frontend # Store detailed results
         }
 
         print(f"Quiz submitted by: {user_email}, Score: {score}/{total_questions}, Submission ID: {submission_id}")
@@ -399,14 +391,14 @@ def submit_quiz():
 
                 Submitted at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
                 """
-                msg = Message(subject, recipients=[admin_email], body=body)
+                # CHANGED: 'sender' parameter in Message to user_email
+                msg = Message(subject, sender=user_email, recipients=[admin_email], body=body)
                 mail.send(msg)
-                print(f"Successfully sent submission email to admin: {admin_email}")
+                print(f"Successfully sent submission email to admin from {user_email}: {admin_email}")
             except Exception as e:
-                print(f"!!! FAILED to send submission email to admin: {e}")
+                print(f"!!! FAILED to send submission email from {user_email} to admin: {e}")
         else:
             print("!!! ADMIN_EMAIL_RECIPIENT not set in .env. Skipping email notification.")
-
 
         return jsonify({
             "success": True, "email": user_email, "submission_id": submission_id,
@@ -449,7 +441,6 @@ def get_user_submissions():
 @app.route('/api/submission/<submission_id_str>/details', methods=['GET'])
 def get_submission_details(submission_id_str):
     try:
-        # Find submission by ID
         user_email = None
         submission = None
 
@@ -474,7 +465,6 @@ def get_submission_details(submission_id_str):
             "user_email": user_email
         }
 
-        # Convert detailed results to match frontend expectations
         detailed_questions_list = []
         for result in submission["detailed_results"]:
             detailed_questions_list.append({
