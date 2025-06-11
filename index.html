@@ -205,7 +205,7 @@
     <script>
         let quizDataStore = [];
         let quizTimeLimit = 1200; // Default, will be updated from API, but not actively used for global timer
-        let timePerQuestion = 30; // NEW: Default, will be updated from API
+        let timePerQuestion = 30; // Default, will be updated from API
         let quizTimerInterval; // For global timer (now likely unused)
         let currentUserEmailGlobal = "";
         let currentUserIdGlobal = null; // To store user ID from login
@@ -215,9 +215,9 @@
         window.latestQuizResultForPrinting = null;
         let answeredQuestionsCount = 0;
 
-        let currentQuestionIndex = 0; // NEW: Tracks current question for per-question flow
-        let perQuestionAnswers = []; // NEW: Stores answers for per-question flow
-        let perQuestionTimer = null; // NEW: Timer for current question
+        let currentQuestionIndex = 0; // Tracks current question for per-question flow
+        let perQuestionAnswers = []; // Stores answers for per-question flow
+        let perQuestionTimer = null; // Timer for current question
 
         // DOM Elements
         const loginSection = document.getElementById("login-section");
@@ -238,7 +238,6 @@
         const loginPasswordInput = document.getElementById("login-password");
         const loginButton = document.getElementById("login-button");
         const viewPastSubmissionsBtn = document.getElementById("view-past-submissions-btn");
-        // Removed quizDifficultySelector as the element is removed from HTML
 
         const registerNameInput = document.getElementById("register-name");
         const registerEmailInput = document.getElementById("register-email");
@@ -404,7 +403,6 @@
         async function login() {
             const email = loginEmailInput.value.trim();
             const password = loginPasswordInput.value;
-            // Removed selectedDifficulty variable as the element is removed.
 
             if (!email || !password) {
                 showModal("Input Required", "Please enter both email and password.");
@@ -417,7 +415,7 @@
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password }) // Only email and password for login
+                    body: JSON.stringify({ email, password })
                 });
                 const result = await response.json();
                 if (response.ok && result.success) {
@@ -425,25 +423,35 @@
                     currentUserIdGlobal = result.user_id;
                     if (viewPastSubmissionsBtn) viewPastSubmissionsBtn.style.display = 'block';
 
-                    // If user has already taken THIS specific quiz, show past results.
                     if (result.quiz_already_taken && result.past_results) {
                         hideAllSections();
                         resultSection.style.display = "block";
                         const past = result.past_results;
-                        window.latestQuizResultForPrinting = { email: currentUserEmailGlobal, score: past.score, totalQuestions: past.totalQuestions, percentage: past.percentage, feedback: past.feedback, title: past.quizTitle || "Quiz Results", detailed_results: [] };
+                        // Use result.detailed_results from the server if available for past quizzes
+                        // For in-memory storage, you might need to fetch this separately or store it with the submission
+                        window.latestQuizResultForPrinting = {
+                            email: currentUserEmailGlobal,
+                            score: past.score,
+                            totalQuestions: past.totalQuestions,
+                            percentage: past.percentage,
+                            feedback: past.feedback,
+                            title: past.quizTitle || "Quiz Results",
+                            // If detailed_results are not directly in past_results, you'd fetch them:
+                            detailed_results: past.detailed_results || [] // Ensure it's an array
+                        };
                         resultSectionTitle.textContent = past.quizTitle || "Previous Quiz Results";
-                        displayResults(past.score, past.totalQuestions, past.percentage, past.feedback, []);
+                        // Pass detailed_results to displayResults for past quizzes too
+                        displayResults(past.score, past.totalQuestions, past.percentage, past.feedback, past.detailed_results || []);
                         userEmailResultDisplay.textContent = `Welcome back, ${currentUserEmailGlobal.split('@')[0]}! Results for "${past.quizTitle || 'the quiz'}":`;
                         showModal("Previous Results Loaded", result.message || "Displayed your previous results for this quiz.");
                     } else {
-                        hideAllSections(); // Ensure only quiz section is shown
-                        // Call startQuizFlow without a difficulty parameter
-                        await startQuizFlow(); // No difficulty parameter passed now
+                        hideAllSections();
+                        await startQuizFlow();
                     }
                 } else {
                     showModal("Login Failed", result.message || "Invalid email or password.");
                     loginPasswordInput.value = "";
-                    loginPasswordInput.focus(); // Keep focus on password for re-entry
+                    loginPasswordInput.focus();
                 }
             } catch (error) {
                 console.error("Login API error:", error);
@@ -455,18 +463,16 @@
         }
 
         // --- Quiz Flow Functions ---
-        // startQuizFlow no longer accepts a difficulty parameter
-        async function startQuizFlow() { // Removed difficulty parameter
+        async function startQuizFlow() {
             hideAllSections();
             quizSection.style.display = "block";
             resultSection.style.display = "none";
-            submitQuizButton.style.display = "none"; // Hide general submit button as we use per-question
+            submitQuizButton.style.display = "none";
             quizActive = true;
             userFocusLossCount = 0;
             currentQuestionIndex = 0;
             perQuestionAnswers = [];
-            // fetchQuizData now called without difficulty parameter
-            await fetchQuizData(); // Removed difficulty parameter
+            await fetchQuizData();
             if (quizDataStore.length > 0) {
                 updateProgressSingle();
                 showSingleQuestion(currentQuestionIndex);
@@ -479,10 +485,9 @@
             }
         }
 
-        // fetchQuizData no longer accepts a difficulty parameter
-        async function fetchQuizData() { // Removed difficulty parameter
+        async function fetchQuizData() {
             try {
-                const response = await fetch(`/api/quiz`); // Removed difficulty query parameter
+                const response = await fetch(`/api/quiz`);
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({ message: "Failed to parse error from server."}));
                     throw new Error(errData.message || `HTTP error! status: ${response.status}`);
@@ -491,7 +496,7 @@
                 if(data.success){
                     quizDataStore = data.questions || [];
                     quizTitleDisplay.textContent = data.title || "Quiz Challenge";
-                    timePerQuestion = data.timePerQuestion || 30; // Get timePerQuestion from backend
+                    timePerQuestion = data.timePerQuestion || 30;
                     console.log(`Quiz loaded: ${data.title}, Time per question: ${timePerQuestion}s`);
                 } else {
                     throw new Error(data.message || "Backend reported failure in fetching quiz data.");
@@ -499,18 +504,18 @@
             } catch (error) {
                 console.error("Fetch quiz data error:", error);
                 showModal("Fetch Error", `Could not retrieve quiz questions: ${error.message}`);
-                quizDataStore = []; // Ensure it's empty on error
+                quizDataStore = [];
             }
         }
 
         // --- Per-Question Quiz Logic ---
         function showSingleQuestion(index) {
             if (!quizDataStore || quizDataStore.length === 0 || index >= quizDataStore.length) {
-                submitQuizSingle(); // Ensure quiz is submitted if somehow called past last question
+                submitQuizSingle();
                 return;
             }
 
-            questionContainer.innerHTML = ""; // Clear previous question
+            questionContainer.innerHTML = "";
             const q = quizDataStore[index];
             const qDiv = document.createElement("div");
             qDiv.className = "question bg-white border border-slate-200 p-6 rounded-lg";
@@ -525,29 +530,27 @@
             qDiv.innerHTML = `<p class="text-base font-medium text-slate-800 mb-4">${index + 1}. ${q.question}</p><div class="space-y-3">${optionsHTML}</div>`;
             questionContainer.appendChild(qDiv);
 
-            // Option select handler
             questionContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
                 radio.addEventListener('change', (event) => {
-                    // Update UI for selected option
                     document.querySelectorAll(`input[name="q${index}"]`).forEach(r => r.closest('.option-label').classList.remove('selected'));
                     if (event.target.checked) event.target.closest('.option-label').classList.add('selected');
 
                     perQuestionAnswers[index] = parseInt(event.target.value, 10);
-                    clearInterval(perQuestionTimer); // Stop timer on selection
-                    nextSingleQuestion(); // Move to next question immediately
+                    clearInterval(perQuestionTimer);
+                    nextSingleQuestion();
                 });
             });
 
-            startPerQuestionTimer(); // Start timer for this question
-            updateProgressSingle(); // Update progress bar
+            startPerQuestionTimer();
+            updateProgressSingle();
         }
 
         function startPerQuestionTimer() {
-            let timeLeft = timePerQuestion; // Use timePerQuestion from backend
+            let timeLeft = timePerQuestion;
             timerDisplay.textContent = formatTime(timeLeft);
-            clearInterval(perQuestionTimer); // Clear any existing timer
+            clearInterval(perQuestionTimer);
             perQuestionTimer = setInterval(() => {
-                if (!quizActive) { // Ensure quiz is still active
+                if (!quizActive) {
                     clearInterval(perQuestionTimer);
                     return;
                 }
@@ -555,22 +558,20 @@
                 timerDisplay.textContent = formatTime(timeLeft);
                 if (timeLeft <= 0) {
                     clearInterval(perQuestionTimer);
-                    // Save as unanswered if not answered for the current question
                     if (perQuestionAnswers[currentQuestionIndex] === undefined || perQuestionAnswers[currentQuestionIndex] === null) {
                         perQuestionAnswers[currentQuestionIndex] = null;
                     }
-                    nextSingleQuestion(); // Auto-advance to next question
+                    nextSingleQuestion();
                 }
             }, 1000);
         }
 
         function nextSingleQuestion() {
-            clearInterval(perQuestionTimer); // Ensure timer is stopped
-            currentQuestionIndex++; // Move to the next question index
+            clearInterval(perQuestionTimer);
+            currentQuestionIndex++;
             if (currentQuestionIndex < quizDataStore.length) {
-                showSingleQuestion(currentQuestionIndex); // Show the next question
+                showSingleQuestion(currentQuestionIndex);
             } else {
-                // All questions done, submit the quiz
                 submitQuizSingle();
             }
         }
@@ -581,7 +582,7 @@
             progressText.textContent = `${percent}%`;
         }
 
-        async function submitQuizSingle() { // Renamed from submitQuiz to reflect per-question flow
+        async function submitQuizSingle() {
             quizActive = false;
             removeAntiCheatingListeners();
             clearInterval(perQuestionTimer);
@@ -591,7 +592,7 @@
             if (!currentUserEmailGlobal) {
                 showModal("Error", "User not logged in. Cannot submit quiz.");
                 submitQuizButton.disabled = false;
-                submitQuizButton.textContent = "Submit Quiz"; // Restore button text
+                submitQuizButton.textContent = "Submit Quiz";
                 return;
             }
 
@@ -601,7 +602,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: currentUserEmailGlobal,
-                        answers: perQuestionAnswers // Send the collected per-question answers
+                        answers: perQuestionAnswers
                     })
                 });
                 const result = await response.json();
@@ -637,13 +638,14 @@
             }
         }
 
-        // Common Utility Functions (keep as is or adapt if needed)
+        // Common Utility Functions
         function formatTime(seconds) {
             const m = Math.floor(seconds / 60);
             const s = seconds % 60;
             return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
 
+        // MODIFIED: displayResults to show correct answer
         function displayResults(score, totalQuestions, percentage, feedback, detailedResults) {
             resultScoreDisplay.textContent = `Score: ${score}/${totalQuestions}`;
             resultPercentageDisplay.textContent = `${percentage.toFixed(2)}%`;
@@ -653,13 +655,12 @@
 
             const detailedResultsContainer = document.getElementById("detailed-quiz-results");
             detailedResultsContainer.innerHTML = "";
-            detailedResults.forEach(item => {
+            detailedResults.forEach((item, index) => { // Added index for question numbering
                 const qDiv = document.createElement("div");
                 qDiv.className = `p-4 mb-3 rounded-lg border ${item.is_correct ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
                 qDiv.innerHTML = `
-                    <p class="font-semibold">${item.question_text}</p>
-                    <p class="text-sm mt-1">Your Answer: <span class="${item.is_correct ? 'text-green-700' : 'text-red-700'} font-medium">${item.user_selected_answer_text}</span></p>
-                    <p class="text-sm">Correct Answer: <span class="text-green-700 font-medium">${item.correct_answer_text}</span></p>
+                    <p class="font-semibold">${index + 1}. ${item.question}</p> <p class="text-sm mt-1">Your Answer: <span class="${item.is_correct ? 'text-green-700' : 'text-red-700'} font-medium">${item.your_answer}</span></p>
+                    <p class="text-sm">Correct Answer: <span class="text-green-700 font-medium">${item.correct_answer}</span></p>
                 `;
                 detailedResultsContainer.appendChild(qDiv);
             });
@@ -670,7 +671,7 @@
             pastSubmissionsSection.style.display = "block";
             const submissionsListContainer = document.getElementById("submissions-list-container");
             const loadingMessage = document.getElementById("loading-submissions-message");
-            submissionsListContainer.innerHTML = ''; // Clear previous list
+            submissionsListContainer.innerHTML = '';
             loadingMessage.style.display = 'block';
 
             if (!currentUserEmailGlobal) {
@@ -683,7 +684,7 @@
                 const response = await fetch(`/api/user/submissions?email=${currentUserEmailGlobal}`);
                 const result = await response.json();
 
-                loadingMessage.style.display = 'none'; // Hide loading message once data is fetched
+                loadingMessage.style.display = 'none';
 
                 if (result.success && result.submissions.length > 0) {
                     result.submissions.forEach(sub => {
@@ -733,12 +734,11 @@
                         <p class="text-xs text-slate-500 mt-2">Submitted: ${new Date(summary.submitted_at).toLocaleString()}</p>
                     `;
 
-                    details.forEach(qDetail => {
+                    details.forEach((qDetail, index) => { // Added index for question numbering
                         const qDiv = document.createElement("div");
                         qDiv.className = `p-4 mb-3 rounded-lg border ${qDetail.is_correct ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`;
                         qDiv.innerHTML = `
-                            <p class="font-semibold">${qDetail.question_text}</p>
-                            <p class="text-sm mt-1">Your Answer: <span class="${qDetail.is_correct ? 'text-green-700' : 'text-red-700'} font-medium">${qDetail.user_selected_answer_text}</span></p>
+                            <p class="font-semibold">${index + 1}. ${qDetail.question_text}</p> <p class="text-sm mt-1">Your Answer: <span class="${qDetail.is_correct ? 'text-green-700' : 'text-red-700'} font-medium">${qDetail.user_selected_answer_text}</span></p>
                             <p class="text-sm">Correct Answer: <span class="text-green-700 font-medium">${qDetail.correct_answer_text}</span></p>
                         `;
                         submissionDetailQuestions.appendChild(qDiv);
@@ -780,9 +780,9 @@
 
                 printContent += `
                     <div style="background-color: ${bgColor}; border: 1px solid ${borderColor}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <p style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${index + 1}. ${item.question_text}</p>
-                        <p style="font-size: 14px; margin-bottom: 4px;">Your Answer: <span style="color: ${textColor}; font-weight: 500;">${item.user_selected_answer_text}</span></p>
-                        <p style="font-size: 14px;">Correct Answer: <span style="color: #065f46; font-weight: 500;">${item.correct_answer_text}</span></p>
+                        <p style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">${index + 1}. ${item.question}</p>
+                        <p style="font-size: 14px; margin-bottom: 4px;">Your Answer: <span style="color: ${textColor}; font-weight: 500;">${item.your_answer}</span></p>
+                        <p style="font-size: 14px;">Correct Answer: <span style="color: #065f46; font-weight: 500;">${item.correct_answer}</span></p>
                     </div>
                 `;
             });
@@ -824,16 +824,12 @@
 
         function showMainLoginOrQuizView() {
             if (currentUserEmailGlobal) {
-                // If logged in, assume they want to restart quiz or see past submissions
-                // For simplicity here, we go back to login screen but keep user data
-                // In a real app, you'd likely go to a dashboard or quiz selection screen
                 toggleAuthView('login');
-                // Reset some quiz state for a new attempt
                 currentQuestionIndex = 0;
                 perQuestionAnswers = [];
                 quizActive = false;
                 clearInterval(perQuestionTimer);
-                timerDisplay.textContent = "00:00"; // Reset timer display
+                timerDisplay.textContent = "00:00";
                 progressBarFill.style.width = '0%';
                 progressText.textContent = '0%';
             } else {
@@ -851,7 +847,7 @@
             userFocusLossCount = 0;
             window.latestQuizResultForPrinting = null;
             clearInterval(perQuestionTimer);
-            timerDisplay.textContent = "00:00"; // Reset timer display
+            timerDisplay.textContent = "00:00";
             progressBarFill.style.width = '0%';
             progressText.textContent = '0%';
             toggleAuthView('login');
