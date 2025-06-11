@@ -24,9 +24,13 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 mail = Mail(app)
 
 # Embedded quiz data
+# NOTE: To truly implement difficulty, you would have multiple QUIZ_DATA structures
+# or a database that allows querying by difficulty. For this in-memory example,
+# we just include `timePerQuestion`.
 QUIZ_DATA = {
     "title": "Demand and Supply Quiz",
-    "timeLimit": 1200,  # 20 questions × 60 seconds = 1200 seconds
+    "timeLimit": 1200,  # Global limit (can be ignored if using per-question)
+    "timePerQuestion": 30, # NEW: Time allowed per question in seconds
     "questions": [
         {
             "id": 1,
@@ -215,7 +219,7 @@ def index_page():
 def register_user():
     data = request.get_json()
     print(f"DEBUG: Received registration data: {data}")
-    
+
     name = data.get('name') if data else None
     email = data.get('email') if data else None
     password = data.get('password') if data else None
@@ -229,16 +233,16 @@ def register_user():
 
     if email in user_accounts:
         return jsonify({"success": False, "message": "Email already registered"}), 409
-    
+
     user_accounts[email] = {
         "name": name,
         "email": email,
         "password": password,  # In production, this should be hashed
         "created_at": datetime.now(timezone.utc)
     }
-    
+
     return jsonify({
-        "success": True, 
+        "success": True,
         "message": "User registered successfully",
         "user_id": email  # Using email as user ID for simplicity
     }), 201
@@ -252,41 +256,47 @@ def login_user():
 
     if not data or not email or not password:
         return jsonify({"success": False, "message": "Email and password are required"}), 400
-    
+
     if email not in user_accounts:
         return jsonify({"success": False, "message": "Invalid email or password"}), 401
-    
+
     if user_accounts[email]["password"] != password:
         return jsonify({"success": False, "message": "Invalid email or password"}), 401
-    
+
     # Check if user has already taken the quiz
     if email in user_submissions:
         submission = user_submissions[email]
         return jsonify({
-            "success": True, 
+            "success": True,
             "quiz_already_taken": True,
             "message": f"You have already completed '{QUIZ_DATA['title']}'. Here are your previous results.",
-            "email": email, 
+            "email": email,
             "user_id": email,
-            "past_results": { 
+            "past_results": {
                 "submission_id": submission["submission_id"],
                 "quizTitle": QUIZ_DATA["title"],
                 "score": submission["score"],
                 "totalQuestions": submission["total_questions"],
-                "percentage": submission["percentage"], 
+                "percentage": submission["percentage"],
                 "feedback": submission["feedback"]
             }
         }), 200
     else:
         return jsonify({"success": True, "message": "Login successful. You can start the quiz.", "email": email, "user_id": email}), 200
 
+# Modified /api/quiz to accept a 'difficulty' parameter
 @app.route('/api/quiz', methods=['GET'])
 def get_quiz():
+    # In a real app, you'd load different QUIZ_DATA based on 'difficulty'
+    # For this in-memory example, it just acknowledges the parameter
+    difficulty = request.args.get('difficulty', 'normal') # Default to 'normal'
+
     try:
         return jsonify({
             "success": True,
             "title": QUIZ_DATA["title"],
-            "timeLimit": QUIZ_DATA["timeLimit"],
+            "timeLimit": QUIZ_DATA["timeLimit"], # Global limit, frontend can choose to ignore
+            "timePerQuestion": QUIZ_DATA["timePerQuestion"], # NEW: Pass time per question
             "questions": [
                 {
                     "id": q["id"],
@@ -296,13 +306,14 @@ def get_quiz():
             ]
         })
     except Exception as e:
+        print(f"Error fetching quiz data: {e}")
         return jsonify({"success": False, "message": "An error occurred while fetching the quiz."}), 500
 
 @app.route('/api/submit', methods=['POST'])
 def submit_quiz():
     data = request.get_json()
     user_email = data.get('email') if data else None
-    user_answers_indices = data.get('answers', []) if data else []
+    user_answers_indices = data.get('answers', []) if data else [] # This will be perQuestionAnswers from frontend
 
     if not data or not user_email or not isinstance(user_answers_indices, list):
         return jsonify({"success": False, "message": "User email and answers list are required."}), 400
@@ -330,16 +341,16 @@ def submit_quiz():
                     if 0 <= user_selected_index < len(question["options"]):
                         user_selected_text = question["options"][user_selected_index]
                     else:
-                        user_selected_index = None 
+                        user_selected_index = None
                         user_selected_text = "Invalid Option Selected"
                 except (ValueError, TypeError):
-                    user_selected_index = None 
+                    user_selected_index = None
                     user_selected_text = "Invalid Answer Format"
-            
+
             if user_selected_index == correct_answer_index:
                 score += 1
                 is_correct_flag = True
-            
+
             detailed_results_for_frontend.append({
                 "id": question["id"],
                 "question": question["question"],
@@ -350,7 +361,7 @@ def submit_quiz():
 
         percentage = (score / total_questions) * 100 if total_questions > 0 else 0
         feedback_name = user_email.split('@')[0]
-        feedback_text = "" 
+        feedback_text = ""
         if percentage == 100: feedback_text = f"Perfect score, {feedback_name}! You're a whiz!"
         elif percentage >= 80: feedback_text = f"Excellent work, {feedback_name}!"
         elif percentage >= 60: feedback_text = f"Good job, {feedback_name}!"
@@ -358,7 +369,7 @@ def submit_quiz():
         else: feedback_text = f"Keep learning, {feedback_name}!"
 
         submission_id = f"sub_{user_email}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
+
         user_submissions[user_email] = {
             "submission_id": submission_id,
             "score": score,
@@ -412,7 +423,7 @@ def get_user_submissions():
     user_email = request.args.get('email')
     if not user_email:
         return jsonify({"success": False, "message": "User email parameter is required."}), 400
-    
+
     try:
         if user_email not in user_accounts:
             return jsonify({"success": False, "message": "User not found."}), 404
@@ -429,7 +440,7 @@ def get_user_submissions():
                 "percentage": submission["percentage"],
                 "submitted_at": submission["submitted_at"].isoformat()
             })
-            
+
         return jsonify({"success": True, "submissions": submissions_list})
     except Exception as e:
         print(f"Error fetching user submissions: {e}")
@@ -441,13 +452,13 @@ def get_submission_details(submission_id_str):
         # Find submission by ID
         user_email = None
         submission = None
-        
+
         for email, sub in user_submissions.items():
             if sub["submission_id"] == submission_id_str:
                 user_email = email
                 submission = sub
                 break
-        
+
         if not submission:
             return jsonify({"success": False, "message": "Submission not found."}), 404
 
@@ -473,7 +484,7 @@ def get_submission_details(submission_id_str):
                 "correct_answer_text": result["correct_answer"],
                 "is_correct": result["is_correct"]
             })
-            
+
         return jsonify({"success": True, "summary": summary_response, "details": detailed_questions_list})
 
     except Exception as e:
@@ -486,44 +497,3 @@ if __name__ == '__main__':
     print("Starting Quizflow application with embedded data...")
     print(f"Quiz: {QUIZ_DATA['title']} ({len(QUIZ_DATA['questions'])} questions)")
     app.run(debug=True, port=5001)
-
-let currentQuestion = 0;
-let answers = [];
-let timer = null;
-const timePerQuestion = 60; // seconds
-
-function showQuestion(index) {
-    // Display question[index] on the page
-    // ...
-    startTimer();
-}
-
-function startTimer() {
-    let timeLeft = timePerQuestion;
-    document.getElementById('timer').innerText = timeLeft;
-    timer = setInterval(() => {
-        timeLeft--;
-        document.getElementById('timer').innerText = timeLeft;
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            saveAnswer(null); // No answer selected
-            nextQuestion();
-        }
-    }, 1000);
-}
-
-function saveAnswer(selectedOption) {
-    answers[currentQuestion] = selectedOption;
-}
-
-function nextQuestion() {
-    clearInterval(timer);
-    currentQuestion++;
-    if (currentQuestion < questions.length) {
-        showQuestion(currentQuestion);
-    } else {
-        submitQuiz();
-    }
-}
-
-// Call showQuestion(0) to start the quiz
