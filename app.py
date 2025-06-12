@@ -343,11 +343,12 @@ def submit_quiz():
                 score += 1
                 is_correct_flag = True
 
+            # Standardize keys for detailed results
             detailed_results_for_frontend.append({
                 "id": question["id"],
-                "question": question["question"],
-                "your_answer": user_selected_text,
-                "correct_answer": question["options"][correct_answer_index],
+                "question_text": question["question"], # Changed key from "question"
+                "user_selected_answer_text": user_selected_text, # Changed key from "your_answer"
+                "correct_answer_text": question["options"][correct_answer_index], # Changed key from "correct_answer"
                 "is_correct": is_correct_flag
             })
 
@@ -470,15 +471,8 @@ def get_submission_details(submission_id_str):
             "user_email": user_email
         }
 
-        detailed_questions_list = []
-        for result in submission["detailed_results"]:
-            detailed_questions_list.append({
-                "question_id": str(result["id"]),
-                "question_text": result["question"],
-                "user_selected_answer_text": result["your_answer"],
-                "correct_answer_text": result["correct_answer"],
-                "is_correct": result["is_correct"]
-            })
+        # Directly use the stored detailed_results as they are now standardized
+        detailed_questions_list = submission["detailed_results"]
 
         return jsonify({"success": True, "summary": summary_response, "details": detailed_questions_list})
 
@@ -492,3 +486,4 @@ if __name__ == '__main__':
     print("Starting Quizflow application with embedded data...")
     print(f"Quiz: {QUIZ_DATA['title']} ({len(QUIZ_DATA['questions'])} questions)")
     app.run(debug=True, port=5001)
+
