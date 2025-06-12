@@ -15,12 +15,12 @@ CORS(app)
 # Configure Flask-Mail with credentials from your .env file
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() in ['true', '1', 't']
-app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'false').lower() in ['true', '1', 't']
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() in ['true', '1', 'yes']
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'false').lower() in ['true', '1', 'yes']
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
-
+admin_email_recipient = os.getenv('ADMIN_EMAIL_RECIPIENT')
 mail = Mail(app)
 
 # Embedded quiz data
@@ -400,7 +400,7 @@ def submit_quiz():
                     reply_to=user_email
                 )
                 mail.send(msg)
-                print(f"Successfully sent submission email to admin from {user_email}: {admin_email}")
+                print(f"Successfully sent submission email from {user_email} to admin: {admin_email}")
             except Exception as e:
                 print(f"!!! FAILED to send submission email from {user_email} to admin: {e}")
         else:
