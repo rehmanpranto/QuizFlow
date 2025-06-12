@@ -4,5 +4,3 @@ Werkzeug>=2.0.0
 Flask-Mail>=0.9.1
 python-dotenv
 gunicorn
-pymongo[srv]
-Flask-PyMongo

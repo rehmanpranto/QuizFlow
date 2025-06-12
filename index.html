@@ -154,19 +154,11 @@
             <button onclick="submitQuizConfirm()" id="submit-quiz-button" class="w-full mt-10 btn btn-primary bg-green-600 hover:bg-green-700" style="display: none;">Submit Quiz</button>
         </div>
 
-        <div id="result-section" style="display: none;" class="card text-center space-y-6">
-            <h2 id="result-section-title" class="text-3xl font-bold text-slate-900">Quiz Result</h2>
-            <div id="result-details" class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-                <p id="user-email-result" class="text-xl font-playfair font-semibold text-slate-700 mb-3"></p>
-                <p id="result-score" class="text-4xl font-playfair font-extrabold text-blue-600 mb-1"></p>
-                <p id="result-percentage" class="text-lg text-slate-500 mb-4"></p>
-                <div id="feedback-message" class="text-base font-medium p-3 rounded-md"></div>
-            </div>
-            <div id="detailed-quiz-results" class="mt-6 text-left"></div>
-            <div class="flex flex-col sm:flex-row justify-center sm:space-x-3 space-y-3 sm:space-y-0 mt-6">
-                <button onclick="printResults()" id="print-results-button" class="w-full sm:w-auto btn btn-secondary">Print Results</button>
-                <button onclick="logoutAndRestart()" class="w-full sm:w-auto btn btn-primary">Logout</button>
-            </div>
+        <div id="result-section" style="display:none;">
+            <h2 class="font-bold text-2xl mb-2" id="resultSectionTitle"></h2>
+            <div id="resultSectionScore" class="mb-2"></div>
+            <div id="resultSectionFeedback" class="mb-4"></div>
+            <div id="result-details"></div>
         </div>
 
         <div id="past-submissions-section" style="display: none;" class="card space-y-6">
