@@ -391,8 +391,13 @@ def submit_quiz():
 
                 Submitted at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
                 """
-                # CHANGED: 'sender' parameter in Message to user_email
-                msg = Message(subject, sender=user_email, recipients=[admin_email], body=body)
+                msg = Message(
+                    subject,
+                    sender=app.config['MAIL_DEFAULT_SENDER'],
+                    recipients=[admin_email],
+                    body=body,
+                    reply_to=user_email
+                )
                 mail.send(msg)
                 print(f"Successfully sent submission email to admin from {user_email}: {admin_email}")
             except Exception as e:
