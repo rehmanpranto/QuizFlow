@@ -264,22 +264,22 @@ def login_user():
         submission = user_submissions[email]
         return jsonify({
             "success": True,
-            "quiz_already_taken": True,
+            "quizAlreadyTaken": True,
             "message": f"You have already completed '{QUIZ_DATA['title']}'. Here are your previous results.",
             "email": email,
-            "user_id": email,
-            "past_results": {
-                "submission_id": submission["submission_id"],
+            "userId": email,
+            "pastResults": {
+                "submissionId": submission["submission_id"],
                 "quizTitle": QUIZ_DATA["title"],
                 "score": submission["score"],
                 "totalQuestions": submission["total_questions"],
                 "percentage": submission["percentage"],
                 "feedback": submission["feedback"],
-                "detailed_results": submission["detailed_results"] # Pass detailed results for past quizzes too
+                "detailedResults": submission["detailed_results"]
             }
         }), 200
     else:
-        return jsonify({"success": True, "message": "Login successful. You can start the quiz.", "email": email, "user_id": email}), 200
+        return jsonify({"success": True, "message": "Login successful. You can start the quiz.", "email": email, "userId": email}), 200
 
 @app.route('/api/quiz', methods=['GET'])
 def get_quiz():
@@ -390,25 +390,39 @@ def submit_quiz():
                 Percentage: {percentage:.2f}%
                 Feedback: {feedback_text}
 
-                Submitted at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
+                Submitted at: {user_submissions[user_email]["submitted_at"].strftime('%Y-%m-%d %H:%M:%S UTC')}
                 """
                 msg = Message(
                     subject,
                     sender=app.config['MAIL_DEFAULT_SENDER'],
-                    recipients=[admin_email],
+                    recipients=[admin_email] if admin_email else [],
                     body=body,
                     reply_to=user_email
                 )
+                # Attempt to send the email; if it fails, the exception is caught and logged below,
+                # but the quiz submission will still be processed successfully.
+                mail.send(msg)
+                print(f"Successfully sent submission email from {user_email} to admin: {admin_email}")
+            except Exception as e:
+                print(f"!!! FAILED to send submission email from {user_email} to admin: {e}")
+                    msg_kwargs["reply_to"] = user_email
+
+                msg = Message(**msg_kwargs)
                 mail.send(msg)
                 print(f"Successfully sent submission email from {user_email} to admin: {admin_email}")
             except Exception as e:
                 print(f"!!! FAILED to send submission email from {user_email} to admin: {e}")
         else:
-            print("!!! ADMIN_EMAIL_RECIPIENT not set in .env. Skipping email notification.")
-
         return jsonify({
-            "success": True, "email": user_email, "submission_id": submission_id,
-            "score": score, "totalQuestions": total_questions, "percentage": percentage,
+            "success": True,
+            "email": user_email,
+            "submissionId": submission_id,
+            "score": score,
+            "totalQuestions": total_questions,
+            "percentage": percentage,
+            "feedback": feedback_text,
+            "detailedResults": detailed_results_for_frontend
+        }), 200
             "feedback": feedback_text, "detailed_results": detailed_results_for_frontend
         }), 200
 
@@ -424,20 +438,20 @@ def get_user_submissions():
 
     try:
         if user_email not in user_accounts:
-            return jsonify({"success": False, "message": "User not found."}), 404
-
         submissions_list = []
         if user_email in user_submissions:
             submission = user_submissions[user_email]
             submissions_list.append({
-                "submission_id": submission["submission_id"],
-                "quiz_id": "default_quiz",
-                "quiz_title": QUIZ_DATA["title"],
+                "submissionId": submission["submission_id"],
+                "quizId": "default_quiz",
+                "quizTitle": QUIZ_DATA["title"],
                 "score": submission["score"],
-                "total_questions_in_quiz": submission["total_questions"],
+                "totalQuestionsInQuiz": submission["total_questions"],
                 "percentage": submission["percentage"],
-                "submitted_at": submission["submitted_at"].isoformat()
+                "submittedAt": submission["submitted_at"].isoformat()
             })
+
+        return jsonify({"success": True, "submissions": submissions_list})
 
         return jsonify({"success": True, "submissions": submissions_list})
     except Exception as e:
@@ -457,22 +471,22 @@ def get_submission_details(submission_id_str):
                 break
 
         if not submission:
-            return jsonify({"success": False, "message": "Submission not found."}), 404
-
         summary_response = {
-            "submission_id": submission["submission_id"],
-            "quiz_id": "default_quiz",
-            "quiz_title": QUIZ_DATA["title"],
+            "submissionId": submission["submission_id"],
+            "quizId": "default_quiz",
+            "quizTitle": QUIZ_DATA["title"],
             "score": submission["score"],
-            "total_questions_in_quiz": submission["total_questions"],
+            "totalQuestionsInQuiz": submission["total_questions"],
             "percentage": submission["percentage"],
-            "feedback_text": submission["feedback"],
-            "submitted_at": submission["submitted_at"].isoformat(),
-            "user_email": user_email
+            "feedback": submission["feedback"],
+            "submittedAt": submission["submitted_at"].isoformat(),
+            "userEmail": user_email
         }
 
         # Directly use the stored detailed_results as they are now standardized
         detailed_questions_list = submission["detailed_results"]
+
+        return jsonify({"success": True, "summary": summary_response, "details": detailed_questions_list})
 
         return jsonify({"success": True, "summary": summary_response, "details": detailed_questions_list})
 
