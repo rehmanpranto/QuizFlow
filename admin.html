@@ -654,6 +654,43 @@
     </style>
 </head>
 <body>
+    <!-- Authentication Check -->
+    <script>
+        // Check authentication on page load
+        function checkAuth() {
+            const adminAuth = sessionStorage.getItem('adminAuth');
+            const adminAuthTime = sessionStorage.getItem('adminAuthTime');
+            
+            // Check if user is authenticated and session is still valid (8 hours)
+            if (!adminAuth || adminAuth !== 'true' || !adminAuthTime || 
+                (Date.now() - parseInt(adminAuthTime)) > 8 * 60 * 60 * 1000) {
+                // Clear any invalid session data
+                sessionStorage.removeItem('adminAuth');
+                sessionStorage.removeItem('adminAuthTime');
+                
+                // Redirect to login page
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            return true;
+        }
+        
+        // Run authentication check immediately
+        if (!checkAuth()) {
+            // Stop page execution if not authenticated
+            document.body.style.display = 'none';
+        }
+        
+        // Add logout functionality
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.removeItem('adminAuth');
+                sessionStorage.removeItem('adminAuthTime');
+                window.location.href = '/admin-login.html';
+            }
+        }
+    </script>
+
     <!-- Mobile Menu Toggle -->
     <button class="mobile-menu-toggle" onclick="toggleSidebar()" style="display: none;">
         <i class="fas fa-bars"></i>
@@ -700,6 +737,12 @@
                 <a href="#" class="nav-link" onclick="switchTab('settings')">
                     <i class="fas fa-cog"></i>
                     Settings
+                </a>
+            </li>
+            <li class="nav-item" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--glass-border);">
+                <a href="#" class="nav-link" onclick="logout()" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
                 </a>
             </li>
         </ul>
