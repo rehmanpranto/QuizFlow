@@ -13,12 +13,13 @@ class handler(BaseHTTPRequestHandler):
         query = urlparse(self.path).query
         
         # Handle different quiz endpoints
-        if path.endswith('/questions') or 'questions' in path:
+        # All /api/quiz/* routes come here, check the specific endpoint
+        if '/questions' in path or query:
             self.handle_get_questions()
-        elif path.endswith('/list') or 'list' in path:
+        elif '/list' in path:
             self.handle_get_quizzes()
         else:
-            # Default to questions if no specific path
+            # Default to questions for any other GET request
             self.handle_get_questions()
     
     def do_POST(self):

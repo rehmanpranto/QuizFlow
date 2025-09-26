@@ -11,10 +11,10 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         
-        # Handle admin GET endpoints - simplified routing for Vercel
-        if 'quizzes' in path:
+        # Handle admin GET endpoints - check the specific endpoint
+        if '/quizzes' in path:
             self.handle_get_quizzes()
-        elif 'students' in path:
+        elif '/students' in path:
             self.handle_get_students()
         else:
             self.handle_get_quizzes()  # Default to quizzes
@@ -22,14 +22,14 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         path = urlparse(self.path).path
         
-        # Handle admin POST endpoints - simplified routing for Vercel
-        if 'login' in path:
+        # Handle admin POST endpoints - check the specific endpoint
+        if '/login' in path:
             self.handle_admin_login()
-        elif 'quiz' in path and 'question' not in path:
+        elif '/quiz' in path and '/question' not in path:
             self.handle_create_quiz()
-        elif 'question' in path:
+        elif '/question' in path:
             self.handle_create_question()
-        elif 'broadcast' in path:
+        elif '/broadcast' in path:
             self.handle_broadcast_email()
         else:
             self.handle_admin_login()  # Default to login
