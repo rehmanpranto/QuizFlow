@@ -704,37 +704,37 @@
         </div>
         <ul class="nav-menu">
             <li class="nav-item">
-                <a href="#" class="nav-link active" onclick="switchTab('dashboard')">
+                <a href="#" class="nav-link active" onclick="switchTab('dashboard', this)">
                     <i class="fas fa-chart-line"></i>
                     Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" onclick="switchTab('quizzes')">
+                <a href="#" class="nav-link" onclick="switchTab('quizzes', this)">
                     <i class="fas fa-clipboard-list"></i>
                     Quiz Management
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" onclick="switchTab('questions')">
+                <a href="#" class="nav-link" onclick="switchTab('questions', this)">
                     <i class="fas fa-question-circle"></i>
                     Questions
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" onclick="switchTab('analytics')">
+                <a href="#" class="nav-link" onclick="switchTab('analytics', this)">
                     <i class="fas fa-chart-bar"></i>
                     Analytics
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" onclick="switchTab('students')">
+                <a href="#" class="nav-link" onclick="switchTab('students', this)">
                     <i class="fas fa-users"></i>
                     Students
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" onclick="switchTab('settings')">
+                <a href="#" class="nav-link" onclick="switchTab('settings', this)">
                     <i class="fas fa-cog"></i>
                     Settings
                 </a>
@@ -1009,7 +1009,7 @@
         }
 
         // Tab switching
-        function switchTab(tabName) {
+        function switchTab(tabName, clickedElement) {
             // Hide all tab contents
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -1024,7 +1024,15 @@
             document.getElementById(tabName + '-tab').classList.add('active');
             
             // Add active class to selected nav link
-            event.target.classList.add('active');
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            } else {
+                // Fallback: find the nav link for this tab
+                const navLink = document.querySelector(`[onclick*="switchTab('${tabName}')"]`);
+                if (navLink) {
+                    navLink.classList.add('active');
+                }
+            }
             
             // Load data for the selected tab
             if (tabName === 'dashboard') {
@@ -1451,6 +1459,67 @@
             switchTab('questions');
             document.getElementById('quiz-select').value = quizId;
             loadQuestions();
+        }
+
+        // Toggle quiz active/inactive status
+        async function toggleQuizStatus(quizId, currentStatus) {
+            const action = currentStatus ? 'deactivate' : 'activate';
+            
+            if (!confirm(`Are you sure you want to ${action} this quiz?`)) {
+                return;
+            }
+            
+            try {
+                // For now, just show a message since we don't have this API endpoint yet
+                showMessage(`Quiz ${action}d successfully! (Feature coming soon)`, 'success');
+                
+                // TODO: Implement actual API call to toggle quiz status
+                // const response = await fetch(`/api/admin/quiz/${quizId}/toggle`, {
+                //     method: 'POST',
+                //     headers: {'Content-Type': 'application/json'},
+                //     body: JSON.stringify({active: !currentStatus})
+                // });
+                
+                // Reload quizzes to reflect changes
+                setTimeout(() => {
+                    loadQuizzes();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error toggling quiz status:', error);
+                showMessage('Error updating quiz status', 'error');
+            }
+        }
+
+        // Get all students (placeholder function)
+        async function loadStudents() {
+            try {
+                // TODO: Implement student loading API
+                showMessage('Student management coming soon!', 'success');
+                
+            } catch (error) {
+                console.error('Error loading students:', error);
+                showMessage('Error loading students', 'error');
+            }
+        }
+
+        // Broadcast email to students (placeholder function)
+        async function broadcastEmail() {
+            const subject = prompt('Email Subject:');
+            const message = prompt('Email Message:');
+            
+            if (!subject || !message) {
+                return;
+            }
+            
+            try {
+                // TODO: Implement email broadcast API
+                showMessage('Email broadcast feature coming soon!', 'success');
+                
+            } catch (error) {
+                console.error('Error broadcasting email:', error);
+                showMessage('Error sending email', 'error');
+            }
         }
 
         // Initialize
