@@ -36,6 +36,25 @@ class handler(BaseHTTPRequestHandler):
             kwargs['sslmode'] = 'require'
         return psycopg2.connect(database_url, **kwargs)
 
+    def _column_exists(self, conn, table, column):
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.columns
+                    WHERE table_name=%s AND column_name=%s
+                )
+                """,
+                (table, column)
+            )
+            exists = cur.fetchone()[0]
+            cur.close()
+            return bool(exists)
+        except Exception:
+            return False
+
     def handle_get_questions(self):
         try:
             # Debug logging
@@ -75,29 +94,59 @@ class handler(BaseHTTPRequestHandler):
             
             print(f"DEBUG: Found quiz: {quiz_data[0]}")
             
-            # Get questions
-            print(f"DEBUG: Getting questions for quiz ID: {quiz_id}")
-            cursor.execute("""
-                SELECT id, question_text, question_type, options, correct_answer 
-                FROM questions 
-                WHERE quiz_id = %s 
-                ORDER BY id
-            """, (quiz_id,))
+            # Get questions (handle schema without question_type column)
+            has_qtype = self._column_exists(conn, 'questions', 'question_type')
+            print(f"DEBUG: questions.question_type exists: {has_qtype}")
+            if has_qtype:
+                cursor.execute(
+                    """
+                    SELECT id, question_text, question_type, options, correct_answer 
+                    FROM questions 
+                    WHERE quiz_id = %s 
+                    ORDER BY id
+                    """,
+                    (quiz_id,)
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id, question_text, options, correct_answer 
+                    FROM questions 
+                    WHERE quiz_id = %s 
+                    ORDER BY id
+                    """,
+                    (quiz_id,)
+                )
             
             questions = []
             rows = cursor.fetchall()
             print(f"DEBUG: Found {len(rows)} questions")
             
             for row in rows:
+                if has_qtype:
+                    q_id, q_text, q_type, q_options, q_correct = row
+                    try:
+                        opts = json.loads(q_options) if q_options else []
+                    except Exception:
+                        opts = []
+                    qtype = q_type or ('written' if not opts else 'multiple_choice')
+                else:
+                    q_id, q_text, q_options, q_correct = row
+                    try:
+                        opts = json.loads(q_options) if q_options else []
+                    except Exception:
+                        opts = []
+                    qtype = 'written' if not opts else 'multiple_choice'
+                
                 question = {
-                    'id': row[0],
-                    'question': row[1],
-                    'type': row[2],
-                    'options': json.loads(row[3]) if row[3] else [],
-                    'correct_answer': row[4]
+                    'id': q_id,
+                    'question': q_text,
+                    'type': qtype,
+                    'options': opts,
+                    'correct_answer': q_correct
                 }
                 questions.append(question)
-                print(f"DEBUG: Added question: {row[1][:50]}...")
+                print(f"DEBUG: Added question: {q_text[:50]}...")
             
             print(f"DEBUG: Sending response with {len(questions)} questions")
             self.send_json_response({
