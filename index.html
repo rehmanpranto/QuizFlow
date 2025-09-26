@@ -1223,7 +1223,7 @@
         // Start quiz
         async function startQuiz() {
             try {
-                const response = await fetch('/api/quiz');
+                const response = await fetch('/api/quiz/questions?quiz_id=1');
                 const result = await response.json();
 
                 if (result.success) {
@@ -1427,14 +1427,14 @@
             const quizDurationSeconds = Math.floor((quizEndTime - quizStartTime) / 1000);
             
             try {
-                const response = await fetch('/api/submit', {
+                const response = await fetch('/api/quiz/submit', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        name: currentUser.name,
-                        code: currentUser.code,
+                        user_id: currentUser.id,
+                        quiz_id: 1,
                         answers: userAnswers,
                         quizStartTime: quizStartTime.toISOString(),
                         quizDurationSeconds: quizDurationSeconds
