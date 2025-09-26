@@ -12,30 +12,36 @@ class handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         query = urlparse(self.path).query
         
-        if path == '/api/quiz/questions':
+        # Handle different quiz endpoints
+        if path.endswith('/questions') or 'questions' in path:
             self.handle_get_questions()
-        elif path == '/api/quiz/list':
+        elif path.endswith('/list') or 'list' in path:
             self.handle_get_quizzes()
         else:
-            self.send_error(404)
+            # Default to questions if no specific path
+            self.handle_get_questions()
     
     def do_POST(self):
-        if self.path == '/api/quiz/submit':
-            self.handle_submit_quiz()
-        else:
-            self.send_error(404)
+        # Handle quiz submission - all POST requests go to submit
+        self.handle_submit_quiz()
     
     def handle_get_questions(self):
         try:
             query_params = parse_qs(urlparse(self.path).query)
             quiz_id = query_params.get('quiz_id', [None])[0]
             
-            if not quiz_id:
-                self.send_json_response({'success': False, 'message': 'Quiz ID required'})
-                return
-            
             conn = psycopg2.connect(os.getenv('DATABASE_URL'))
             cursor = conn.cursor()
+            
+            # If no quiz_id provided, get the first available quiz
+            if not quiz_id:
+                cursor.execute("SELECT id FROM quizzes ORDER BY id LIMIT 1")
+                result = cursor.fetchone()
+                if result:
+                    quiz_id = result[0]
+                else:
+                    self.send_json_response({'success': False, 'message': 'No quizzes available'})
+                    return
             
             # Get quiz info
             cursor.execute("SELECT title, description, time_limit FROM quizzes WHERE id = %s", (quiz_id,))

@@ -11,26 +11,28 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         
-        if path == '/api/admin/quizzes':
+        # Handle admin GET endpoints - simplified routing for Vercel
+        if 'quizzes' in path:
             self.handle_get_quizzes()
-        elif path == '/api/admin/students':
+        elif 'students' in path:
             self.handle_get_students()
         else:
-            self.send_error(404)
+            self.handle_get_quizzes()  # Default to quizzes
     
     def do_POST(self):
         path = urlparse(self.path).path
         
-        if path == '/api/admin/login':
+        # Handle admin POST endpoints - simplified routing for Vercel
+        if 'login' in path:
             self.handle_admin_login()
-        elif path == '/api/admin/quiz':
+        elif 'quiz' in path and 'question' not in path:
             self.handle_create_quiz()
-        elif path == '/api/admin/question':
+        elif 'question' in path:
             self.handle_create_question()
-        elif path == '/api/admin/broadcast':
+        elif 'broadcast' in path:
             self.handle_broadcast_email()
         else:
-            self.send_error(404)
+            self.handle_admin_login()  # Default to login
     
     def do_DELETE(self):
         path = urlparse(self.path).path
