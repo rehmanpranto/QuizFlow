@@ -54,6 +54,11 @@ QuizFlow (Serverless)
 ├── Configuration
 │   ├── vercel.json       # Vercel deployment config
 │   └── requirements.txt  # Python dependencies
+├── Database
+│   ├── database_setup.sql    # Complete database schema
+│   ├── database_migration.sql # Migration for existing databases
+│   ├── sample_data.sql       # Basic sample data
+│   └── test_quiz_data.sql    # Comprehensive test quizzes
 └── Documentation
     ├── README.md         # This file
     └── VERCEL_DEPLOYMENT.md  # Detailed deployment guide
@@ -129,7 +134,13 @@ QuizFlow (Serverless)
    );
    ```
 
-5. **Gmail App Password Setup**
+5. **Add Sample Quiz Data** (Optional but recommended for testing)
+   ```sql
+   -- Run test_quiz_data.sql in your database to add sample quizzes
+   -- This creates 3 test quizzes with multiple choice and written questions
+   ```
+
+6. **Gmail App Password Setup**
    - Enable 2FA on your Google account
    - Go to Google Account → Security → 2-Step Verification → App passwords
    - Generate app password for "Mail"
