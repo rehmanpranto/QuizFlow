@@ -7,6 +7,13 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+# Load environment variables from .env file for local development
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv not available in production, which is fine
+
 class handler(BaseHTTPRequestHandler):
     def _connect_db(self):
         database_url = os.getenv('DATABASE_URL')
@@ -109,12 +116,18 @@ class handler(BaseHTTPRequestHandler):
             password = data.get('password', '')
             admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
             
+            # Debug logging (remove in production)
+            print(f"DEBUG: Received password: '{password}'")
+            print(f"DEBUG: Expected password: '{admin_password}'")
+            print(f"DEBUG: Passwords match: {password == admin_password}")
+            
             if password == admin_password:
                 self.send_json_response({'success': True, 'message': 'Admin login successful'})
             else:
                 self.send_json_response({'success': False, 'message': 'Invalid admin password'})
                 
         except Exception as e:
+            print(f"DEBUG: Login error: {e}")
             self.send_json_response({'success': False, 'message': str(e)})
     
     def handle_get_quizzes(self):
