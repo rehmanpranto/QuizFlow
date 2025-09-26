@@ -1150,6 +1150,7 @@
         let isPaused = false;
         let pausedTime = 0;
         let overviewVisible = false;
+        let currentQuizId = null;
 
         // Login functionality
         async function login() {
@@ -1223,12 +1224,26 @@
         // Start quiz
         async function startQuiz() {
             try {
-                const response = await fetch('/api/quiz/questions?quiz_id=1');
+                // Get available quizzes and select the first one
+                const listResp = await fetch('/api/quiz/list');
+                const list = await listResp.json();
+                let selectedQuizId = null;
+                if (list.success && Array.isArray(list.quizzes) && list.quizzes.length > 0) {
+                    selectedQuizId = list.quizzes[0].id;
+                }
+                
+                const response = await fetch(`/api/quiz/questions${selectedQuizId ? `?quiz_id=${selectedQuizId}` : ''}`);
                 const result = await response.json();
 
                 if (result.success) {
                     quizData = result.questions;
+                    currentQuizId = result.quiz_id || selectedQuizId || 1;
                     document.getElementById('quiz-title').textContent = result.quiz?.title || 'Quiz Challenge';
+                    
+                    // Set timer from quiz time_limit (minutes -> seconds) if provided
+                    if (result.quiz?.time_limit) {
+                        timeLeft = Number(result.quiz.time_limit) * 60;
+                    }
                     
                     // Record quiz start time
                     quizStartTime = new Date();
@@ -1242,12 +1257,27 @@
                     userAnswers = [];
                     showQuestion(0);
                 } else {
-                    showError('Failed to load quiz. Please try again.');
+                    showError(result.message || 'Failed to load quiz. Please try again.');
                 }
             } catch (error) {
                 console.error('Quiz loading error:', error);
                 showError('Failed to load quiz. Please try again.');
             }
+        }
+
+        function startTimer() {
+            // Do not reset timeLeft here; it is set when loading quiz
+            updateTimerDisplay();
+            timer = setInterval(() => {
+                if (!isPaused) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        submitQuiz();
+                    }
+                }
+            }, 1000);
         }
 
         // Show current question
@@ -1381,19 +1411,15 @@
 
         // Timer functionality
         function startTimer() {
-            timeLeft = 30;
+            // Do not reset timeLeft here; it is set when loading quiz
             updateTimerDisplay();
-            
             timer = setInterval(() => {
                 if (!isPaused) {
                     timeLeft--;
                     updateTimerDisplay();
-                    
                     if (timeLeft <= 0) {
                         clearInterval(timer);
-                        // Auto-advance to next question (no answer recorded)
-                        userAnswers[currentQuestionIndex] = null;
-                        nextQuestion();
+                        submitQuiz();
                     }
                 }
             }, 1000);
@@ -1434,7 +1460,7 @@
                     },
                     body: JSON.stringify({
                         user_id: currentUser.id,
-                        quiz_id: 1,
+                        quiz_id: currentQuizId || 1,
                         answers: userAnswers,
                         quizStartTime: quizStartTime.toISOString(),
                         quizDurationSeconds: quizDurationSeconds
@@ -1446,7 +1472,7 @@
                 if (result.success) {
                     showResults(result);
                 } else {
-                    showError('Failed to submit quiz. Please try again.');
+                    showError(result.message || 'Failed to submit quiz. Please try again.');
                 }
             } catch (error) {
                 console.error('Submit error:', error);
@@ -1780,6 +1806,14 @@
                 }, 5000);
             }
         }
+
+        /* Enhanced keyboard shortcuts for written questions */
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isFullscreen) {
+                e.preventDefault();
+                exitFullscreen();
+            }
+        });
 
         // Initialize new features when quiz starts
         function initializeQuizFeatures() {
