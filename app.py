@@ -66,11 +66,13 @@ class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
     question_text = db.Column(db.Text, nullable=False)
-    option_a = db.Column(db.String(500), nullable=False)
-    option_b = db.Column(db.String(500), nullable=False)
-    option_c = db.Column(db.String(500), nullable=False)
-    option_d = db.Column(db.String(500), nullable=False)
-    correct_answer = db.Column(db.Integer, nullable=False)  # 0=A, 1=B, 2=C, 3=D
+    question_type = db.Column(db.String(50), default='multiple_choice')  # Support for different question types
+    option_a = db.Column(db.String(500), nullable=True)  # Nullable for essay questions
+    option_b = db.Column(db.String(500), nullable=True)
+    option_c = db.Column(db.String(500), nullable=True)
+    option_d = db.Column(db.String(500), nullable=True)
+    options = db.Column(db.JSON, nullable=True)  # For essay question metadata (instructions, word limits)
+    correct_answer = db.Column(db.Text, nullable=False)  # Changed to Text to support essay answers
     order_index = db.Column(db.Integer, default=0)  # For ordering questions
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -134,6 +136,22 @@ def get_all_quizzes():
         })
     
     return jsonify({"success": True, "quizzes": quiz_list})
+
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    """Admin authentication endpoint"""
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({"success": False, "message": "Request body must be JSON."}), 400
+    
+    password = data.get('password', '')
+    admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
+    
+    if password == admin_password:
+        return jsonify({'success': True, 'message': 'Admin login successful'})
+    else:
+        return jsonify({'success': False, 'message': 'Invalid admin password'}), 401
 
 @app.route('/api/admin/quiz/<int:quiz_id>/questions', methods=['GET'])
 def get_quiz_questions(quiz_id):
@@ -202,7 +220,7 @@ def create_quiz():
 
 @app.route('/api/admin/quiz/<int:quiz_id>/question', methods=['POST'])
 def add_question(quiz_id):
-    """Add a question to a quiz"""
+    """Add a question to a quiz (supports both multiple choice and essay questions)"""
     quiz = Quiz.query.get_or_404(quiz_id)
     data = request.get_json()
     
@@ -210,44 +228,78 @@ def add_question(quiz_id):
         return jsonify({"success": False, "message": "Request body must be JSON."}), 400
     
     question_text = data.get('questionText', '').strip()
-    option_a = data.get('optionA', '').strip()
-    option_b = data.get('optionB', '').strip()
-    option_c = data.get('optionC', '').strip()
-    option_d = data.get('optionD', '').strip()
-    correct_answer = data.get('correctAnswer')
+    question_type = data.get('question_type', 'multiple_choice')
     
-    if not all([question_text, option_a, option_b, option_c, option_d]):
-        return jsonify({"success": False, "message": "All question fields are required"}), 400
+    if not question_text:
+        return jsonify({"success": False, "message": "Question text is required"}), 400
     
-    if correct_answer not in [0, 1, 2, 3]:
-        return jsonify({"success": False, "message": "Correct answer must be 0, 1, 2, or 3"}), 400
+    # Handle different question types
+    if question_type == 'essay':
+        # Essay questions
+        correct_answer = data.get('correct_answer', '').strip()
+        options = data.get('options', {})
+        
+        if not correct_answer:
+            return jsonify({"success": False, "message": "Sample answer is required for essay questions"}), 400
+        
+        # Get the next order index
+        max_order = db.session.query(db.func.max(Question.order_index)).filter_by(quiz_id=quiz_id).scalar() or 0
+        
+        new_question = Question(
+            quiz_id=quiz_id,
+            question_text=question_text,
+            question_type='essay',
+            options=options,  # Store as JSON
+            correct_answer=correct_answer,
+            order_index=max_order + 1
+        )
+        
+    else:
+        # Multiple choice questions
+        option_a = data.get('optionA', '').strip()
+        option_b = data.get('optionB', '').strip()
+        option_c = data.get('optionC', '').strip()
+        option_d = data.get('optionD', '').strip()
+        correct_answer = data.get('correctAnswer')
+        
+        if not all([option_a, option_b, option_c, option_d]):
+            return jsonify({"success": False, "message": "All options are required for multiple choice questions"}), 400
+        
+        if correct_answer not in [0, 1, 2, 3]:
+            return jsonify({"success": False, "message": "Correct answer must be 0, 1, 2, or 3"}), 400
+        
+        # Get the next order index
+        max_order = db.session.query(db.func.max(Question.order_index)).filter_by(quiz_id=quiz_id).scalar() or 0
+        
+        new_question = Question(
+            quiz_id=quiz_id,
+            question_text=question_text,
+            question_type='multiple_choice',
+            option_a=option_a,
+            option_b=option_b,
+            option_c=option_c,
+            option_d=option_d,
+            correct_answer=correct_answer,
+            order_index=max_order + 1
+        )
     
-    # Get the next order index
-    max_order = db.session.query(db.func.max(Question.order_index)).filter_by(quiz_id=quiz_id).scalar() or 0
-    
-    new_question = Question(
-        quiz_id=quiz_id,
-        question_text=question_text,
-        option_a=option_a,
-        option_b=option_b,
-        option_c=option_c,
-        option_d=option_d,
-        correct_answer=correct_answer,
-        order_index=max_order + 1
-    )
-    
-    db.session.add(new_question)
-    db.session.commit()
-    
-    return jsonify({
-        "success": True,
-        "message": "Question added successfully",
-        "question": {
-            "id": new_question.id,
-            "questionText": new_question.question_text,
-            "orderIndex": new_question.order_index
-        }
-    })
+    try:
+        db.session.add(new_question)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Question added successfully",
+            "question": {
+                "id": new_question.id,
+                "questionText": new_question.question_text,
+                "questionType": new_question.question_type,
+                "orderIndex": new_question.order_index
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": f"Database error: {str(e)}"}), 500
 
 @app.route('/api/admin/quiz/<int:quiz_id>/activate', methods=['POST'])
 def toggle_quiz_status(quiz_id):
