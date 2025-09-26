@@ -29,13 +29,38 @@ class handler(BaseHTTPRequestHandler):
                     db_version = cursor.fetchone()[0]
                     db_status = f"Connected: {db_version}"
                     
-                    # Check required tables
-                    required_tables = ['users', 'quizzes', 'questions', 'submissions']
-                    for table in required_tables:
+                    # Check required tables and their structure
+                    required_tables = {
+                        'users': ['id', 'name', 'email', 'password', 'created_at'],
+                        'quizzes': ['id', 'title', 'description', 'time_limit', 'created_at'],
+                        'questions': ['id', 'quiz_id', 'question_text', 'question_type', 'options', 'correct_answer'],
+                        'submissions': ['id', 'user_id', 'quiz_id', 'answers', 'score', 'completed_at']
+                    }
+                    
+                    for table, expected_columns in required_tables.items():
                         try:
                             cursor.execute(f"SELECT COUNT(*) FROM {table};")
                             count = cursor.fetchone()[0]
-                            table_status[table] = f"✅ Exists ({count} rows)"
+                            
+                            # Check columns
+                            cursor.execute(f"""
+                                SELECT column_name 
+                                FROM information_schema.columns 
+                                WHERE table_name = '{table}' 
+                                ORDER BY ordinal_position;
+                            """)
+                            actual_columns = [row[0] for row in cursor.fetchall()]
+                            
+                            missing_cols = set(expected_columns) - set(actual_columns)
+                            extra_cols = set(actual_columns) - set(expected_columns)
+                            
+                            status = f"✅ Exists ({count} rows)"
+                            if missing_cols:
+                                status += f" | Missing: {list(missing_cols)}"
+                            if extra_cols:
+                                status += f" | Extra: {list(extra_cols)}"
+                                
+                            table_status[table] = status
                         except Exception as e:
                             table_status[table] = f"❌ Missing or error: {str(e)}"
                     
