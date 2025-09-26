@@ -80,14 +80,15 @@ QuizFlow (Serverless)
    - Vercel automatically detects the configuration
 
 3. **Configure Environment Variables**
-   Add these in your Vercel dashboard:
-   ```env
-   DATABASE_URL=postgresql://user:password@host:port/database
-   GMAIL_USER=your-email@gmail.com
-   GMAIL_PASSWORD=your-gmail-app-password
-   STUDENT_ACCESS_CODE=12345
-   ADMIN_PASSWORD=admin123
-   ```
+   In your Vercel dashboard, go to Settings → Environment Variables and add:
+   
+   | Variable Name | Value | Description |
+   |---------------|-------|-------------|
+   | `DATABASE_URL` | `postgresql://user:password@host:port/database` | Your PostgreSQL connection string |
+   | `GMAIL_USER` | `your-email@gmail.com` | Gmail address for sending emails |
+   | `GMAIL_PASSWORD` | `your-gmail-app-password` | Gmail app password (not regular password) |
+   | `STUDENT_ACCESS_CODE` | `12345` | Access code for students |
+   | `ADMIN_PASSWORD` | `admin123` | Admin panel password |
 
 4. **Set Up Database**
    ```sql

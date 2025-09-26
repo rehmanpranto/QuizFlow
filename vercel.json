@@ -39,12 +39,5 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "GMAIL_USER": "@gmail_user",
-    "GMAIL_PASSWORD": "@gmail_password",
-    "STUDENT_ACCESS_CODE": "@student_access_code",
-    "ADMIN_ACCESS_CODE": "@admin_access_code"
-  }
+  ]
 }
