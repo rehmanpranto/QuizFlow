@@ -823,10 +823,17 @@
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2><i class="fas fa-edit"></i> Manage Questions</h2>
-                    <button class="btn btn-success" onclick="showAddQuestionModal()" disabled id="add-question-btn">
-                        <i class="fas fa-plus"></i>
-                        Add Question
-                    </button>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn btn-primary" onclick="showAIGenerateModal()" disabled id="ai-generate-btn" 
+                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-magic"></i>
+                            AI Generate Questions
+                        </button>
+                        <button class="btn btn-success" onclick="showAddQuestionModal()" disabled id="add-question-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Question
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="quiz-select"><i class="fas fa-clipboard-list"></i> Select Quiz:</label>
@@ -998,9 +1005,164 @@
         </div>
     </div>
 
+    <!-- Edit Question Modal -->
+    <div id="edit-question-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-edit"></i> Edit Question</h3>
+                <button class="close" onclick="closeModal('edit-question-modal')">&times;</button>
+            </div>
+            <form id="edit-question-form">
+                <input type="hidden" id="edit-question-id" value="">
+                <div class="form-group">
+                    <label for="edit-question-text">Question *</label>
+                    <textarea id="edit-question-text" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-question-type">Question Type *</label>
+                    <select id="edit-question-type" onchange="toggleEditQuestionType()" required>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="essay">Essay Question</option>
+                    </select>
+                </div>
+                
+                <!-- Multiple Choice Options -->
+                <div id="edit-multiple-choice-options">
+                    <div class="form-group">
+                        <label for="edit-option-a">Option A *</label>
+                        <input type="text" id="edit-option-a">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-option-b">Option B *</label>
+                        <input type="text" id="edit-option-b">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-option-c">Option C *</label>
+                        <input type="text" id="edit-option-c">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-option-d">Option D *</label>
+                        <input type="text" id="edit-option-d">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-correct-answer">Correct Answer *</label>
+                        <select id="edit-correct-answer">
+                            <option value="">Select correct answer</option>
+                            <option value="0">Option A</option>
+                            <option value="1">Option B</option>
+                            <option value="2">Option C</option>
+                            <option value="3">Option D</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Essay Question Options -->
+                <div id="edit-essay-options" style="display: none;">
+                    <div class="form-group">
+                        <label for="edit-essay-instructions">Instructions for Students</label>
+                        <textarea id="edit-essay-instructions" rows="2" placeholder="e.g., Write a detailed answer in 200-300 words..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-essay-sample-answer">Sample/Model Answer *</label>
+                        <textarea id="edit-essay-sample-answer" rows="4" placeholder="Enter the expected answer or key points that should be covered..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-essay-max-words">Maximum Word Count (optional)</label>
+                        <input type="number" id="edit-essay-max-words" placeholder="e.g., 300" min="50">
+                    </div>
+                </div>
+                <button type="submit" class="btn">Update Question</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('edit-question-modal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Generate Questions Modal -->
+    <div id="ai-generate-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-magic"></i> AI Generate Questions</h3>
+                <button class="close" onclick="closeModal('ai-generate-modal')">&times;</button>
+            </div>
+            <form id="ai-generate-form">
+                <div class="form-group">
+                    <label for="ai-topic">Topic/Subject *</label>
+                    <input type="text" id="ai-topic" placeholder="e.g., Economics, World War II, Photosynthesis" required>
+                </div>
+                <div class="form-group">
+                    <label for="ai-difficulty">Difficulty Level</label>
+                    <select id="ai-difficulty">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate" selected>Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ai-question-type">Question Type</label>
+                    <select id="ai-question-type">
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="essay">Essay Questions</option>
+                        <option value="mixed">Mixed (Both Types)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ai-num-questions">Number of Questions</label>
+                    <select id="ai-num-questions">
+                        <option value="3">3 Questions</option>
+                        <option value="5" selected>5 Questions</option>
+                        <option value="10">10 Questions</option>
+                        <option value="15">15 Questions</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ai-context">Additional Context (Optional)</label>
+                    <textarea id="ai-context" rows="3" placeholder="Provide any specific context, learning objectives, or requirements for the questions..."></textarea>
+                </div>
+                <div class="form-group" style="background: #f8fafc; padding: 16px; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <h4 style="margin: 0 0 8px 0; color: #667eea;"><i class="fas fa-lightbulb"></i> AI Tips</h4>
+                    <ul style="margin: 0; padding-left: 20px; color: #64748b; font-size: 0.875rem;">
+                        <li>Be specific with your topic for better results</li>
+                        <li>The AI will create questions with explanations</li>
+                        <li>Review and edit generated questions before adding</li>
+                        <li>AI generation may take 10-30 seconds</li>
+                    </ul>
+                </div>
+                <button type="submit" class="btn btn-primary" id="generate-btn">
+                    <i class="fas fa-magic"></i>
+                    Generate Questions
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('ai-generate-modal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Generated Questions Review Modal -->
+    <div id="ai-review-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-check-circle"></i> Review Generated Questions</h3>
+                <button class="close" onclick="closeModal('ai-review-modal')">&times;</button>
+            </div>
+            <div style="margin-bottom: 20px; color: #64748b;">
+                <p>Review the AI-generated questions below. You can edit them before adding to your quiz.</p>
+            </div>
+            <div id="generated-questions-container">
+                <!-- Generated questions will appear here -->
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-success" onclick="addSelectedQuestions()">
+                    <i class="fas fa-plus"></i>
+                    Add Selected Questions
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal('ai-review-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentQuizzes = [];
         let currentQuizId = null;
+        let currentQuestions = [];
 
         // Mobile sidebar toggle
         function toggleSidebar() {
@@ -1143,6 +1305,7 @@
             
             currentQuizId = parseInt(quizId);
             addBtn.disabled = false;
+            document.getElementById('ai-generate-btn').disabled = false;
             container.innerHTML = '<div class="loading">Loading questions...</div>';
             
             try {
@@ -1150,6 +1313,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    currentQuestions = data.questions; // Update current questions
                     displayQuestions(data.questions);
                 } else {
                     container.innerHTML = '<p class="loading">Failed to load questions</p>';
@@ -1174,11 +1338,18 @@
                     <div class="question-item">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                             <div class="question-text" style="flex: 1;">${index + 1}. ${q.questionText}</div>
-                            <button class="btn btn-danger" onclick="confirmDeleteQuestion(${q.id}, ${index + 1})" 
-                                    style="background: #dc2626; padding: 4px 8px; font-size: 0.75rem; margin-left: 12px;" 
-                                    title="Delete Question">
-                                🗑️
-                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" onclick="showEditQuestionModal(${q.id}, ${index + 1})" 
+                                        style="background: #667eea; padding: 4px 8px; font-size: 0.75rem;" 
+                                        title="Edit Question">
+                                    ✏️
+                                </button>
+                                <button class="btn btn-danger" onclick="confirmDeleteQuestion(${q.id}, ${index + 1})" 
+                                        style="background: #dc2626; padding: 4px 8px; font-size: 0.75rem;" 
+                                        title="Delete Question">
+                                    🗑️
+                                </button>
+                            </div>
                         </div>
                         <div style="margin: 8px 0; font-size: 0.875rem; color: #667eea; font-weight: 500;">
                             ${q.questionType === 'essay' ? '📝 Essay Question' : '🔘 Multiple Choice'}
@@ -1223,6 +1394,52 @@
             document.getElementById('add-question-modal').style.display = 'block';
         }
 
+        function showEditQuestionModal(questionId, questionNumber) {
+            if (!currentQuizId) {
+                alert('Please select a quiz first');
+                return;
+            }
+            
+            // Find the question data from the current questions
+            const question = currentQuestions.find(q => q.id === questionId);
+            if (!question) {
+                alert('Question not found');
+                return;
+            }
+            
+            // Set the question ID
+            document.getElementById('edit-question-id').value = questionId;
+            
+            // Fill the basic fields
+            document.getElementById('edit-question-text').value = question.questionText;
+            document.getElementById('edit-question-type').value = question.questionType || 'multiple_choice';
+            
+            // Fill fields based on question type
+            if (question.questionType === 'essay') {
+                const options = question.options || {};
+                document.getElementById('edit-essay-instructions').value = options.instructions || '';
+                document.getElementById('edit-essay-sample-answer').value = question.correctAnswer || '';
+                document.getElementById('edit-essay-max-words').value = options.maxWords || '';
+            } else {
+                // Multiple choice
+                document.getElementById('edit-option-a').value = question.optionA || '';
+                document.getElementById('edit-option-b').value = question.optionB || '';
+                document.getElementById('edit-option-c').value = question.optionC || '';
+                document.getElementById('edit-option-d').value = question.optionD || '';
+                document.getElementById('edit-correct-answer').value = question.correctAnswer !== undefined ? question.correctAnswer : '';
+            }
+            
+            // Toggle the appropriate fields
+            toggleEditQuestionType();
+            
+            // Show the modal
+            document.getElementById('edit-question-modal').style.display = 'block';
+        }
+
+        function showAIGenerateModal() {
+            document.getElementById('ai-generate-modal').style.display = 'block';
+        }
+
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
             
@@ -1234,6 +1451,13 @@
                 toggleQuestionType();
             } else if (modalId === 'create-quiz-modal') {
                 document.getElementById('create-quiz-form').reset();
+            } else if (modalId === 'edit-question-modal') {
+                document.getElementById('edit-question-form').reset();
+                // Reset to multiple choice and show appropriate fields
+                document.getElementById('edit-question-type').value = 'multiple_choice';
+                toggleEditQuestionType();
+            } else if (modalId === 'ai-generate-modal') {
+                document.getElementById('ai-generate-form').reset();
             }
         }
 
@@ -1319,220 +1543,391 @@
             }
         });
 
-        // Toggle question type fields
-        function toggleQuestionType() {
-            const questionType = document.getElementById('question-type').value;
-            const multipleChoiceOptions = document.getElementById('multiple-choice-options');
-            const essayOptions = document.getElementById('essay-options');
+        document.getElementById('edit-question-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const questionId = document.getElementById('edit-question-id').value;
+            const questionType = document.getElementById('edit-question-type').value;
+            let formData = {
+                questionText: document.getElementById('edit-question-text').value,
+                question_type: questionType
+            };
             
             if (questionType === 'essay') {
-                multipleChoiceOptions.style.display = 'none';
-                essayOptions.style.display = 'block';
-                
-                // Remove required attribute from multiple choice fields
-                document.getElementById('option-a').removeAttribute('required');
-                document.getElementById('option-b').removeAttribute('required');
-                document.getElementById('option-c').removeAttribute('required');
-                document.getElementById('option-d').removeAttribute('required');
-                document.getElementById('correct-answer').removeAttribute('required');
-                
-                // Add required attribute to essay fields
-                document.getElementById('essay-sample-answer').setAttribute('required', 'required');
+                // For essay questions
+                formData.correct_answer = document.getElementById('edit-essay-sample-answer').value;
+                formData.options = {
+                    instructions: document.getElementById('edit-essay-instructions').value,
+                    maxWords: document.getElementById('edit-essay-max-words').value || null
+                };
             } else {
-                multipleChoiceOptions.style.display = 'block';
-                essayOptions.style.display = 'none';
-                
-                // Add required attribute to multiple choice fields
-                document.getElementById('option-a').setAttribute('required', 'required');
-                document.getElementById('option-b').setAttribute('required', 'required');
-                document.getElementById('option-c').setAttribute('required', 'required');
-                document.getElementById('option-d').setAttribute('required', 'required');
-                document.getElementById('correct-answer').setAttribute('required', 'required');
-                
-                // Remove required attribute from essay fields
-                document.getElementById('essay-sample-answer').removeAttribute('required');
+                // For multiple choice questions
+                formData.optionA = document.getElementById('edit-option-a').value;
+                formData.optionB = document.getElementById('edit-option-b').value;
+                formData.optionC = document.getElementById('edit-option-c').value;
+                formData.optionD = document.getElementById('edit-option-d').value;
+                formData.correctAnswer = parseInt(document.getElementById('edit-correct-answer').value);
             }
-        }
-
-        // Delete quiz functionality
-        function confirmDeleteQuiz(quizId, quizTitle) {
-            if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"?\n\nThis will permanently delete:\n• The quiz\n• All its questions\n• All student submissions\n\nThis action cannot be undone!`)) {
-                deleteQuiz(quizId);
-            }
-        }
-
-        async function deleteQuiz(quizId) {
+            
             try {
-                console.log('DELETE request to:', `/api/admin/quiz/${quizId}`);
-                const response = await fetch(`/api/admin/quiz/${quizId}`, {
-                    method: 'DELETE'
-                });
-                
-                console.log('DELETE response status:', response.status);
-                console.log('DELETE response headers:', response.headers);
-                
-                if (!response.ok) {
-                    console.error('DELETE failed with status:', response.status);
-                    const text = await response.text();
-                    console.error('DELETE response text:', text);
-                    throw new Error(`HTTP ${response.status}: ${text}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Quiz deleted successfully!', 'success');
-                    loadQuizzes(); // Reload the quiz list
-                    
-                    // If this quiz was selected in the questions tab, reset it
-                    const quizSelect = document.getElementById('quiz-select');
-                    if (quizSelect && quizSelect.value == quizId) {
-                        quizSelect.value = '';
-                        loadQuestions(); // This will show "Select a quiz" message
-                    }
-                } else {
-                    showMessage(data.message || 'Failed to delete quiz', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting quiz:', error);
-                showMessage('Error deleting quiz', 'error');
-            }
-        }
-
-        // Delete question functionality
-        function confirmDeleteQuestion(questionId, questionNumber) {
-            if (confirm(`Are you sure you want to delete Question ${questionNumber}?\n\nThis action cannot be undone!`)) {
-                deleteQuestion(questionId);
-            }
-        }
-
-        async function deleteQuestion(questionId) {
-            try {
-                console.log('DELETE question request to:', `/api/admin/question/${questionId}`);
                 const response = await fetch(`/api/admin/question/${questionId}`, {
-                    method: 'DELETE'
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
                 });
-                
-                console.log('DELETE question response status:', response.status);
-                
-                if (!response.ok) {
-                    console.error('DELETE question failed with status:', response.status);
-                    const text = await response.text();
-                    console.error('DELETE question response text:', text);
-                    throw new Error(`HTTP ${response.status}: ${text}`);
-                }
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage('Question deleted successfully!', 'success');
-                    loadQuestions(); // Reload the questions list
-                    loadQuizzes(); // Reload quizzes to update question counts
+                    showMessage('Question updated successfully!', 'success');
+                    closeModal('edit-question-modal');
+                    loadQuestions();
+                    this.reset();
                 } else {
-                    showMessage(data.message || 'Failed to delete question', 'error');
+                    showMessage(data.message, 'error');
                 }
             } catch (error) {
-                console.error('Error deleting question:', error);
-                showMessage('Error deleting question', 'error');
+                console.error('Error updating question:', error);
+                showMessage('Error updating question', 'error');
             }
-        }
+        });
 
-        // Helper functions
-        function showMessage(text, type) {
-            const existingMessage = document.querySelector('.message');
-            if (existingMessage) {
-                existingMessage.remove();
+        document.getElementById('ai-generate-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                topic: document.getElementById('ai-topic').value,
+                difficulty: document.getElementById('ai-difficulty').value,
+                questionType: document.getElementById('ai-question-type').value,
+                numQuestions: parseInt(document.getElementById('ai-num-questions').value),
+                context: document.getElementById('ai-context').value
+            };
+            
+            try {
+                const response = await fetch('/api/admin/ai/generate-questions', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Questions generated successfully!', 'success');
+                    closeModal('ai-generate-modal');
+                    showAIGeneratedQuestions(data.questions);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error generating questions:', error);
+                showMessage('Error generating questions', 'error');
             }
+        });
+
+        // Show AI generated questions in review modal
+        function showAIGeneratedQuestions(questions) {
+            const container = document.getElementById('generated-questions-container');
+            container.innerHTML = '';
             
-            const message = document.createElement('div');
-            message.className = `message message-${type}`;
-            message.textContent = text;
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-item';
+                questionDiv.style.marginBottom = '16px';
+                
+                let content = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div class="question-text" style="flex: 1; color: var(--white);">${index + 1}. ${q.questionText}</div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" onclick="editAIGeneratedQuestion(${q.id}, ${index + 1})" 
+                                    style="background: #667eea; padding: 4px 8px; font-size: 0.75rem;" 
+                                    title="Edit Question">
+                                ✏️
+                            </button>
+                            <button class="btn btn-danger" onclick="confirmDeleteQuestion(${q.id}, ${index + 1})" 
+                                    style="background: #dc2626; padding: 4px 8px; font-size: 0.75rem;" 
+                                    title="Delete Question">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                    <div style="margin: 8px 0; font-size: 0.875rem; color: #667eea; font-weight: 500;">
+                        ${q.questionType === 'essay' ? '📝 Essay Question' : '🔘 Multiple Choice'}
+                    </div>
+                `;
+                
+                if (q.questionType === 'essay') {
+                    const options = q.options || {};
+                    content += `
+                        <div class="essay-details" style="margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 6px;">
+                            ${options.instructions ? `<div style="margin-bottom: 8px;"><strong>Instructions:</strong> ${options.instructions}</div>` : ''}
+                            ${options.maxWords ? `<div style="margin-bottom: 8px;"><strong>Max Words:</strong> ${options.maxWords}</div>` : ''}
+                            <div><strong>Sample Answer:</strong> ${q.correctAnswer.substring(0, 150)}${q.correctAnswer.length > 150 ? '...' : ''}</div>
+                        </div>
+                    `;
+                } else {
+                    content += `
+                        <div class="options">
+                            <div class="${q.correctAnswer === 0 ? 'option correct' : ''}">A) ${q.optionA}</div>
+                            <div class="${q.correctAnswer === 1 ? 'option correct' : ''}">B) ${q.optionB}</div>
+                            <div class="${q.correctAnswer === 2 ? 'option correct' : ''}">C) ${q.optionC}</div>
+                            <div class="${q.correctAnswer === 3 ? 'option correct' : ''}">D) ${q.optionD}</div>
+                        </div>
+                    `;
+                }
+                
+                questionDiv.innerHTML = content;
+                container.appendChild(questionDiv);
+            });
             
-            document.querySelector('.container').insertBefore(message, document.querySelector('.tabs'));
-            
-            setTimeout(() => {
-                message.remove();
-            }, 5000);
+            // Show the review modal
+            document.getElementById('ai-review-modal').style.display = 'block';
         }
 
-        function viewQuestions(quizId, quizTitle) {
-            switchTab('questions');
-            document.getElementById('quiz-select').value = quizId;
-            loadQuestions();
-        }
-
-        // Toggle quiz active/inactive status
-        async function toggleQuizStatus(quizId, currentStatus) {
-            const action = currentStatus ? 'deactivate' : 'activate';
-            
-            if (!confirm(`Are you sure you want to ${action} this quiz?`)) {
+        // Edit AI generated question
+        function editAIGeneratedQuestion(questionId, questionNumber) {
+            // Find the question data from the generated questions
+            const question = currentQuestions.find(q => q.id === questionId);
+            if (!question) {
+                alert('Question not found');
                 return;
             }
             
+            // Set the question ID
+            document.getElementById('edit-question-id').value = questionId;
+            
+            // Fill the basic fields
+            document.getElementById('edit-question-text').value = question.questionText;
+            document.getElementById('edit-question-type').value = question.questionType || 'multiple_choice';
+            
+            // Fill fields based on question type
+            if (question.questionType === 'essay') {
+                const options = question.options || {};
+                document.getElementById('edit-essay-instructions').value = options.instructions || '';
+                document.getElementById('edit-essay-sample-answer').value = question.correctAnswer || '';
+                document.getElementById('edit-essay-max-words').value = options.maxWords || '';
+            } else {
+                // Multiple choice
+                document.getElementById('edit-option-a').value = question.optionA || '';
+                document.getElementById('edit-option-b').value = question.optionB || '';
+                document.getElementById('edit-option-c').value = question.optionC || '';
+                document.getElementById('edit-option-d').value = question.optionD || '';
+                document.getElementById('edit-correct-answer').value = question.correctAnswer !== undefined ? question.correctAnswer : '';
+            }
+            
+            // Toggle the appropriate fields
+            toggleEditQuestionType();
+            
+            // Show the modal
+            document.getElementById('edit-question-modal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            
+            // Reset forms when closing modals
+            if (modalId === 'add-question-modal') {
+                document.getElementById('add-question-form').reset();
+                // Reset to multiple choice and show appropriate fields
+                document.getElementById('question-type').value = 'multiple_choice';
+                toggleQuestionType();
+            } else if (modalId === 'create-quiz-modal') {
+                document.getElementById('create-quiz-form').reset();
+            } else if (modalId === 'edit-question-modal') {
+                document.getElementById('edit-question-form').reset();
+                // Reset to multiple choice and show appropriate fields
+                document.getElementById('edit-question-type').value = 'multiple_choice';
+                toggleEditQuestionType();
+            } else if (modalId === 'ai-generate-modal') {
+                document.getElementById('ai-generate-form').reset();
+            } else if (modalId === 'ai-review-modal') {
+                // Clear generated questions container
+                document.getElementById('generated-questions-container').innerHTML = '';
+            }
+        }
+
+        // Form submissions
+        document.getElementById('create-quiz-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('quiz-title').value,
+                description: document.getElementById('quiz-description').value,
+                timeLimit: parseInt(document.getElementById('time-limit').value),
+                timePerQuestion: parseInt(document.getElementById('time-per-question').value)
+            };
+            
             try {
-                // For now, just show a message since we don't have this API endpoint yet
-                showMessage(`Quiz ${action}d successfully! (Feature coming soon)`, 'success');
+                const response = await fetch('/api/admin/quiz', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
                 
-                // TODO: Implement actual API call to toggle quiz status
-                // const response = await fetch(`/api/admin/quiz/${quizId}/toggle`, {
-                //     method: 'POST',
-                //     headers: {'Content-Type': 'application/json'},
-                //     body: JSON.stringify({active: !currentStatus})
-                // });
+                const data = await response.json();
                 
-                // Reload quizzes to reflect changes
-                setTimeout(() => {
+                if (data.success) {
+                    showMessage('Quiz created successfully!', 'success');
+                    closeModal('create-quiz-modal');
                     loadQuizzes();
-                }, 1000);
-                
+                    this.reset();
+                } else {
+                    showMessage(data.message, 'error');
+                }
             } catch (error) {
-                console.error('Error toggling quiz status:', error);
-                showMessage('Error updating quiz status', 'error');
+                console.error('Error creating quiz:', error);
+                showMessage('Error creating quiz', 'error');
             }
-        }
-
-        // Get all students (placeholder function)
-        async function loadStudents() {
-            try {
-                // TODO: Implement student loading API
-                showMessage('Student management coming soon!', 'success');
-                
-            } catch (error) {
-                console.error('Error loading students:', error);
-                showMessage('Error loading students', 'error');
-            }
-        }
-
-        // Broadcast email to students (placeholder function)
-        async function broadcastEmail() {
-            const subject = prompt('Email Subject:');
-            const message = prompt('Email Message:');
-            
-            if (!subject || !message) {
-                return;
-            }
-            
-            try {
-                // TODO: Implement email broadcast API
-                showMessage('Email broadcast feature coming soon!', 'success');
-                
-            } catch (error) {
-                console.error('Error broadcasting email:', error);
-                showMessage('Error sending email', 'error');
-            }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDashboard();
         });
 
-        // Close modals when clicking outside
-        window.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
+        document.getElementById('add-question-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const questionType = document.getElementById('question-type').value;
+            let formData = {
+                questionText: document.getElementById('question-text').value,
+                question_type: questionType
+            };
+            
+            if (questionType === 'essay') {
+                // For essay questions
+                formData.correct_answer = document.getElementById('essay-sample-answer').value;
+                formData.options = {
+                    instructions: document.getElementById('essay-instructions').value,
+                    maxWords: document.getElementById('essay-max-words').value || null
+                };
+            } else {
+                // For multiple choice questions
+                formData.optionA = document.getElementById('option-a').value;
+                formData.optionB = document.getElementById('option-b').value;
+                formData.optionC = document.getElementById('option-c').value;
+                formData.optionD = document.getElementById('option-d').value;
+                formData.correctAnswer = parseInt(document.getElementById('correct-answer').value);
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/quiz/${currentQuizId}/question`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Question added successfully!', 'success');
+                    closeModal('add-question-modal');
+                    loadQuestions();
+                    this.reset();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error adding question:', error);
+                showMessage('Error adding question', 'error');
             }
         });
-    </script>
-</body>
-</html>
+
+        document.getElementById('edit-question-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const questionId = document.getElementById('edit-question-id').value;
+            const questionType = document.getElementById('edit-question-type').value;
+            let formData = {
+                questionText: document.getElementById('edit-question-text').value,
+                question_type: questionType
+            };
+            
+            if (questionType === 'essay') {
+                // For essay questions
+                formData.correct_answer = document.getElementById('edit-essay-sample-answer').value;
+                formData.options = {
+                    instructions: document.getElementById('edit-essay-instructions').value,
+                    maxWords: document.getElementById('edit-essay-max-words').value || null
+                };
+            } else {
+                // For multiple choice questions
+                formData.optionA = document.getElementById('edit-option-a').value;
+                formData.optionB = document.getElementById('edit-option-b').value;
+                formData.optionC = document.getElementById('edit-option-c').value;
+                formData.optionD = document.getElementById('edit-option-d').value;
+                formData.correctAnswer = parseInt(document.getElementById('edit-correct-answer').value);
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/question/${questionId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Question updated successfully!', 'success');
+                    closeModal('edit-question-modal');
+                    loadQuestions();
+                    this.reset();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error updating question:', error);
+                showMessage('Error updating question', 'error');
+            }
+        });
+
+        document.getElementById('ai-generate-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                topic: document.getElementById('ai-topic').value,
+                difficulty: document.getElementById('ai-difficulty').value,
+                questionType: document.getElementById('ai-question-type').value,
+                numQuestions: parseInt(document.getElementById('ai-num-questions').value),
+                context: document.getElementById('ai-context').value
+            };
+            
+            try {
+                const response = await fetch('/api/admin/ai/generate-questions', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Questions generated successfully!', 'success');
+                    closeModal('ai-generate-modal');
+                    showAIGeneratedQuestions(data.questions);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error generating questions:', error);
+                showMessage('Error generating questions', 'error');
+            }
+        });
+
+        // Show AI generated questions in review modal
+        function showAIGeneratedQuestions(questions) {
+            const container = document.getElementById('generated-questions-container');
+            container.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-item';
+                questionDiv.style.marginBottom = '16px';
+                
+                let content = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div class="question-text" style="flex: 1; color: var(--white);">${index + 1}. ${q.questionText}</div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" onclick="editAIGeneratedQuestion(${q.id}, ${index + 1})" 
+                                    style="background: #667eea; padding: 4px 8px; font-size: 0.75rem;" 
+                                    title="Edit Question">
+                                ✏️
+                            </button>
+                            <button class="btn btn-danger" onclick="confirmDeleteQuestion(${q.id}, ${index + 1})" 
+                                    style="background: #dc2626;

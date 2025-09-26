@@ -164,12 +164,14 @@ def get_quiz_questions(quiz_id):
         question_list.append({
             "id": q.id,
             "questionText": q.question_text,
+            "questionType": q.question_type or 'multiple_choice',
             "optionA": q.option_a,
             "optionB": q.option_b,
             "optionC": q.option_c,
             "optionD": q.option_d,
             "correctAnswer": q.correct_answer,
-            "orderIndex": q.order_index
+            "orderIndex": q.order_index,
+            "options": q.options
         })
     
     return jsonify({
@@ -864,6 +866,223 @@ def get_submission_details(submission_id_str):
         "summary": summary_response, 
         "details": submission.detailed_results
     })
+
+@app.route('/api/admin/quiz/<int:quiz_id>', methods=['DELETE'])  
+def delete_quiz(quiz_id):
+    """Delete a quiz and all its questions"""
+    try:
+        quiz = Quiz.query.get(quiz_id)
+        if not quiz:
+            return jsonify({"success": False, "message": "Quiz not found"}), 404
+        
+        quiz_title = quiz.title
+        
+        # Delete all questions associated with the quiz (CASCADE should handle this)
+        Question.query.filter_by(quiz_id=quiz_id).delete()
+        
+        # Delete the quiz
+        db.session.delete(quiz)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True, 
+            "message": f"Quiz '{quiz_title}' and all its questions deleted successfully"
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/admin/question/<int:question_id>', methods=['DELETE'])
+def delete_question(question_id):
+    """Delete a specific question"""
+    try:
+        question = Question.query.get(question_id)
+        if not question:
+            return jsonify({"success": False, "message": "Question not found"}), 404
+        
+        db.session.delete(question)
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Question deleted successfully"
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/admin/question/<int:question_id>', methods=['PUT'])
+def update_question(question_id):
+    """Update a specific question"""
+    try:
+        question = Question.query.get(question_id)
+        if not question:
+            return jsonify({"success": False, "message": "Question not found"}), 404
+        
+        data = request.get_json()
+        question_text = data.get('questionText', '').strip()
+        question_type = data.get('question_type', 'multiple_choice')
+        
+        if not question_text:
+            return jsonify({"success": False, "message": "Question text is required"}), 400
+        
+        # Update basic fields
+        question.question_text = question_text
+        question.question_type = question_type
+        
+        if question_type == 'essay':
+            # Essay question updates
+            correct_answer = data.get('correct_answer', '').strip()
+            if not correct_answer:
+                return jsonify({"success": False, "message": "Sample answer is required for essay questions"}), 400
+            
+            options = data.get('options', {})
+            question.correct_answer = correct_answer
+            question.options = options
+            
+            # Clear multiple choice fields for essay questions
+            question.option_a = None
+            question.option_b = None
+            question.option_c = None
+            question.option_d = None
+            
+        else:
+            # Multiple choice question updates
+            option_a = data.get('optionA', '').strip()
+            option_b = data.get('optionB', '').strip()
+            option_c = data.get('optionC', '').strip()
+            option_d = data.get('optionD', '').strip()
+            correct_answer = data.get('correctAnswer')
+            
+            if not all([option_a, option_b, option_c, option_d]):
+                return jsonify({"success": False, "message": "All options are required for multiple choice questions"}), 400
+            
+            if correct_answer not in [0, 1, 2, 3]:
+                return jsonify({"success": False, "message": "Correct answer must be 0, 1, 2, or 3"}), 400
+            
+            question.option_a = option_a
+            question.option_b = option_b
+            question.option_c = option_c
+            question.option_d = option_d
+            question.correct_answer = correct_answer
+            question.options = None  # Clear options for multiple choice
+        
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Question updated successfully",
+            "question": {
+                "id": question.id,
+                "questionText": question.question_text,
+                "questionType": question.question_type
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/admin/ai/generate-questions', methods=['POST'])
+def generate_ai_questions():
+    """Generate questions using OpenAI API"""
+    try:
+        import openai
+        from openai import OpenAI
+        
+        data = request.get_json()
+        topic = data.get('topic', '').strip()
+        difficulty = data.get('difficulty', 'intermediate')
+        question_type = data.get('questionType', 'multiple_choice')
+        num_questions = data.get('numQuestions', 5)
+        context = data.get('context', '').strip()
+        
+        if not topic:
+            return jsonify({"success": False, "message": "Topic is required"}), 400
+        
+        # Get OpenAI API key from environment
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key or api_key == 'your_openai_api_key_here':
+            return jsonify({"success": False, "message": "OpenAI API key not configured"}), 500
+        
+        # Initialize OpenAI client
+        client = OpenAI(
+            api_key=api_key,
+            organization=os.getenv('OPENAI_ORGANIZATION')
+        )
+        
+        # Create the prompt based on question type
+        if question_type == 'multiple_choice':
+            prompt = f"""Create {num_questions} multiple choice questions about {topic} at {difficulty} level.
+{f'Additional context: {context}' if context else ''}
+
+For each question, provide:
+1. Question text
+2. Four options (A, B, C, D)  
+3. Correct answer (A, B, C, or D)
+4. Brief explanation
+
+Format as JSON array with objects containing: questionText, optionA, optionB, optionC, optionD, correctAnswer (0-3), explanation"""
+
+        elif question_type == 'essay':
+            prompt = f"""Create {num_questions} essay questions about {topic} at {difficulty} level.
+{f'Additional context: {context}' if context else ''}
+
+For each question, provide:
+1. Question text
+2. Sample answer/key points
+3. Instructions for students
+4. Suggested word count
+
+Format as JSON array with objects containing: questionText, sampleAnswer, instructions, maxWords"""
+
+        else:  # mixed
+            mc_count = num_questions // 2
+            essay_count = num_questions - mc_count
+            prompt = f"""Create {mc_count} multiple choice and {essay_count} essay questions about {topic} at {difficulty} level.
+{f'Additional context: {context}' if context else ''}
+
+For multiple choice questions, provide: questionText, optionA, optionB, optionC, optionD, correctAnswer (0-3), explanation, type: "multiple_choice"
+For essay questions, provide: questionText, sampleAnswer, instructions, maxWords, type: "essay"
+
+Format as JSON array."""
+
+        # Make API call to OpenAI
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are an expert educator who creates high-quality quiz questions. Always respond with valid JSON only."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2000,
+            temperature=0.7
+        )
+        
+        # Parse the response
+        generated_content = response.choices[0].message.content.strip()
+        
+        # Clean up the response to ensure it's valid JSON
+        if generated_content.startswith('```json'):
+            generated_content = generated_content[7:]
+        if generated_content.endswith('```'):
+            generated_content = generated_content[:-3]
+        
+        generated_questions = json.loads(generated_content)
+        
+        return jsonify({
+            "success": True,
+            "questions": generated_questions,
+            "message": f"Generated {len(generated_questions)} questions successfully"
+        })
+        
+    except ImportError:
+        return jsonify({"success": False, "message": "OpenAI library not installed. Run: pip install openai"}), 500
+    except json.JSONDecodeError as e:
+        return jsonify({"success": False, "message": f"Failed to parse AI response: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "message": f"AI generation failed: {str(e)}"}), 500
 
 def migrate_database():
     """Add new columns to existing tables if they don't exist"""

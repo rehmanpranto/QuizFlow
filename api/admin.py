@@ -107,6 +107,33 @@ class handler(BaseHTTPRequestHandler):
             print(f"DEBUG DELETE: No matching route for path: {path}")
             self.send_json_response({'success': False, 'message': 'DELETE endpoint not found'})
     
+    def do_PUT(self):
+        path = urlparse(self.path).path
+        
+        # Debug logging
+        print(f"DEBUG PUT: Full path: {self.path}")
+        print(f"DEBUG PUT: Parsed path: {path}")
+        
+        # Handle question updates - path like /api/admin/question/123 or /question/123
+        if '/question/' in path:
+            # Extract question ID from path
+            parts = path.split('/')
+            question_id = None
+            for i, part in enumerate(parts):
+                if part == 'question' and i + 1 < len(parts):
+                    question_id = parts[i + 1]
+                    break
+            
+            if question_id:
+                print(f"DEBUG PUT: Extracted question_id: {question_id}")
+                self.handle_update_question(question_id)
+            else:
+                print("DEBUG PUT: Could not extract question_id")
+                self.send_json_response({'success': False, 'message': 'Invalid question ID in path'})
+        else:
+            print(f"DEBUG PUT: No matching route for path: {path}")
+            self.send_json_response({'success': False, 'message': 'PUT endpoint not found'})
+    
     def handle_admin_login(self):
         try:
             content_length = int(self.headers['Content-Length'])
@@ -411,6 +438,77 @@ class handler(BaseHTTPRequestHandler):
                 self.send_json_response({'success': True, 'message': 'Question deleted successfully'})
             else:
                 self.send_json_response({'success': False, 'message': 'Question not found'})
+            
+            cursor.close()
+            conn.close()
+            
+        except Exception as e:
+            self.send_json_response({'success': False, 'message': str(e)})
+    
+    def handle_update_question(self, question_id):
+        try:
+            # Validate question_id
+            try:
+                question_id = int(question_id)
+            except (ValueError, TypeError):
+                self.send_json_response({'success': False, 'message': 'Invalid question ID format'})
+                return
+                
+            print(f"DEBUG: Updating question with ID: {question_id}")
+            
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+            
+            # Extract fields from payload
+            question_text = (data.get('question_text') or data.get('questionText') or '').strip()
+            question_type = data.get('question_type') or 'multiple_choice'
+            options = data.get('options')
+            correct_answer = data.get('correct_answer')
+            
+            if question_type == 'essay':
+                # For essay questions, options contain instructions and maxWords
+                if not options:
+                    options = {}
+            else:
+                # For multiple choice questions - Options can come as optionA-D + correctAnswer index
+                if not options:
+                    optionA = data.get('optionA')
+                    optionB = data.get('optionB')
+                    optionC = data.get('optionC')
+                    optionD = data.get('optionD')
+                    options = [opt for opt in [optionA, optionB, optionC, optionD] if opt is not None]
+                
+                # Map correctAnswer index to actual value
+                if correct_answer is None and 'correctAnswer' in data:
+                    idx = data.get('correctAnswer')
+                    try:
+                        idx = int(idx)
+                        if isinstance(options, list) and 0 <= idx < len(options):
+                            correct_answer = options[idx]
+                    except Exception:
+                        correct_answer = ''
+            
+            if not all([question_text, correct_answer]):
+                self.send_json_response({'success': False, 'message': 'All fields are required'})
+                return
+            
+            conn = self._connect_db()
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                UPDATE questions
+                SET question_text = %s, question_type = %s, options = %s, correct_answer = %s
+                WHERE id = %s
+            """, (question_text, question_type, json.dumps(options), correct_answer, question_id))
+            
+            conn.commit()
+            
+            self.send_json_response({
+                'success': True, 
+                'message': 'Question updated successfully',
+                'question_id': question_id
+            })
             
             cursor.close()
             conn.close()
