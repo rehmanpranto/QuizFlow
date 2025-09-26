@@ -94,79 +94,82 @@ class handler(BaseHTTPRequestHandler):
             
             print(f"DEBUG: Found quiz: {quiz_data[0]}")
             
-            # Get questions (handle schema without question_type column)
+            # Get questions with schema detection
             has_qtype = self._column_exists(conn, 'questions', 'question_type')
+            has_options = self._column_exists(conn, 'questions', 'options')
             print(f"DEBUG: questions.question_type exists: {has_qtype}")
-            if has_qtype:
+            print(f"DEBUG: questions.options exists: {has_options}")
+
+            if has_qtype and has_options:
                 cursor.execute(
                     """
-                    SELECT id, question_text, question_type, options, correct_answer 
-                    FROM questions 
-                    WHERE quiz_id = %s 
-                    ORDER BY id
+                    SELECT id, question_text, question_type, options, correct_answer
+                    FROM questions WHERE quiz_id = %s ORDER BY id
                     """,
                     (quiz_id,)
                 )
-            else:
-                cursor.execute(
-                    """
-                    SELECT id, question_text, options, correct_answer 
-                    FROM questions 
-                    WHERE quiz_id = %s 
-                    ORDER BY id
-                    """,
-                    (quiz_id,)
-                )
-            
-            questions = []
-            rows = cursor.fetchall()
-            print(f"DEBUG: Found {len(rows)} questions")
-            
-            for row in rows:
-                if has_qtype:
-                    q_id, q_text, q_type, q_options, q_correct = row
+                rows = cursor.fetchall()
+                questions = []
+                for q_id, q_text, q_type, q_options, q_correct in rows:
                     try:
                         opts = json.loads(q_options) if q_options else []
                     except Exception:
                         opts = []
                     qtype = q_type or ('written' if not opts else 'multiple_choice')
-                else:
-                    q_id, q_text, q_options, q_correct = row
+                    questions.append({'id': q_id, 'question': q_text, 'type': qtype, 'options': opts, 'correct_answer': q_correct})
+            elif has_qtype and not has_options:
+                cursor.execute(
+                    """
+                    SELECT id, question_text, question_type, correct_answer
+                    FROM questions WHERE quiz_id = %s ORDER BY id
+                    """,
+                    (quiz_id,)
+                )
+                rows = cursor.fetchall()
+                questions = []
+                for q_id, q_text, q_type, q_correct in rows:
+                    qtype = q_type or 'written'
+                    questions.append({'id': q_id, 'question': q_text, 'type': qtype, 'options': [], 'correct_answer': q_correct})
+            elif not has_qtype and has_options:
+                cursor.execute(
+                    """
+                    SELECT id, question_text, options, correct_answer
+                    FROM questions WHERE quiz_id = %s ORDER BY id
+                    """,
+                    (quiz_id,)
+                )
+                rows = cursor.fetchall()
+                questions = []
+                for q_id, q_text, q_options, q_correct in rows:
                     try:
                         opts = json.loads(q_options) if q_options else []
                     except Exception:
                         opts = []
                     qtype = 'written' if not opts else 'multiple_choice'
-                
-                question = {
-                    'id': q_id,
-                    'question': q_text,
-                    'type': qtype,
-                    'options': opts,
-                    'correct_answer': q_correct
-                }
-                questions.append(question)
-                print(f"DEBUG: Added question: {q_text[:50]}...")
-            
-            print(f"DEBUG: Sending response with {len(questions)} questions")
+                    questions.append({'id': q_id, 'question': q_text, 'type': qtype, 'options': opts, 'correct_answer': q_correct})
+            else:
+                cursor.execute(
+                    """
+                    SELECT id, question_text, correct_answer
+                    FROM questions WHERE quiz_id = %s ORDER BY id
+                    """,
+                    (quiz_id,)
+                )
+                rows = cursor.fetchall()
+                questions = []
+                for q_id, q_text, q_correct in rows:
+                    questions.append({'id': q_id, 'question': q_text, 'type': 'written', 'options': [], 'correct_answer': q_correct})
+
+            print(f"DEBUG: Found {len(questions)} questions")
             self.send_json_response({
                 'success': True,
                 'quiz_id': int(quiz_id),
-                'quiz': {
-                    'title': quiz_data[0],
-                    'description': quiz_data[1],
-                    'time_limit': quiz_data[2]
-                },
+                'quiz': {'title': quiz_data[0], 'description': quiz_data[1], 'time_limit': quiz_data[2]},
                 'questions': questions
             })
-            
-            cursor.close()
-            conn.close()
-            
+            cursor.close(); conn.close()
         except Exception as e:
-            print(f"DEBUG: Error in handle_get_questions: {str(e)}")
-            import traceback
-            traceback.print_exc()
+            print(f"DEBUG: Error in handle_get_questions: {str(e)}"); import traceback; traceback.print_exc()
             self.send_json_response({'success': False, 'message': str(e)})
     
     def handle_get_quizzes(self):
