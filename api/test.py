@@ -20,6 +20,7 @@ class handler(BaseHTTPRequestHandler):
             
             # Test database connection
             db_status = "Not connected"
+            table_status = {}
             if database_url != 'Not set':
                 try:
                     conn = psycopg2.connect(database_url)
@@ -27,6 +28,17 @@ class handler(BaseHTTPRequestHandler):
                     cursor.execute("SELECT version();")
                     db_version = cursor.fetchone()[0]
                     db_status = f"Connected: {db_version}"
+                    
+                    # Check required tables
+                    required_tables = ['users', 'quizzes', 'questions', 'submissions']
+                    for table in required_tables:
+                        try:
+                            cursor.execute(f"SELECT COUNT(*) FROM {table};")
+                            count = cursor.fetchone()[0]
+                            table_status[table] = f"✅ Exists ({count} rows)"
+                        except Exception as e:
+                            table_status[table] = f"❌ Missing or error: {str(e)}"
+                    
                     cursor.close()
                     conn.close()
                 except Exception as e:
@@ -42,7 +54,8 @@ class handler(BaseHTTPRequestHandler):
                     'ADMIN_PASSWORD': 'Set' if admin_password != 'Not set' else 'Not set'
                 },
                 'database': {
-                    'status': db_status
+                    'status': db_status,
+                    'tables': table_status
                 }
             }
             

@@ -49,13 +49,12 @@ class handler(BaseHTTPRequestHandler):
             
             # Create user if not exists
             cursor.execute("""
-                INSERT INTO users (name, email, access_code) 
-                VALUES (%s, %s, %s) 
+                INSERT INTO users (name, email) 
+                VALUES (%s, %s) 
                 ON CONFLICT (email) DO UPDATE SET 
-                    name = EXCLUDED.name,
-                    access_code = EXCLUDED.access_code
+                    name = EXCLUDED.name
                 RETURNING id
-            """, (name, email, code))
+            """, (name, email))
             
             user_id = cursor.fetchone()[0]
             conn.commit()
