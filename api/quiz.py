@@ -14,9 +14,10 @@ class handler(BaseHTTPRequestHandler):
         
         # Handle different quiz endpoints
         # All /api/quiz/* routes come here, check the specific endpoint
-        if '/questions' in path or query:
+        # The path will be like /questions, /list, etc. (without /api/quiz prefix)
+        if path.endswith('/questions') or 'quiz_id' in query:
             self.handle_get_questions()
-        elif '/list' in path:
+        elif path.endswith('/list'):
             self.handle_get_quizzes()
         else:
             # Default to questions for any other GET request
@@ -28,31 +29,45 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_get_questions(self):
         try:
+            # Debug logging
+            print(f"DEBUG: Path: {self.path}")
+            print(f"DEBUG: Headers: {dict(self.headers)}")
+            
             query_params = parse_qs(urlparse(self.path).query)
             quiz_id = query_params.get('quiz_id', [None])[0]
+            
+            print(f"DEBUG: Quiz ID requested: {quiz_id}")
             
             conn = psycopg2.connect(os.getenv('DATABASE_URL'))
             cursor = conn.cursor()
             
             # If no quiz_id provided, get the first available quiz
             if not quiz_id:
+                print("DEBUG: No quiz_id provided, getting first quiz")
                 cursor.execute("SELECT id FROM quizzes ORDER BY id LIMIT 1")
                 result = cursor.fetchone()
                 if result:
                     quiz_id = result[0]
+                    print(f"DEBUG: Found first quiz with ID: {quiz_id}")
                 else:
+                    print("DEBUG: No quizzes available in database")
                     self.send_json_response({'success': False, 'message': 'No quizzes available'})
                     return
             
             # Get quiz info
+            print(f"DEBUG: Getting quiz info for ID: {quiz_id}")
             cursor.execute("SELECT title, description, time_limit FROM quizzes WHERE id = %s", (quiz_id,))
             quiz_data = cursor.fetchone()
             
             if not quiz_data:
+                print(f"DEBUG: Quiz not found for ID: {quiz_id}")
                 self.send_json_response({'success': False, 'message': 'Quiz not found'})
                 return
             
+            print(f"DEBUG: Found quiz: {quiz_data[0]}")
+            
             # Get questions
+            print(f"DEBUG: Getting questions for quiz ID: {quiz_id}")
             cursor.execute("""
                 SELECT id, question_text, question_type, options, correct_answer 
                 FROM questions 
@@ -61,7 +76,10 @@ class handler(BaseHTTPRequestHandler):
             """, (quiz_id,))
             
             questions = []
-            for row in cursor.fetchall():
+            rows = cursor.fetchall()
+            print(f"DEBUG: Found {len(rows)} questions")
+            
+            for row in rows:
                 question = {
                     'id': row[0],
                     'question': row[1],
@@ -70,7 +88,9 @@ class handler(BaseHTTPRequestHandler):
                     'correct_answer': row[4]
                 }
                 questions.append(question)
+                print(f"DEBUG: Added question: {row[1][:50]}...")
             
+            print(f"DEBUG: Sending response with {len(questions)} questions")
             self.send_json_response({
                 'success': True,
                 'quiz': {
@@ -85,6 +105,9 @@ class handler(BaseHTTPRequestHandler):
             conn.close()
             
         except Exception as e:
+            print(f"DEBUG: Error in handle_get_questions: {str(e)}")
+            import traceback
+            traceback.print_exc()
             self.send_json_response({'success': False, 'message': str(e)})
     
     def handle_get_quizzes(self):

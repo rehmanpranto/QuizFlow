@@ -1228,7 +1228,7 @@
 
                 if (result.success) {
                     quizData = result.questions;
-                    document.getElementById('quiz-title').textContent = result.title || 'Quiz Challenge';
+                    document.getElementById('quiz-title').textContent = result.quiz?.title || 'Quiz Challenge';
                     
                     // Record quiz start time
                     quizStartTime = new Date();
