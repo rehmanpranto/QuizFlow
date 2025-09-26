@@ -19,9 +19,15 @@ Dive into an interactive experience built with a powerful **Flask (Python) backe
     * View a list of all quizzes you've attempted. [cite: 1]
     * Check your previous scores anytime. [cite: 1]
     * 🔎 **Detailed Answer Review:** Dive deep into past submissions to see exactly which questions you aced and which ones tricked you, along with the correct answers! [cite: 1]
-* 📧 **Email Result Notifications:** Get your quiz summaries delivered straight to your inbox (and the admin's!). [cite: 1]
+* 📧 **Advanced Email System:** 
+    * 🎉 Welcome emails when students first login
+    * 📊 Detailed result emails with complete breakdown sent to students after completion
+    * 📢 Admin notifications for every quiz submission
+    * 📨 Custom email broadcasting to all students via admin panel
+    * ⚙️ Configurable - easily enable/disable student emails
 * 🛡️ **Focus Mode:** Basic anti-cheating measures with alerts for tab-switching to help maintain focus.
-* 🎨 **Sleek & Responsive UI:** Crafted with Tailwind CSS for a beautiful experience on any device, featuring elegant Playfair Display and readable Roboto fonts.
+* 🎨 **Modern Professional UI:** Dark theme with glassmorphism design, smooth animations, and fully responsive layout
+* 🔧 **Database-Driven Questions:** All quiz questions stored in PostgreSQL database with full CRUD operations via admin panel
 * 🔧 **Tech Stack:**
     * **Backend:** Python (Flask) [cite: 1]
     * **Frontend:** Vanilla JavaScript, Tailwind CSS, HTML5
@@ -77,21 +83,35 @@ Ready to start your QuizFlow adventure? Here’s how:
         DB_PORT=your_db_port (e.g., 5432 or 6543 for Supabase pooler)
 
         # --- Email Credentials (Optional, for sending result emails) ---
-        MAIL_SERVER=smtp.example.com
+        MAIL_SERVER=smtp.gmail.com
         MAIL_PORT=587
         MAIL_USE_TLS=true
         MAIL_USE_SSL=false
-        MAIL_USERNAME=your-email@example.com
-        MAIL_PASSWORD=your-email-password-or-app-password
-        MAIL_DEFAULT_SENDER=your-email@example.com
-        ADMIN_EMAIL_RECIPIENT=admin-email@example.com
+        MAIL_USERNAME=your-email@gmail.com
+        MAIL_PASSWORD=your-gmail-app-password  # Use App Password, not regular password
+        MAIL_DEFAULT_SENDER=your-email@gmail.com
+        ADMIN_EMAIL_RECIPIENT=admin-email@gmail.com
+        
+        # --- Email Features Configuration ---
+        SEND_STUDENT_EMAILS=true  # Set to false to disable student emails
+        VALID_LOGIN_CODES=12345,67890,54321,11111,99999  # 5-digit access codes
         ```
 
-6.  **Launch!**
+6.  **Set Up Gmail App Password (For Email Features):**
+    * Go to your [Google Account settings](https://myaccount.google.com/)
+    * Enable 2-factor authentication if not already enabled
+    * Go to Security → 2-Step Verification → App passwords
+    * Generate an app password for "Mail"
+    * Use this app password (not your regular password) in the `.env` file
+
+7.  **Launch!**
     ```bash
     python app.py
     ```
-    Open your browser and navigate to: `http://127.0.0.1:5001` (or the address shown in your terminal).
+    Open your browser and navigate to: `http://127.0.0.1:5001` (or the address shown in your terminal)
+    
+8.  **Access Admin Panel:**
+    Navigate to: `http://127.0.0.1:5001/admin` to manage quizzes and questions
 
 ---
 

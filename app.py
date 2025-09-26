@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timezone
@@ -12,6 +13,12 @@ load_dotenv()
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://neondb_owner:npg_XnpQSx3Jh0bs@ep-gentle-moon-a1u0xdk9-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
 # --- Mail Configuration ---
 # Configure Flask-Mail with credentials from your .env file
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
@@ -23,44 +30,74 @@ app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 mail = Mail(app)
 
-# Embedded quiz data
-QUIZ_DATA = {
-    "title": "Demand and Supply Quiz",
-    "timeLimit": 1200,  # Global limit (can be ignored if using per-question)
-    "timePerQuestion": 30, # Time allowed per question in seconds
-    "questions": [
-        { "id": 1, "question": "What does the Law of Demand state, ceteris paribus?", "options": ["As price increases, quantity demanded increases", "As price increases, quantity demanded decreases", "As supply increases, demand increases", "As income increases, demand always increases"], "correct_answer": 1 },
-        { "id": 2, "question": "Which of the following can shift the demand curve to the right?", "options": ["A decrease in consumer income (for normal goods)", "A fall in the price of a complement", "A fall in the price of the good itself", "An increase in input prices"], "correct_answer": 1 },
-        { "id": 3, "question": "The substitution effect means that:", "options": ["Consumers substitute inferior goods with luxury goods", "A good becomes more desirable as it becomes more expensive", "Consumers switch to a good when its price falls relative to substitutes", "Consumers always prefer imported goods"], "correct_answer": 2 },
-        { "id": 4, "question": "Which of the following is not a determinant of supply?", "options": ["Input prices", "Technology", "Consumer tastes", "Government subsidies"], "correct_answer": 2 },
-        { "id": 5, "question": "A rightward shift in the supply curve results in:", "options": ["Higher prices and lower quantity", "Lower prices and higher quantity", "No change in equilibrium", "Lower prices and lower quantity"], "correct_answer": 1 },
-        { "id": 6, "question": "What causes movement along the demand curve?", "options": ["Change in price of substitute goods", "Change in consumer income", "Change in the price of the good itself", "Change in consumer expectations"], "correct_answer": 2 },
-        { "id": 7, "question": "Market equilibrium occurs when:", "options": ["Quantity supplied is greater than quantity demanded", "Demand equals supply", "Supply increases rapidly", "Demand is falling while price is rising"], "correct_answer": 1 },
-        { "id": 8, "question": "A shortage occurs when:", "options": ["Quantity supplied exceeds quantity demanded", "Price is above equilibrium", "Price is below equilibrium", "Demand curve shifts left"], "correct_answer": 2 },
-        { "id": 9, "question": "The Law of Supply states that:", "options": ["As price rises, supply decreases", "As price rises, supply increases", "Supply is not affected by price", "Supply only increases when demand increases"], "correct_answer": 1 },
-        { "id": 10, "question": "Which factor will most likely cause a leftward shift in the supply curve?", "options": ["Technological advancement", "Fall in input costs", "Increase in taxes", "Increase in number of sellers"], "correct_answer": 2 },
-        { "id": 11, "question": "The demand curve typically slopes downward because of the substitution and income effects.", "options": ["True", "False"], "correct_answer": 0 },
-        { "id": 12, "question": "An increase in consumer income will always increase the demand for every type of good.", "options": ["True", "False"], "correct_answer": 1 },
-        { "id": 13, "question": "A surplus occurs when the quantity supplied is less than the quantity demanded.", "options": ["True", "False"], "correct_answer": 1 },
-        { "id": 14, "question": "Expectations about future price increases can cause current supply to decrease.", "options": ["True", "False"], "correct_answer": 0 },
-        { "id": 15, "question": "The supply curve usually slopes downward because producers are willing to supply more at lower prices.", "options": ["True", "False"], "correct_answer": 1 },
-        { "id": 16, "question": "Equilibrium price is also known as the market-clearing price.", "options": ["True", "False"], "correct_answer": 0 },
-        { "id": 17, "question": "Changes in the price of a good shift the demand curve.", "options": ["True", "False"], "correct_answer": 1 },
-        { "id": 18, "question": "More sellers in a market typically increase the overall market supply.", "options": ["True", "False"], "correct_answer": 0 },
-        { "id": 19, "question": "A decrease in the price of a substitute good will increase the demand for the original good.", "options": ["True", "False"], "correct_answer": 1 },
-        { "id": 20, "question": "If both demand and supply increase, the equilibrium quantity will definitely rise.", "options": ["True", "False"], "correct_answer": 0 }
-    ]
-}
+# Legacy hardcoded quiz data - now replaced with database-driven approach
+# QUIZ_DATA = { ... } - Removed as questions are now stored in database
 
-# In-memory storage (for demonstration purposes)
-user_submissions = {}
-user_accounts = {}
+# Database Models
+class User(db.Model):
+    __tablename__ = 'users'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)  # In production, hash this
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship with submissions
+    submissions = db.relationship('Submission', backref='user', lazy=True)
+
+class Quiz(db.Model):
+    __tablename__ = 'quizzes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    time_limit = db.Column(db.Integer, default=1200)  # Global time limit in seconds
+    time_per_question = db.Column(db.Integer, default=30)  # Time per question in seconds
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationship with questions
+    questions = db.relationship('Question', backref='quiz', lazy=True, cascade='all, delete-orphan')
+
+class Question(db.Model):
+    __tablename__ = 'questions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'), nullable=False)
+    question_text = db.Column(db.Text, nullable=False)
+    option_a = db.Column(db.String(500), nullable=False)
+    option_b = db.Column(db.String(500), nullable=False)
+    option_c = db.Column(db.String(500), nullable=False)
+    option_d = db.Column(db.String(500), nullable=False)
+    correct_answer = db.Column(db.Integer, nullable=False)  # 0=A, 1=B, 2=C, 3=D
+    order_index = db.Column(db.Integer, default=0)  # For ordering questions
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Submission(db.Model):
+    __tablename__ = 'submissions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.String(36), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+    total_questions = db.Column(db.Integer, nullable=False)
+    percentage = db.Column(db.Float, nullable=False)
+    feedback = db.Column(db.Text, nullable=True)
+    submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    detailed_results = db.Column(db.JSON, nullable=True)  # Store as JSON
+    access_code = db.Column(db.String(5), nullable=True)  # Store the 5-digit access code
+    quiz_start_time = db.Column(db.DateTime, nullable=True)  # When quiz started
+    quiz_duration_seconds = db.Column(db.Integer, nullable=True)  # Time taken in seconds# Create tables
+with app.app_context():
+    db.create_all()
 
 # --- Helper function to find submission by ID ---
 def find_submission_by_id(submission_id):
-    for email, submission in user_submissions.items():
-        if submission.get("submission_id") == submission_id:
-            return email, submission
+    submission = Submission.query.filter_by(submission_id=submission_id).first()
+    if submission:
+        user = User.query.get(submission.user_id)
+        return user.email if user else None, submission
     return None, None
 
 # --- Routes ---
@@ -68,32 +105,277 @@ def find_submission_by_id(submission_id):
 def index_page():
     return send_from_directory('.', 'index.html')
 
-@app.route('/api/auth/register', methods=['POST'])
-def register_user():
+@app.route('/login')
+def login_page():
+    return send_from_directory('.', 'login.html')
+
+@app.route('/admin')
+def admin_page():
+    return send_from_directory('.', 'admin.html')
+
+# --- Admin Routes ---
+@app.route('/api/admin/quizzes', methods=['GET'])
+def get_all_quizzes():
+    """Get all quizzes with their question counts"""
+    quizzes = Quiz.query.all()
+    quiz_list = []
+    
+    for quiz in quizzes:
+        question_count = Question.query.filter_by(quiz_id=quiz.id).count()
+        quiz_list.append({
+            "id": quiz.id,
+            "title": quiz.title,
+            "description": quiz.description,
+            "timeLimit": quiz.time_limit,
+            "timePerQuestion": quiz.time_per_question,
+            "isActive": quiz.is_active,
+            "questionCount": question_count,
+            "createdAt": quiz.created_at.isoformat()
+        })
+    
+    return jsonify({"success": True, "quizzes": quiz_list})
+
+@app.route('/api/admin/quiz/<int:quiz_id>/questions', methods=['GET'])
+def get_quiz_questions(quiz_id):
+    """Get all questions for a specific quiz"""
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = Question.query.filter_by(quiz_id=quiz_id).order_by(Question.order_index.asc()).all()
+    
+    question_list = []
+    for q in questions:
+        question_list.append({
+            "id": q.id,
+            "questionText": q.question_text,
+            "optionA": q.option_a,
+            "optionB": q.option_b,
+            "optionC": q.option_c,
+            "optionD": q.option_d,
+            "correctAnswer": q.correct_answer,
+            "orderIndex": q.order_index
+        })
+    
+    return jsonify({
+        "success": True, 
+        "quiz": {
+            "id": quiz.id,
+            "title": quiz.title,
+            "description": quiz.description
+        },
+        "questions": question_list
+    })
+
+@app.route('/api/admin/quiz', methods=['POST'])
+def create_quiz():
+    """Create a new quiz"""
     data = request.get_json()
     if not data:
         return jsonify({"success": False, "message": "Request body must be JSON."}), 400
+    
+    title = data.get('title', '').strip()
+    description = data.get('description', '').strip()
+    time_limit = data.get('timeLimit', 1200)
+    time_per_question = data.get('timePerQuestion', 30)
+    
+    if not title:
+        return jsonify({"success": False, "message": "Quiz title is required"}), 400
+    
+    new_quiz = Quiz(
+        title=title,
+        description=description,
+        time_limit=time_limit,
+        time_per_question=time_per_question,
+        is_active=False  # Start as inactive
+    )
+    
+    db.session.add(new_quiz)
+    db.session.commit()
+    
+    return jsonify({
+        "success": True,
+        "message": "Quiz created successfully",
+        "quiz": {
+            "id": new_quiz.id,
+            "title": new_quiz.title,
+            "description": new_quiz.description
+        }
+    })
 
-    name = data.get('name')
-    email = data.get('email')
-    password = data.get('password')
+@app.route('/api/admin/quiz/<int:quiz_id>/question', methods=['POST'])
+def add_question(quiz_id):
+    """Add a question to a quiz"""
+    quiz = Quiz.query.get_or_404(quiz_id)
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({"success": False, "message": "Request body must be JSON."}), 400
+    
+    question_text = data.get('questionText', '').strip()
+    option_a = data.get('optionA', '').strip()
+    option_b = data.get('optionB', '').strip()
+    option_c = data.get('optionC', '').strip()
+    option_d = data.get('optionD', '').strip()
+    correct_answer = data.get('correctAnswer')
+    
+    if not all([question_text, option_a, option_b, option_c, option_d]):
+        return jsonify({"success": False, "message": "All question fields are required"}), 400
+    
+    if correct_answer not in [0, 1, 2, 3]:
+        return jsonify({"success": False, "message": "Correct answer must be 0, 1, 2, or 3"}), 400
+    
+    # Get the next order index
+    max_order = db.session.query(db.func.max(Question.order_index)).filter_by(quiz_id=quiz_id).scalar() or 0
+    
+    new_question = Question(
+        quiz_id=quiz_id,
+        question_text=question_text,
+        option_a=option_a,
+        option_b=option_b,
+        option_c=option_c,
+        option_d=option_d,
+        correct_answer=correct_answer,
+        order_index=max_order + 1
+    )
+    
+    db.session.add(new_question)
+    db.session.commit()
+    
+    return jsonify({
+        "success": True,
+        "message": "Question added successfully",
+        "question": {
+            "id": new_question.id,
+            "questionText": new_question.question_text,
+            "orderIndex": new_question.order_index
+        }
+    })
 
-    if not all([name, email, password]):
-        return jsonify({"success": False, "message": "All fields (name, email, password) are required"}), 400
-    if "@" not in email or "." not in email.split("@")[-1]:
-        return jsonify({"success": False, "message": "Invalid email format"}), 400
-    if len(password) < 6:
-        return jsonify({"success": False, "message": "Password must be at least 6 characters long"}), 400
-    if email in user_accounts:
-        return jsonify({"success": False, "message": "Email already registered"}), 409
+@app.route('/api/admin/quiz/<int:quiz_id>/activate', methods=['POST'])
+def toggle_quiz_status(quiz_id):
+    """Activate or deactivate a quiz"""
+    quiz = Quiz.query.get_or_404(quiz_id)
+    data = request.get_json()
+    
+    is_active = data.get('isActive', not quiz.is_active)
+    
+    # If activating this quiz, deactivate all others (only one active quiz at a time)
+    if is_active:
+        Quiz.query.update({'is_active': False})
+    
+    quiz.is_active = is_active
+    db.session.commit()
+    
+    status = "activated" if is_active else "deactivated"
+    return jsonify({
+        "success": True,
+        "message": f"Quiz '{quiz.title}' has been {status}",
+        "quiz": {
+            "id": quiz.id,
+            "title": quiz.title,
+            "isActive": quiz.is_active
+        }
+    })
 
-    user_accounts[email] = {
-        "name": name,
-        "password": password,  # In production, this should always be hashed
-        "created_at": datetime.now(timezone.utc)
-    }
+@app.route('/api/admin/students', methods=['GET'])
+def get_all_students():
+    """Get all registered students with their submission status"""
+    users = User.query.all()
+    student_list = []
+    
+    for user in users:
+        submission = Submission.query.filter_by(user_id=user.id).first()
+        student_list.append({
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "registeredAt": user.created_at.isoformat(),
+            "hasSubmitted": submission is not None,
+            "submissionDetails": {
+                "score": submission.score,
+                "percentage": submission.percentage,
+                "submittedAt": submission.submitted_at.isoformat()
+            } if submission else None
+        })
+    
+    return jsonify({"success": True, "students": student_list})
 
-    return jsonify({"success": True, "message": "User registered successfully", "userId": email}), 201
+@app.route('/api/admin/send-email', methods=['POST'])
+def send_custom_email():
+    """Send custom email to students"""
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "Request body must be JSON."}), 400
+    
+    recipient_emails = data.get('recipients', [])  # List of email addresses
+    subject = data.get('subject', '').strip()
+    message_body = data.get('message', '').strip()
+    send_to_all = data.get('sendToAll', False)
+    
+    if not subject or not message_body:
+        return jsonify({"success": False, "message": "Subject and message are required"}), 400
+    
+    # Get recipients
+    if send_to_all:
+        users = User.query.all()
+        recipients = [user.email for user in users]
+    else:
+        recipients = recipient_emails
+    
+    if not recipients:
+        return jsonify({"success": False, "message": "No recipients specified"}), 400
+    
+    # Send emails
+    sent_count = 0
+    failed_count = 0
+    
+    for email in recipients:
+        try:
+            msg = Message(
+                subject=f"📢 {subject}",
+                recipients=[email],
+                body=f"""
+{message_body}
+
+---
+This message was sent via QuizFlow Admin Panel
+{datetime.now().strftime('%B %d, %Y at %I:%M %p')}
+                """.strip()
+            )
+            mail.send(msg)
+            sent_count += 1
+            print(f"✅ Email sent to: {email}")
+        except Exception as e:
+            failed_count += 1
+            print(f"❌ Failed to send email to {email}: {e}")
+    
+    return jsonify({
+        "success": True,
+        "message": f"Email sent to {sent_count} recipients. {failed_count} failed.",
+        "sentCount": sent_count,
+        "failedCount": failed_count
+    })
+
+@app.route('/api/validate-code', methods=['POST'])
+def validate_code():
+    """Endpoint to validate if a code is valid without logging in"""
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "Request body must be JSON."}), 400
+    
+    code = data.get('code')
+    if not code:
+        return jsonify({"success": False, "message": "Code is required"}), 400
+    
+    if not code.isdigit() or len(code) != 5:
+        return jsonify({"success": False, "message": "Code must be exactly 5 digits"}), 400
+    
+    valid_codes = os.getenv('VALID_LOGIN_CODES', '12345,67890,11111,22222,33333').split(',')
+    
+    if code in valid_codes:
+        return jsonify({"success": True, "message": "Valid code", "isValid": True}), 200
+    else:
+        return jsonify({"success": False, "message": "Invalid code", "isValid": False}), 200
+
+
 
 @app.route('/api/auth/login', methods=['POST'])
 def login_user():
@@ -101,43 +383,167 @@ def login_user():
     if not data:
         return jsonify({"success": False, "message": "Request body must be JSON."}), 400
     
-    email = data.get('email')
-    password = data.get('password')
+    login_code = data.get('code')
+    student_name = data.get('name', '').strip()
+    student_email = data.get('email', '').strip()
 
-    if not email or not password:
-        return jsonify({"success": False, "message": "Email and password are required"}), 400
+    if not login_code:
+        return jsonify({"success": False, "message": "Login code is required"}), 400
+    
+    if not student_name:
+        return jsonify({"success": False, "message": "Student name is required"}), 400
+    
+    if not student_email:
+        return jsonify({"success": False, "message": "Email address is required"}), 400
+    
+    # Validate email format
+    import re
+    email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+    if not re.match(email_pattern, student_email):
+        return jsonify({"success": False, "message": "Please enter a valid email address"}), 400
 
-    user = user_accounts.get(email)
-    if not user or user["password"] != password:
-        return jsonify({"success": False, "message": "Invalid email or password"}), 401
+    # Validate the 5-digit code format
+    if not login_code.isdigit() or len(login_code) != 5:
+        return jsonify({"success": False, "message": "Invalid code format. Please enter a 5-digit code."}), 400
 
-    submission = user_submissions.get(email)
-    if submission:
-        return jsonify({
-            "success": True,
-            "quizAlreadyTaken": True,
-            "message": f"You have already completed '{QUIZ_DATA['title']}'.",
-            "email": email,
-            "userId": email,
-            "pastResults": {
-                "submissionId": submission["submission_id"],
-                "score": submission["score"],
-                "totalQuestions": submission["total_questions"],
-                "percentage": submission["percentage"],
-                "feedback": submission["feedback"],
-                "detailedResults": submission["detailed_results"]
-            }
-        }), 200
+    # Check if the code is valid (you can modify this list with your valid codes)
+    valid_codes = os.getenv('VALID_LOGIN_CODES', '12345,67890,11111,22222,33333').split(',')
+    
+    if login_code not in valid_codes:
+        return jsonify({"success": False, "message": "Invalid login code. Please check your code and try again."}), 401
+
+    # Check if this student has already taken the quiz with this email and code combination
+    existing_user = User.query.filter_by(email=student_email).first()
+    
+    if existing_user:
+        # Check if user has already submitted quiz
+        submission = Submission.query.filter_by(user_id=existing_user.id).first()
+        if submission:
+            # Get quiz title from database
+            quiz = Quiz.query.filter_by(is_active=True).first()
+            quiz_title = quiz.title if quiz else "the quiz"
+            
+            return jsonify({
+                "success": True,
+                "quizAlreadyTaken": True,
+                "message": f"You have already completed '{quiz_title}' with this code.",
+                "email": student_email,
+                "userId": student_email,
+                "studentName": student_name,
+                "pastResults": {
+                    "submissionId": submission.submission_id,
+                    "score": submission.score,
+                    "totalQuestions": submission.total_questions,
+                    "percentage": submission.percentage,
+                    "feedback": submission.feedback,
+                    "detailedResults": submission.detailed_results
+                }
+            }), 200
+        else:
+            return jsonify({
+                "success": True, 
+                "message": "Login successful. You can start the quiz.", 
+                "email": student_email,
+                "userId": student_email,
+                "studentName": student_name
+            }), 200
     else:
-        return jsonify({"success": True, "message": "Login successful. You can start the quiz.", "email": email, "userId": email}), 200
+        # Create new user entry for this student
+        new_user = User(
+            name=student_name,
+            email=student_email,
+            password=login_code  # Store the code as password for reference
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        
+        # Send welcome email to new student
+        send_welcome_emails = os.getenv('SEND_STUDENT_EMAILS', 'true').lower() in ['true', '1', 'yes']
+        if send_welcome_emails:
+            try:
+                # Get quiz info for welcome email
+                active_quiz = Quiz.query.filter_by(is_active=True).first()
+                quiz_info = f"You're about to take: {active_quiz.title}" if active_quiz else "Get ready for your quiz!"
+                
+                welcome_subject = f"🎯 Welcome to QuizFlow - Ready to Start?"
+                welcome_body = f"""
+🎉 Hello {student_name}!
+
+Welcome to QuizFlow! You have successfully logged in and are ready to begin your quiz.
+
+📋 QUIZ INFORMATION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{quiz_info}
+🔐 Your access code: {login_code}
+📧 Email: {student_email}
+📅 Login time: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
+
+📝 INSTRUCTIONS:
+• Make sure you have a stable internet connection
+• Take your time to read each question carefully  
+• You can only submit the quiz once
+• Your results will be emailed to you upon completion
+
+Good luck! We're rooting for you! 🚀
+
+Best regards,
+The QuizFlow Team
+                """.strip()
+                
+                welcome_msg = Message(
+                    subject=welcome_subject,
+                    recipients=[student_email],
+                    body=welcome_body
+                )
+                mail.send(welcome_msg)
+                print(f"✅ Successfully sent welcome email to: {student_email}")
+                
+            except Exception as e:
+                print(f"❌ FAILED to send welcome email: {e}")
+        
+        return jsonify({
+            "success": True, 
+            "message": "Login successful. You can start the quiz.", 
+            "email": student_email,
+            "userId": student_email,
+            "studentName": student_name
+        }), 200
 
 @app.route('/api/quiz', methods=['GET'])
 def get_quiz():
+    # Get the first active quiz (you can modify this to select specific quiz)
+    quiz = Quiz.query.filter_by(is_active=True).first()
+    
+    if not quiz:
+        return jsonify({
+            "success": False,
+            "message": "No active quiz found"
+        }), 404
+    
+    # Get questions for this quiz, ordered by order_index
+    questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order_index.asc()).all()
+    
+    if not questions:
+        return jsonify({
+            "success": False,
+            "message": "No questions found for this quiz"
+        }), 404
+    
+    # Format questions for frontend
+    formatted_questions = []
+    for q in questions:
+        formatted_questions.append({
+            "id": q.id,
+            "question": q.question_text,
+            "options": [q.option_a, q.option_b, q.option_c, q.option_d]
+        })
+    
     return jsonify({
         "success": True,
-        "title": QUIZ_DATA["title"],
-        "timePerQuestion": QUIZ_DATA["timePerQuestion"],
-        "questions": [{"id": q["id"], "question": q["question"], "options": q["options"]} for q in QUIZ_DATA["questions"]]
+        "title": quiz.title,
+        "timePerQuestion": quiz.time_per_question,
+        "timeLimit": quiz.time_limit,
+        "questions": formatted_questions
     })
 
 @app.route('/api/submit', methods=['POST'])
@@ -146,39 +552,77 @@ def submit_quiz():
     if not data:
         return jsonify({"success": False, "message": "Request body must be JSON."}), 400
 
+    # Handle both old format (email) and new format (name+code)
     user_email = data.get('email')
+    student_name = data.get('name', '').strip()
+    login_code = data.get('code')
     user_answers_indices = data.get('answers', [])
+    quiz_start_time_str = data.get('quizStartTime')
+    quiz_duration_seconds = data.get('quizDurationSeconds')
 
-    if not user_email or not isinstance(user_answers_indices, list):
-        return jsonify({"success": False, "message": "User email and a valid answers list are required."}), 400
+    if not isinstance(user_answers_indices, list):
+        return jsonify({"success": False, "message": "A valid answers list is required."}), 400
 
-    if user_email not in user_accounts:
-        return jsonify({"success": False, "message": "User not found."}), 401
-    if user_email in user_submissions:
+    # Create user identifier for new format
+    if student_name and login_code:
+        user_identifier = f"{login_code}_{student_name.lower().replace(' ', '_')}"
+    elif user_email:
+        user_identifier = user_email
+    else:
+        return jsonify({"success": False, "message": "Either email or name+code are required."}), 400
+
+    # Parse quiz start time if provided
+    quiz_start_time = None
+    if quiz_start_time_str:
+        try:
+            quiz_start_time = datetime.fromisoformat(quiz_start_time_str.replace('Z', '+00:00'))
+        except ValueError:
+            quiz_start_time = None
+
+    # Find user in database
+    user = User.query.filter_by(email=user_identifier).first()
+    if not user:
+        return jsonify({"success": False, "message": "User not found. Please login first."}), 401
+    
+    # Check if user has already submitted
+    existing_submission = Submission.query.filter_by(user_id=user.id).first()
+    if existing_submission:
         return jsonify({"success": False, "message": "This quiz has already been submitted by you."}), 403
 
+    # Get the active quiz and its questions
+    quiz = Quiz.query.filter_by(is_active=True).first()
+    if not quiz:
+        return jsonify({"success": False, "message": "No active quiz found"}), 404
+    
+    questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order_index.asc()).all()
+    if not questions:
+        return jsonify({"success": False, "message": "No questions found for this quiz"}), 404
+
     score = 0
-    total_questions = len(QUIZ_DATA["questions"])
+    total_questions = len(questions)
     detailed_results = []
 
-    for i, question in enumerate(QUIZ_DATA["questions"]):
-        correct_answer_index = question["correct_answer"]
+    for i, question in enumerate(questions):
+        correct_answer_index = question.correct_answer
         user_selected_index = user_answers_indices[i] if i < len(user_answers_indices) else None
         
         is_correct = (user_selected_index is not None and int(user_selected_index) == correct_answer_index)
         if is_correct:
             score += 1
 
+        # Get the option texts
+        options = [question.option_a, question.option_b, question.option_c, question.option_d]
+        
         detailed_results.append({
-            "id": question["id"],
-            "question_text": question["question"],
-            "user_selected_answer_text": question["options"][user_selected_index] if user_selected_index is not None else "Not Answered",
-            "correct_answer_text": question["options"][correct_answer_index],
+            "id": question.id,
+            "question_text": question.question_text,
+            "user_selected_answer_text": options[user_selected_index] if user_selected_index is not None else "Not Answered",
+            "correct_answer_text": options[correct_answer_index],
             "is_correct": is_correct
         })
 
     percentage = (score / total_questions) * 100 if total_questions > 0 else 0
-    name = user_accounts.get(user_email, {}).get('name', 'Quiz Taker').split(' ')[0]
+    name = user.name.split(' ')[0]
 
     if percentage == 100: feedback_text = f"Perfect score, {name}! You're a demand and supply expert!"
     elif percentage >= 80: feedback_text = f"Excellent work, {name}!"
@@ -186,29 +630,119 @@ def submit_quiz():
     else: feedback_text = f"Keep practicing, {name}. You'll get there!"
 
     submission_id = str(uuid.uuid4())
-    user_submissions[user_email] = {
-        "submission_id": submission_id,
-        "score": score,
-        "total_questions": total_questions,
-        "percentage": round(percentage, 2),
-        "feedback": feedback_text,
-        "submitted_at": datetime.now(timezone.utc),
-        "detailed_results": detailed_results
-    }
+    
+    # Save submission to database
+    new_submission = Submission(
+        submission_id=submission_id,
+        user_id=user.id,
+        score=score,
+        total_questions=total_questions,
+        percentage=round(percentage, 2),
+        feedback=feedback_text,
+        detailed_results=detailed_results,
+        access_code=login_code if login_code else None,
+        quiz_start_time=quiz_start_time,
+        quiz_duration_seconds=quiz_duration_seconds
+    )
+    db.session.add(new_submission)
+    db.session.commit()
     
     print(f"Quiz submitted by: {user_email}, Score: {score}/{total_questions}")
 
-    # --- Send Email Notification to Admin (cleaned up) ---
+    # --- Send Email Notifications ---
+    
+    # 1. Send email to student with their results (if enabled)
+    send_student_emails = os.getenv('SEND_STUDENT_EMAILS', 'true').lower() in ['true', '1', 'yes']
+    
+    if send_student_emails:
+        try:
+            student_subject = f"🎯 Quiz Results: {quiz.title}"
+            
+            # Create a nicely formatted email with emoji indicators
+            grade_emoji = "🏆" if percentage >= 90 else "🥉" if percentage >= 80 else "📚" if percentage >= 60 else "💪"
+            
+            # Create detailed results for email
+            detailed_email_results = []
+            for i, result in enumerate(detailed_results, 1):
+                status_emoji = "✅" if result['is_correct'] else "❌"
+                detailed_email_results.append(
+                    f"{i}. {result['question_text']}\n"
+                    f"   Your answer: {result['user_selected_answer_text']}\n"
+                    f"   Correct answer: {result['correct_answer_text']}\n"
+                    f"   {status_emoji} {status_emoji if result['is_correct'] else 'Incorrect'}\n"
+                )
+            
+            # Format duration nicely
+            duration_text = ""
+            if quiz_duration_seconds:
+                minutes = quiz_duration_seconds // 60
+                seconds = quiz_duration_seconds % 60
+                duration_text = f"⏱️ Time taken: {minutes}:{seconds:02d} minutes\n"
+            
+            student_body = f"""
+{grade_emoji} Dear {user.name},
+
+Congratulations on completing the "{quiz.title}"!
+
+📊 YOUR RESULTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 Score: {score}/{total_questions} ({percentage:.1f}%)
+💬 {feedback_text}
+{duration_text}📅 Completed: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
+
+📋 DETAILED BREAKDOWN:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{chr(10).join(detailed_email_results)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Thank you for participating! Keep up the great work! 🚀
+
+Best regards,
+The QuizFlow Team
+            """.strip()
+            
+            student_msg = Message(
+                subject=student_subject, 
+                recipients=[user.email], 
+                body=student_body
+            )
+            mail.send(student_msg)
+            print(f"✅ Successfully sent results email to student: {user.email}")
+            
+        except Exception as e:
+            print(f"❌ FAILED to send results email to student: {e}")
+    
+    # 2. Send notification to admin
     admin_email = os.getenv('ADMIN_EMAIL_RECIPIENT')
     if admin_email:
         try:
-            subject = f"Quiz Submission: {user_email} on '{QUIZ_DATA['title']}'"
-            body = f"User {user_email} completed the quiz with a score of {score}/{total_questions} ({percentage:.2f}%)."
-            msg = Message(subject, recipients=[admin_email], body=body, reply_to=user_email)
-            mail.send(msg)
-            print(f"Successfully sent submission email to admin: {admin_email}")
+            admin_subject = f"Quiz Submission: {user.email} on '{quiz.title}'"
+            admin_body = f"""
+New quiz submission received:
+
+Student: {user.name} ({user.email})
+Quiz: {quiz.title}
+Score: {score}/{total_questions} ({percentage:.2f}%)
+Access Code: {login_code}
+Duration: {quiz_duration_seconds // 60}:{quiz_duration_seconds % 60:02d} minutes
+Submitted: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
+
+Feedback given: {feedback_text}
+            """.strip()
+            
+            admin_msg = Message(
+                subject=admin_subject, 
+                recipients=[admin_email], 
+                body=admin_body, 
+                reply_to=user.email
+            )
+            mail.send(admin_msg)
+            print(f"Successfully sent notification email to admin: {admin_email}")
+            
         except Exception as e:
-            print(f"!!! FAILED to send submission email to admin: {e}")
+            print(f"!!! FAILED to send notification email to admin: {e}")
 
     return jsonify({
         "success": True,
@@ -217,7 +751,10 @@ def submit_quiz():
         "totalQuestions": total_questions,
         "percentage": round(percentage, 2),
         "feedback": feedback_text,
-        "detailedResults": detailed_results
+        "detailedResults": detailed_results,
+        "accessCode": login_code,
+        "quizDurationSeconds": quiz_duration_seconds,
+        "quizStartTime": quiz_start_time.isoformat() if quiz_start_time else None
     }), 200
 
 @app.route('/api/user/submissions', methods=['GET'])
@@ -226,19 +763,24 @@ def get_user_submissions():
     if not user_email:
         return jsonify({"success": False, "message": "User email parameter is required."}), 400
 
-    if user_email not in user_accounts:
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
         return jsonify({"success": False, "message": "User account not found."}), 404
 
+    # Get the active quiz for title reference
+    quiz = Quiz.query.filter_by(is_active=True).first()
+    quiz_title = quiz.title if quiz else "Quiz"
+
     submissions_list = []
-    if user_email in user_submissions:
-        sub = user_submissions[user_email]
+    submissions = Submission.query.filter_by(user_id=user.id).all()
+    for sub in submissions:
         submissions_list.append({
-            "submissionId": sub["submission_id"],
-            "quizTitle": QUIZ_DATA["title"],
-            "score": sub["score"],
-            "totalQuestionsInQuiz": sub["total_questions"],
-            "percentage": sub["percentage"],
-            "submittedAt": sub["submitted_at"].isoformat()
+            "submissionId": sub.submission_id,
+            "quizTitle": quiz_title,
+            "score": sub.score,
+            "totalQuestionsInQuiz": sub.total_questions,
+            "percentage": sub.percentage,
+            "submittedAt": sub.submitted_at.isoformat()
         })
     
     return jsonify({"success": True, "submissions": submissions_list})
@@ -250,25 +792,185 @@ def get_submission_details(submission_id_str):
     if not submission:
         return jsonify({"success": False, "message": "Submission not found."}), 404
 
+    # Get the active quiz for title reference
+    quiz = Quiz.query.filter_by(is_active=True).first()
+    quiz_title = quiz.title if quiz else "Quiz"
+
     summary_response = {
-        "submissionId": submission["submission_id"],
-        "quizTitle": QUIZ_DATA["title"],
-        "score": submission["score"],
-        "totalQuestionsInQuiz": submission["total_questions"],
-        "percentage": submission["percentage"],
-        "feedback": submission["feedback"],
-        "submittedAt": submission["submitted_at"].isoformat(),
+        "submissionId": submission.submission_id,
+        "quizTitle": quiz_title,
+        "score": submission.score,
+        "totalQuestionsInQuiz": submission.total_questions,
+        "percentage": submission.percentage,
+        "feedback": submission.feedback,
+        "submittedAt": submission.submitted_at.isoformat(),
         "userEmail": user_email
     }
     
     return jsonify({
         "success": True, 
         "summary": summary_response, 
-        "details": submission["detailed_results"]
+        "details": submission.detailed_results
     })
+
+def migrate_database():
+    """Add new columns to existing tables if they don't exist"""
+    try:
+        # Check if new columns exist and add them if missing
+        with db.engine.connect() as conn:
+            # Add access_code column if it doesn't exist
+            try:
+                conn.execute(db.text("ALTER TABLE submissions ADD COLUMN access_code VARCHAR(5)"))
+                print("Added access_code column to submissions table")
+            except Exception:
+                pass  # Column already exists
+            
+            # Add quiz_start_time column if it doesn't exist  
+            try:
+                conn.execute(db.text("ALTER TABLE submissions ADD COLUMN quiz_start_time TIMESTAMP"))
+                print("Added quiz_start_time column to submissions table")
+            except Exception:
+                pass  # Column already exists
+                
+            # Add quiz_duration_seconds column if it doesn't exist
+            try:
+                conn.execute(db.text("ALTER TABLE submissions ADD COLUMN quiz_duration_seconds INTEGER"))
+                print("Added quiz_duration_seconds column to submissions table")
+            except Exception:
+                pass  # Column already exists
+            
+            conn.commit()
+    except Exception as e:
+        print(f"Migration warning: {e}")
+
+def populate_sample_quiz():
+    """Populate database with sample quiz data if no quiz exists"""
+    existing_quiz = Quiz.query.first()
+    if existing_quiz:
+        print("Quiz data already exists, skipping sample data creation")
+        return
+    
+    print("Creating sample quiz data...")
+    
+    # Create sample quiz
+    sample_quiz = Quiz(
+        title="Demand and Supply Quiz",
+        description="Test your knowledge of basic economic principles of demand and supply",
+        time_limit=1200,  # 20 minutes
+        time_per_question=30,  # 30 seconds per question
+        is_active=True
+    )
+    db.session.add(sample_quiz)
+    db.session.flush()  # Get the quiz ID
+    
+    # Sample questions data
+    sample_questions = [
+        {
+            "question_text": "What does the Law of Demand state, ceteris paribus?",
+            "option_a": "As price increases, quantity demanded increases",
+            "option_b": "As price increases, quantity demanded decreases",
+            "option_c": "As supply increases, demand increases",
+            "option_d": "As income increases, demand always increases",
+            "correct_answer": 1
+        },
+        {
+            "question_text": "Which of the following can shift the demand curve to the right?",
+            "option_a": "A decrease in consumer income (for normal goods)",
+            "option_b": "A fall in the price of a complement",
+            "option_c": "A fall in the price of the good itself",
+            "option_d": "An increase in input prices",
+            "correct_answer": 1
+        },
+        {
+            "question_text": "The substitution effect means that:",
+            "option_a": "Consumers substitute inferior goods with luxury goods",
+            "option_b": "A good becomes more desirable as it becomes more expensive",
+            "option_c": "Consumers switch to a good when its price falls relative to substitutes",
+            "option_d": "Consumers always prefer imported goods",
+            "correct_answer": 2
+        },
+        {
+            "question_text": "Which of the following is not a determinant of supply?",
+            "option_a": "Input prices",
+            "option_b": "Technology",
+            "option_c": "Consumer tastes",
+            "option_d": "Government subsidies",
+            "correct_answer": 2
+        },
+        {
+            "question_text": "A rightward shift in the supply curve results in:",
+            "option_a": "Higher prices and lower quantity",
+            "option_b": "Lower prices and higher quantity",
+            "option_c": "No change in equilibrium",
+            "option_d": "Lower prices and lower quantity",
+            "correct_answer": 1
+        },
+        {
+            "question_text": "What causes movement along the demand curve?",
+            "option_a": "Change in price of substitute goods",
+            "option_b": "Change in consumer income",
+            "option_c": "Change in the price of the good itself",
+            "option_d": "Change in consumer expectations",
+            "correct_answer": 2
+        },
+        {
+            "question_text": "Market equilibrium occurs when:",
+            "option_a": "Quantity supplied is greater than quantity demanded",
+            "option_b": "Demand equals supply",
+            "option_c": "Supply increases rapidly",
+            "option_d": "Demand is falling while price is rising",
+            "correct_answer": 1
+        },
+        {
+            "question_text": "A shortage occurs when:",
+            "option_a": "Quantity supplied exceeds quantity demanded",
+            "option_b": "Price is above equilibrium",
+            "option_c": "Price is below equilibrium",
+            "option_d": "Demand curve shifts left",
+            "correct_answer": 2
+        },
+        {
+            "question_text": "The Law of Supply states that:",
+            "option_a": "As price rises, supply decreases",
+            "option_b": "As price rises, supply increases",
+            "option_c": "Supply is not affected by price",
+            "option_d": "Supply only increases when demand increases",
+            "correct_answer": 1
+        },
+        {
+            "question_text": "Which factor will most likely cause a leftward shift in the supply curve?",
+            "option_a": "Technological advancement",
+            "option_b": "Fall in input costs",
+            "option_c": "Increase in taxes",
+            "option_d": "Increase in number of sellers",
+            "correct_answer": 2
+        }
+    ]
+    
+    # Add questions to database
+    for i, q_data in enumerate(sample_questions):
+        question = Question(
+            quiz_id=sample_quiz.id,
+            question_text=q_data["question_text"],
+            option_a=q_data["option_a"],
+            option_b=q_data["option_b"],
+            option_c=q_data["option_c"],
+            option_d=q_data["option_d"],
+            correct_answer=q_data["correct_answer"],
+            order_index=i + 1
+        )
+        db.session.add(question)
+    
+    db.session.commit()
+    print(f"Created sample quiz '{sample_quiz.title}' with {len(sample_questions)} questions")
 
 # --- Main Execution ---
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     print(f"Starting Quizflow application on port {port}...")
+    with app.app_context():
+        db.create_all()
+        migrate_database()
+        populate_sample_quiz()
+        print("Database tables created and migrated successfully.")
     app.run(debug=True, port=port)
