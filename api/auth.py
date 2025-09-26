@@ -9,10 +9,8 @@ from email.mime.multipart import MIMEMultipart
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        if self.path == '/api/auth/login':
-            self.handle_login()
-        else:
-            self.send_error(404)
+        # Handle all POST requests to this auth endpoint
+        self.handle_login()
     
     def handle_login(self):
         try:
@@ -29,6 +27,12 @@ class handler(BaseHTTPRequestHandler):
                 self.send_json_response({'success': False, 'message': 'All fields are required'})
                 return
             
+            # Check if DATABASE_URL is configured
+            database_url = os.getenv('DATABASE_URL')
+            if not database_url:
+                self.send_json_response({'success': False, 'message': 'Database not configured'})
+                return
+            
             # Check access code
             student_code = os.getenv('STUDENT_ACCESS_CODE', '12345')
             if code != student_code:
@@ -36,8 +40,12 @@ class handler(BaseHTTPRequestHandler):
                 return
             
             # Connect to database
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
-            cursor = conn.cursor()
+            try:
+                conn = psycopg2.connect(database_url)
+                cursor = conn.cursor()
+            except Exception as db_error:
+                self.send_json_response({'success': False, 'message': f'Database connection failed: {str(db_error)}'})
+                return
             
             # Create user if not exists
             cursor.execute("""
