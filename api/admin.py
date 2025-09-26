@@ -60,15 +60,45 @@ class handler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         path = urlparse(self.path).path
         
-        # Paths in Vercel map to this file without the /api/admin prefix
-        if path.startswith('/quiz/'):
-            quiz_id = path.split('/')[-1]
-            self.handle_delete_quiz(quiz_id)
-        elif path.startswith('/question/'):
-            question_id = path.split('/')[-1]
-            self.handle_delete_question(question_id)
+        # Debug logging
+        print(f"DEBUG DELETE: Full path: {self.path}")
+        print(f"DEBUG DELETE: Parsed path: {path}")
+        
+        # Handle different path formats - with or without /api/admin prefix
+        if '/quiz/' in path and '/question' not in path:
+            # Extract quiz ID from path like /api/admin/quiz/123 or /quiz/123
+            parts = path.split('/')
+            quiz_id = None
+            for i, part in enumerate(parts):
+                if part == 'quiz' and i + 1 < len(parts):
+                    quiz_id = parts[i + 1]
+                    break
+            
+            if quiz_id:
+                print(f"DEBUG DELETE: Extracted quiz_id: {quiz_id}")
+                self.handle_delete_quiz(quiz_id)
+            else:
+                print("DEBUG DELETE: Could not extract quiz_id")
+                self.send_json_response({'success': False, 'message': 'Invalid quiz ID in path'})
+                
+        elif '/question/' in path:
+            # Extract question ID from path like /api/admin/question/123 or /question/123
+            parts = path.split('/')
+            question_id = None
+            for i, part in enumerate(parts):
+                if part == 'question' and i + 1 < len(parts):
+                    question_id = parts[i + 1]
+                    break
+            
+            if question_id:
+                print(f"DEBUG DELETE: Extracted question_id: {question_id}")
+                self.handle_delete_question(question_id)
+            else:
+                print("DEBUG DELETE: Could not extract question_id")
+                self.send_json_response({'success': False, 'message': 'Invalid question ID in path'})
         else:
-            self.send_error(404)
+            print(f"DEBUG DELETE: No matching route for path: {path}")
+            self.send_json_response({'success': False, 'message': 'DELETE endpoint not found'})
     
     def handle_admin_login(self):
         try:
@@ -317,6 +347,15 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_delete_quiz(self, quiz_id):
         try:
+            # Validate quiz_id
+            try:
+                quiz_id = int(quiz_id)
+            except (ValueError, TypeError):
+                self.send_json_response({'success': False, 'message': 'Invalid quiz ID format'})
+                return
+                
+            print(f"DEBUG: Deleting quiz with ID: {quiz_id}")
+            
             conn = self._connect_db()
             cursor = conn.cursor()
             
@@ -340,6 +379,15 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_delete_question(self, question_id):
         try:
+            # Validate question_id
+            try:
+                question_id = int(question_id)
+            except (ValueError, TypeError):
+                self.send_json_response({'success': False, 'message': 'Invalid question ID format'})
+                return
+                
+            print(f"DEBUG: Deleting question with ID: {question_id}")
+            
             conn = self._connect_db()
             cursor = conn.cursor()
             

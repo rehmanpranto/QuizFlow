@@ -820,9 +820,20 @@
 
         async function deleteQuiz(quizId) {
             try {
+                console.log('DELETE request to:', `/api/admin/quiz/${quizId}`);
                 const response = await fetch(`/api/admin/quiz/${quizId}`, {
                     method: 'DELETE'
                 });
+                
+                console.log('DELETE response status:', response.status);
+                console.log('DELETE response headers:', response.headers);
+                
+                if (!response.ok) {
+                    console.error('DELETE failed with status:', response.status);
+                    const text = await response.text();
+                    console.error('DELETE response text:', text);
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                }
                 
                 const data = await response.json();
                 
@@ -854,9 +865,19 @@
 
         async function deleteQuestion(questionId) {
             try {
+                console.log('DELETE question request to:', `/api/admin/question/${questionId}`);
                 const response = await fetch(`/api/admin/question/${questionId}`, {
                     method: 'DELETE'
                 });
+                
+                console.log('DELETE question response status:', response.status);
+                
+                if (!response.ok) {
+                    console.error('DELETE question failed with status:', response.status);
+                    const text = await response.text();
+                    console.error('DELETE question response text:', text);
+                    throw new Error(`HTTP ${response.status}: ${text}`);
+                }
                 
                 const data = await response.json();
                 
