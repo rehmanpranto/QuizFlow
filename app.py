@@ -132,7 +132,7 @@ def get_all_quizzes():
             "timePerQuestion": quiz.time_per_question,
             "isActive": quiz.is_active,
             "questionCount": question_count,
-            "createdAt": quiz.created_at.isoformat()
+            "createdAt": quiz.created_at.isoformat() if quiz.created_at else None
         })
     
     return jsonify({"success": True, "quizzes": quiz_list})
