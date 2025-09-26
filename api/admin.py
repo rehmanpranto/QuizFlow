@@ -12,7 +12,15 @@ class handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         
         # Handle admin GET endpoints - check the specific endpoint
-        if '/quizzes' in path:
+        if path.startswith('/quiz/') and path.endswith('/questions'):
+            # Expecting /quiz/{id}/questions
+            try:
+                parts = path.strip('/').split('/')
+                quiz_id = parts[1]
+            except Exception:
+                return self.send_json_response({'success': False, 'message': 'Invalid path'})
+            return self.handle_get_questions_for_quiz(quiz_id)
+        elif '/quizzes' in path:
             self.handle_get_quizzes()
         elif '/students' in path:
             self.handle_get_students()
@@ -25,10 +33,16 @@ class handler(BaseHTTPRequestHandler):
         # Handle admin POST endpoints - check the specific endpoint
         if '/login' in path:
             self.handle_admin_login()
+        elif path.startswith('/quiz/') and path.endswith('/question'):
+            # Expecting /quiz/{id}/question from UI, merge id into payload
+            try:
+                parts = path.strip('/').split('/')
+                quiz_id = int(parts[1])
+            except Exception:
+                return self.send_json_response({'success': False, 'message': 'Invalid quiz id in path'})
+            self.handle_create_question(quiz_id_from_path=quiz_id)
         elif '/quiz' in path and '/question' not in path:
             self.handle_create_quiz()
-        elif '/question' in path:
-            self.handle_create_question()
         elif '/broadcast' in path:
             self.handle_broadcast_email()
         else:
@@ -37,10 +51,11 @@ class handler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         path = urlparse(self.path).path
         
-        if path.startswith('/api/admin/quiz/'):
+        # Paths in Vercel map to this file without the /api/admin prefix
+        if path.startswith('/quiz/'):
             quiz_id = path.split('/')[-1]
             self.handle_delete_quiz(quiz_id)
-        elif path.startswith('/api/admin/question/'):
+        elif path.startswith('/question/'):
             question_id = path.split('/')[-1]
             self.handle_delete_question(question_id)
         else:
@@ -69,10 +84,10 @@ class handler(BaseHTTPRequestHandler):
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT q.id, q.title, q.description, q.time_limit, COUNT(qs.id) as question_count
+                SELECT q.id, q.title, q.description, q.time_limit, q.created_at, COUNT(qs.id) as question_count
                 FROM quizzes q
                 LEFT JOIN questions qs ON q.id = qs.quiz_id
-                GROUP BY q.id, q.title, q.description, q.time_limit
+                GROUP BY q.id, q.title, q.description, q.time_limit, q.created_at
                 ORDER BY q.id
             """)
             
@@ -82,8 +97,10 @@ class handler(BaseHTTPRequestHandler):
                     'id': row[0],
                     'title': row[1],
                     'description': row[2],
-                    'time_limit': row[3],
-                    'question_count': row[4]
+                    'timePerQuestion': row[3],  # reuse time_limit for display
+                    'createdAt': row[4].isoformat() if row[4] else None,
+                    'questionCount': row[5],
+                    'isActive': True  # no status column; default to active
                 })
             
             self.send_json_response({'success': True, 'quizzes': quizzes})
@@ -136,7 +153,8 @@ class handler(BaseHTTPRequestHandler):
             
             title = data.get('title', '').strip()
             description = data.get('description', '').strip()
-            time_limit = data.get('time_limit', 30)
+            # accept both time_limit and timeLimit
+            time_limit = data.get('time_limit') or data.get('timeLimit') or 30
             
             if not title:
                 self.send_json_response({'success': False, 'message': 'Quiz title is required'})
@@ -149,7 +167,7 @@ class handler(BaseHTTPRequestHandler):
                 INSERT INTO quizzes (title, description, time_limit)
                 VALUES (%s, %s, %s)
                 RETURNING id
-            """, (title, description, time_limit))
+            """, (title, description, int(time_limit)))
             
             quiz_id = cursor.fetchone()[0]
             conn.commit()
@@ -166,17 +184,34 @@ class handler(BaseHTTPRequestHandler):
         except Exception as e:
             self.send_json_response({'success': False, 'message': str(e)})
     
-    def handle_create_question(self):
+    def handle_create_question(self, quiz_id_from_path=None):
         try:
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
             
-            quiz_id = data.get('quiz_id')
-            question_text = data.get('question_text', '').strip()
-            question_type = data.get('question_type', 'multiple_choice')
-            options = data.get('options', [])
-            correct_answer = data.get('correct_answer', '').strip()
+            # Support admin UI payload shape
+            quiz_id = quiz_id_from_path or data.get('quiz_id')
+            question_text = (data.get('question_text') or data.get('questionText') or '').strip()
+            question_type = data.get('question_type') or 'multiple_choice'
+            
+            # Options can come as optionA-D + correctAnswer index
+            options = data.get('options')
+            if not options:
+                optionA = data.get('optionA')
+                optionB = data.get('optionB')
+                optionC = data.get('optionC')
+                optionD = data.get('optionD')
+                options = [opt for opt in [optionA, optionB, optionC, optionD] if opt is not None]
+            correct_answer = data.get('correct_answer')
+            if correct_answer is None and 'correctAnswer' in data:
+                idx = data.get('correctAnswer')
+                try:
+                    idx = int(idx)
+                    if isinstance(options, list) and 0 <= idx < len(options):
+                        correct_answer = options[idx]
+                except Exception:
+                    correct_answer = ''
             
             if not all([quiz_id, question_text, correct_answer]):
                 self.send_json_response({'success': False, 'message': 'All fields are required'})
@@ -203,6 +238,48 @@ class handler(BaseHTTPRequestHandler):
             cursor.close()
             conn.close()
             
+        except Exception as e:
+            self.send_json_response({'success': False, 'message': str(e)})
+    
+    def handle_get_questions_for_quiz(self, quiz_id):
+        try:
+            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            cursor = conn.cursor()
+            
+            cursor.execute(
+                """
+                SELECT id, question_text, question_type, options, correct_answer
+                FROM questions
+                WHERE quiz_id = %s
+                ORDER BY id
+                """,
+                (quiz_id,)
+            )
+            rows = cursor.fetchall()
+            questions = []
+            for row in rows:
+                q_id, q_text, q_type, q_options, q_correct = row
+                try:
+                    opts = json.loads(q_options) if q_options else []
+                except Exception:
+                    opts = []
+                # Map to admin UI shape
+                correct_index = -1
+                if isinstance(opts, list) and q_correct in opts:
+                    correct_index = opts.index(q_correct)
+                questions.append({
+                    'id': q_id,
+                    'questionText': q_text,
+                    'optionA': opts[0] if len(opts) > 0 else '',
+                    'optionB': opts[1] if len(opts) > 1 else '',
+                    'optionC': opts[2] if len(opts) > 2 else '',
+                    'optionD': opts[3] if len(opts) > 3 else '',
+                    'correctAnswer': correct_index
+                })
+            
+            self.send_json_response({'success': True, 'questions': questions})
+            cursor.close()
+            conn.close()
         except Exception as e:
             self.send_json_response({'success': False, 'message': str(e)})
     
@@ -290,19 +367,19 @@ class handler(BaseHTTPRequestHandler):
                     
                     body = f"""
                     <html>
-                    <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white; border-radius: 10px 10px 0 0;">
-                            <h1 style="margin: 0; font-size: 24px;">📢 QuizFlow Announcement</h1>
+                    <body style=\"font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;\">
+                        <div style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white; border-radius: 10px 10px 0 0;\">
+                            <h1 style=\"margin: 0; font-size: 24px;\">📢 QuizFlow Announcement</h1>
                         </div>
                         
-                        <div style="padding: 30px; background: #f8fafc; border-radius: 0 0 10px 10px;">
-                            <h2 style="color: #1e293b;">Hello {name}! 👋</h2>
-                            <div style="background: white; padding: 25px; border-radius: 10px; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <div style=\"padding: 30px; background: #f8fafc; border-radius: 0 0 10px 10px;\">
+                            <h2 style=\"color: #1e293b;\">Hello {name}! 👋</h2>
+                            <div style=\"background: white; padding: 25px; border-radius: 10px; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);\">
                                 {message.replace(chr(10), '<br>')}
                             </div>
                             
-                            <hr style="margin: 30px 0; border: none; height: 1px; background: #e2e8f0;">
-                            <p style="font-size: 12px; color: #64748b; text-align: center;">
+                            <hr style=\"margin: 30px 0; border: none; height: 1px; background: #e2e8f0;\">
+                            <p style=\"font-size: 12px; color: #64748b; text-align: center;\">
                                 This message was sent from QuizFlow Administration. 🚀
                             </p>
                         </div>

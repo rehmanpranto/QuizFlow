@@ -93,6 +93,7 @@ class handler(BaseHTTPRequestHandler):
             print(f"DEBUG: Sending response with {len(questions)} questions")
             self.send_json_response({
                 'success': True,
+                'quiz_id': int(quiz_id),
                 'quiz': {
                     'title': quiz_data[0],
                     'description': quiz_data[1],
@@ -153,59 +154,87 @@ class handler(BaseHTTPRequestHandler):
             conn = psycopg2.connect(os.getenv('DATABASE_URL'))
             cursor = conn.cursor()
             
-            # Get correct answers
+            # Fetch questions to align indexes and compute details
             cursor.execute("""
-                SELECT id, correct_answer, question_text 
+                SELECT id, question_text, correct_answer 
                 FROM questions 
                 WHERE quiz_id = %s
+                ORDER BY id
             """, (quiz_id,))
+            question_rows = cursor.fetchall()
             
-            correct_answers = {}
-            question_texts = {}
-            for row in cursor.fetchall():
-                correct_answers[str(row[0])] = row[1]
-                question_texts[str(row[0])] = row[2]
+            # Normalize answers: allow list (by index) or dict keyed by question id
+            normalized_answers = {}
+            if isinstance(answers, list):
+                # Map list index -> question id in same order
+                for idx, row in enumerate(question_rows):
+                    q_id = str(row[0])
+                    if idx < len(answers):
+                        normalized_answers[q_id] = answers[idx]
+            elif isinstance(answers, dict):
+                normalized_answers = {str(k): v for k, v in answers.items()}
+            else:
+                normalized_answers = {}
             
-            # Calculate score
-            total_questions = len(correct_answers)
+            correct_answers = {str(r[0]): r[2] for r in question_rows}
+            question_texts = {str(r[0]): r[1] for r in question_rows}
+            
+            total_questions = len(question_rows)
             correct_count = 0
+            detailed_results = []
             
-            for q_id, user_answer in answers.items():
-                if str(q_id) in correct_answers:
-                    if str(user_answer).strip().lower() == str(correct_answers[str(q_id)]).strip().lower():
-                        correct_count += 1
+            for qid in correct_answers.keys():
+                user_answer = normalized_answers.get(qid)
+                correct_answer = correct_answers[qid]
+                is_correct = False
+                if user_answer is not None:
+                    is_correct = str(user_answer).strip().lower() == str(correct_answer).strip().lower()
+                if is_correct:
+                    correct_count += 1
+                detailed_results.append({
+                    'question': question_texts[qid],
+                    'your_answer': user_answer if user_answer is not None else '',
+                    'correct_answer': correct_answer,
+                    'is_correct': is_correct
+                })
             
-            score = (correct_count / total_questions) * 100 if total_questions > 0 else 0
+            percentage = (correct_count / total_questions) * 100 if total_questions > 0 else 0.0
             
             # Save submission
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO submissions (user_id, quiz_id, answers, score, completed_at)
                 VALUES (%s, %s, %s, %s, NOW())
                 RETURNING id
-            """, (user_id, quiz_id, json.dumps(answers), score))
-            
+                """,
+                (user_id, quiz_id, json.dumps(normalized_answers), percentage)
+            )
             submission_id = cursor.fetchone()[0]
             conn.commit()
             
-            # Get user email for completion email
+            # Optional: send completion email
             cursor.execute("SELECT name, email FROM users WHERE id = %s", (user_id,))
             user_data = cursor.fetchone()
-            
             if user_data:
                 self.send_completion_email(
-                    user_data[0], 
-                    user_data[1], 
-                    score, 
-                    correct_count, 
+                    user_data[0],
+                    user_data[1],
+                    percentage,
+                    correct_count,
                     total_questions
                 )
             
+            # Return a response shape compatible with frontend expectations
             self.send_json_response({
                 'success': True,
-                'score': score,
-                'correct': correct_count,
-                'total': total_questions,
-                'submission_id': submission_id
+                'submission_id': submission_id,
+                'score': correct_count,               # number of correct answers
+                'totalQuestions': total_questions,    # for UI display
+                'percentage': round(percentage, 2),
+                'correct': correct_count,             # keep legacy keys
+                'total': total_questions,             # keep legacy keys
+                'feedback': 'Great job!' if percentage >= 60 else 'Keep practicing!',
+                'detailed_results': detailed_results
             })
             
             cursor.close()
