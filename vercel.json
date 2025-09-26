@@ -44,6 +44,10 @@
       "dest": "/api/admin.py"
     },
     {
+      "src": "/api/health",
+      "dest": "/api/health.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1"
     }
