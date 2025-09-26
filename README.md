@@ -1,156 +1,251 @@
-# 🚀 QuizFlow: Unleash Your Inner Genius! 🧠✨
+# 🚀 QuizFlow: Professional Quiz Platform ✨
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000?logo=vercel)](https://vercel.com)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?logo=postgresql)](https://postgresql.org)
 
-Ever wondered how much you *really* know? Ready to challenge yourself and track your learning journey like never before? **QuizFlow** is here to transform the way you test your knowledge! This isn't just another quiz app; it's your personal arena for intellectual showdowns, complete with dynamic quizzes, persistent scores, and detailed feedback to help you conquer any topic! [cite: 1]
+**QuizFlow** is a modern, professional quiz platform designed for educational institutions and corporate training. Built with a **serverless architecture** on Vercel, featuring a sleek modern UI, comprehensive admin management, and automated email notifications.
 
-Dive into an interactive experience built with a powerful **Flask (Python) backend** and a sleek **Vanilla JS & Tailwind CSS frontend**, all powered by a robust **PostgreSQL database** to keep your progress safe and sound. [cite: 1]
-
----
-
-## 🌟 Features That Make QuizFlow Awesome!
-
-* 🔐 **Rock-Solid User Authentication:** Secure registration and login system to keep your quiz journey personal. [cite: 1]
-* 🧠 **Dynamic Interactive Quizzes:** Engage with quizzes pulled directly from our database – always fresh, always challenging! [cite: 1]
-* ⏱️ **Beat the Clock:** A built-in timer keeps you on your toes for each quiz session! [cite: 1]
-* 📊 **Instant Scores & Insightful Feedback:** Get your results pasiónmediately, with tailored feedback to understand your strengths and areas for growth. [cite: 1]
-* 💾 **Persistent Progress with PostgreSQL:** Your user accounts, quiz attempts, scores, and even your specific answers are securely stored. [cite: 1]
-* 📜 **Your Quiz History, Unlocked!**
-    * View a list of all quizzes you've attempted. [cite: 1]
-    * Check your previous scores anytime. [cite: 1]
-    * 🔎 **Detailed Answer Review:** Dive deep into past submissions to see exactly which questions you aced and which ones tricked you, along with the correct answers! [cite: 1]
-* 📧 **Advanced Email System:** 
-    * 🎉 Welcome emails when students first login
-    * 📊 Detailed result emails with complete breakdown sent to students after completion
-    * 📢 Admin notifications for every quiz submission
-    * 📨 Custom email broadcasting to all students via admin panel
-    * ⚙️ Configurable - easily enable/disable student emails
-* 🛡️ **Focus Mode:** Basic anti-cheating measures with alerts for tab-switching to help maintain focus.
-* 🎨 **Modern Professional UI:** Dark theme with glassmorphism design, smooth animations, and fully responsive layout
-* 🔧 **Database-Driven Questions:** All quiz questions stored in PostgreSQL database with full CRUD operations via admin panel
-* 🔧 **Tech Stack:**
-    * **Backend:** Python (Flask) [cite: 1]
-    * **Frontend:** Vanilla JavaScript, Tailwind CSS, HTML5
-    * **Database:** PostgreSQL [cite: 1]
-    * **And more:** `python-dotenv`, Flask-CORS, Flask-Mail, Werkzeug.
-
----
----
-
-## 🗂️ Project Structure
-├── app.py             # Flask backend (API routes, DB logic, email)
-├── index.html         # Frontend (UI, Vanilla JS logic, Tailwind CSS)
-├── requirements.txt   # Python dependencies
-├── .env               # !!! IMPORTANT: For your database and mail credentials (Create this file!)
-└── README.md          # You are here!
-## ⚙️ Get QuizFlow Up & Running!
-
-Ready to start your QuizFlow adventure? Here’s how:
-
-1.  **Clone the Mothership (This Repository):**
-    ```bash
-    git clone [https://github.com/your-username/quizflow.git](https://github.com/your-username/quizflow.git) # Replace with your repo URL
-    cd quizflow
-    ```
-
-2.  **Set Up Your Python Universe (Virtual Environment):**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    ```
-
-3.  **Install the Power-Ups (Dependencies):**
-    ```bash
-    pip install -r requirements.txt
-    ```
-    *(This will install Flask, psycopg2-binary, python-dotenv, Flask-CORS, Flask-Mail, Werkzeug, and gunicorn).*
-
-4.  **Awaken the Database (PostgreSQL Setup):**
-    * Ensure PostgreSQL is installed and running.
-    * Create a new database (e.g., `quizflow_db`).
-    * Connect to your database and execute the SQL commands provided (or use your migration scripts) to create the necessary tables: `users`, `quizzes`, `questions`, `quiz_submissions`, `submission_answers`.
-    * **Crucial:** Populate your `quizzes` and `questions` tables with at least one quiz and its questions for the app to function correctly.
-
-5.  **Configure Your Secrets (`.env` file):**
-    * Create a `.env` file in the root of the project.
-    * Add your database and email credentials. This file is loaded by `app.py` to configure the application. **Do NOT commit your `.env` file to version control!**
-        ```env
-        # --- Database Credentials ---
-        DB_HOST=your_db_host (e.g., localhost or your Supabase host)
-        DB_NAME=your_db_name (e.g., quizflow_db or postgres)
-        DB_USER=your_db_user
-        DB_PASSWORD=your_super_secret_db_password
-        DB_PORT=your_db_port (e.g., 5432 or 6543 for Supabase pooler)
-
-        # --- Email Credentials (Optional, for sending result emails) ---
-        MAIL_SERVER=smtp.gmail.com
-        MAIL_PORT=587
-        MAIL_USE_TLS=true
-        MAIL_USE_SSL=false
-        MAIL_USERNAME=your-email@gmail.com
-        MAIL_PASSWORD=your-gmail-app-password  # Use App Password, not regular password
-        MAIL_DEFAULT_SENDER=your-email@gmail.com
-        ADMIN_EMAIL_RECIPIENT=admin-email@gmail.com
-        
-        # --- Email Features Configuration ---
-        SEND_STUDENT_EMAILS=true  # Set to false to disable student emails
-        VALID_LOGIN_CODES=12345,67890,54321,11111,99999  # 5-digit access codes
-        ```
-
-6.  **Set Up Gmail App Password (For Email Features):**
-    * Go to your [Google Account settings](https://myaccount.google.com/)
-    * Enable 2-factor authentication if not already enabled
-    * Go to Security → 2-Step Verification → App passwords
-    * Generate an app password for "Mail"
-    * Use this app password (not your regular password) in the `.env` file
-
-7.  **Launch!**
-    ```bash
-    python app.py
-    ```
-    Open your browser and navigate to: `http://127.0.0.1:5001` (or the address shown in your terminal)
-    
-8.  **Access Admin Panel:**
-    Navigate to: `http://127.0.0.1:5001/admin` to manage quizzes and questions
+Experience seamless quiz delivery with real-time scoring, detailed analytics, and a mobile-responsive design that works perfectly across all devices.
 
 ---
 
-## 🔑 User Accounts
+## ✨ Key Features
 
-* 🚀 **Self-Registration:** Users can create their own accounts directly within the app! [cite: 1]
+### 🎓 **Student Experience**
+* **Modern Professional UI** - Dark theme with glassmorphism effects and smooth animations
+* **Interactive Quiz Taking** - Multiple choice and written questions with auto-save
+* **Advanced Navigation** - Question overview panel, jump to any question, progress tracking
+* **Rich Text Editor** - For written answers with formatting tools and keyboard shortcuts
+* **Real-time Timer** - Visual countdown with automatic submission when time expires
+* **Instant Results** - Immediate scoring with detailed performance breakdown
+* **Email Notifications** - Welcome emails and comprehensive result reports
+
+### 👨‍💼 **Admin Management**
+* **Complete Quiz Builder** - Create and manage quizzes with drag-and-drop simplicity
+* **Question Bank Management** - Support for multiple question types and bulk operations
+* **Student Analytics** - Real-time performance tracking and detailed progress reports
+* **Email Broadcasting** - Send announcements and updates to all students
+* **User Management** - Monitor student registrations and quiz attempts
+* **Dashboard Overview** - Key metrics and system health at a glance
+
+### 🔧 **Technical Excellence**
+* **Serverless Architecture** - Built for Vercel with automatic scaling
+* **PostgreSQL Database** - Reliable cloud database with optimized queries
+* **Email Integration** - Professional HTML emails via Gmail SMTP
+* **Mobile Responsive** - Perfect experience on desktop, tablet, and mobile
+* **Security First** - Access codes, admin authentication, and secure data handling
+* **Performance Optimized** - Fast loading times and smooth interactions
 
 ---
 
-## 🛠️ Future Enhancements & Galactic Conquests!
+## 🏗️ Architecture
 
-QuizFlow is already cool, but the universe is vast! Here’s what’s on the horizon:
+```
+QuizFlow (Serverless)
+├── Frontend (Static Files)
+│   ├── index.html         # Student quiz interface
+│   ├── admin.html         # Admin management panel  
+│   └── login.html         # Authentication page
+├── API (Serverless Functions)
+│   ├── auth.py           # User authentication & registration
+│   ├── quiz.py           # Quiz delivery & submissions
+│   └── admin.py          # Admin management functions
+├── Configuration
+│   ├── vercel.json       # Vercel deployment config
+│   └── requirements.txt  # Python dependencies
+└── Documentation
+    ├── README.md         # This file
+    └── VERCEL_DEPLOYMENT.md  # Detailed deployment guide
+```
 
-* 👑 **Admin Command Center:** A dedicated panel for creating, editing, and managing quizzes with god-like ease.
-* 🎭 **More Quiz Flavors:** Support for different question types (fill-in-the-blanks, matching, etc.).
-* 📈 **Enhanced User Dashboards:** Visual progress tracking and performance analytics.
-* 🛡️ **Fort Knox Security:** Implementation of JWT/Session-based authentication for even tighter security.
-* 🔑 **"Oops, I Forgot!" Button:** Password reset functionality.
-* 🌐 **Multilingual Support:** Quizzes for everyone, everywhere!
-* 🤝 **Team Challenges:** Group quiz modes for collaborative fun.
+---
+
+## 🚀 Quick Deploy to Vercel
+
+### One-Click Deployment
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rehmanpranto/QuizFlow)
+
+### Manual Deployment Steps
+
+1. **Fork/Clone the Repository**
+   ```bash
+   git clone https://github.com/rehmanpranto/QuizFlow.git
+   cd QuizFlow
+   ```
+
+2. **Deploy to Vercel**
+   - Go to [vercel.com](https://vercel.com) and sign in
+   - Click "New Project" → Import your GitHub repository
+   - Vercel automatically detects the configuration
+
+3. **Configure Environment Variables**
+   Add these in your Vercel dashboard:
+   ```env
+   DATABASE_URL=postgresql://user:password@host:port/database
+   GMAIL_USER=your-email@gmail.com
+   GMAIL_PASSWORD=your-gmail-app-password
+   STUDENT_ACCESS_CODE=12345
+   ADMIN_PASSWORD=admin123
+   ```
+
+4. **Set Up Database**
+   ```sql
+   -- Create required tables (PostgreSQL)
+   CREATE TABLE users (
+       id SERIAL PRIMARY KEY,
+       name VARCHAR(255) NOT NULL,
+       email VARCHAR(255) UNIQUE NOT NULL,
+       access_code VARCHAR(50),
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   );
+
+   CREATE TABLE quizzes (
+       id SERIAL PRIMARY KEY,
+       title VARCHAR(255) NOT NULL,
+       description TEXT,
+       time_limit INTEGER DEFAULT 30,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   );
+
+   CREATE TABLE questions (
+       id SERIAL PRIMARY KEY,
+       quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+       question_text TEXT NOT NULL,
+       question_type VARCHAR(50) DEFAULT 'multiple_choice',
+       options JSON,
+       correct_answer TEXT NOT NULL,
+       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   );
+
+   CREATE TABLE submissions (
+       id SERIAL PRIMARY KEY,
+       user_id INTEGER REFERENCES users(id),
+       quiz_id INTEGER REFERENCES quizzes(id),
+       answers JSON,
+       score DECIMAL(5,2),
+       completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+   );
+   ```
+
+5. **Gmail App Password Setup**
+   - Enable 2FA on your Google account
+   - Go to Google Account → Security → 2-Step Verification → App passwords
+   - Generate app password for "Mail"
+   - Use this password in `GMAIL_PASSWORD` environment variable
+
+---
+
+## 🔗 Live Demo & Access
+
+- **Student Interface**: `your-domain.vercel.app`
+- **Admin Panel**: `your-domain.vercel.app/admin`
+- **Login Page**: `your-domain.vercel.app/login`
+
+### Default Access Credentials
+- **Student Access Code**: `12345`
+- **Admin Password**: `admin123`
+
+---
+
+## 📱 API Endpoints
+
+### Authentication
+- `POST /api/auth` - User login and registration
+
+### Quiz Management
+- `GET /api/quiz/questions?quiz_id=1` - Get quiz questions
+- `GET /api/quiz/list` - Get all available quizzes
+- `POST /api/quiz/submit` - Submit quiz answers
+
+### Admin Functions
+- `POST /api/admin/login` - Admin authentication
+- `GET /api/admin/quizzes` - Get all quizzes with stats
+- `GET /api/admin/students` - Get student analytics
+- `POST /api/admin/quiz` - Create new quiz
+- `POST /api/admin/question` - Add question to quiz
+- `DELETE /api/admin/quiz/{id}` - Delete quiz
+- `DELETE /api/admin/question/{id}` - Delete question
+- `POST /api/admin/broadcast` - Send email to all students
+
+---
+
+## 🛠️ Local Development
+
+For local development, you can still run the original Flask application:
+
+```bash
+# Clone the repository
+git clone https://github.com/rehmanpranto/QuizFlow.git
+cd QuizFlow
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env  # Edit .env with your credentials
+
+# Run locally
+python app.py
+```
+
+---
+
+## 🔒 Security Features
+
+- **Access Code Protection** - Students need valid codes to access quizzes
+- **Admin Authentication** - Secure admin panel with password protection
+- **SQL Injection Prevention** - Parameterized queries throughout
+- **CORS Configuration** - Proper cross-origin request handling
+- **Environment Variables** - Sensitive data stored securely
+
+---
+
+## 📧 Email Notifications
+
+QuizFlow includes comprehensive email functionality:
+
+- **Welcome Emails** - Sent when students first login
+- **Result Emails** - Detailed performance reports after quiz completion
+- **Admin Broadcasts** - Send announcements to all students
+- **Professional Templates** - HTML emails with modern design
+
+---
+
+## 🎯 Screenshots
+
+### Student Quiz Interface
+![Student Interface](https://via.placeholder.com/800x400/1e293b/ffffff?text=Modern+Quiz+Interface)
+
+### Admin Management Panel
+![Admin Panel](https://via.placeholder.com/800x400/667eea/ffffff?text=Comprehensive+Admin+Dashboard)
 
 ---
 
 ## 🤝 Contributing
 
-Got ideas to make QuizFlow even more epic? Contributions are welcome! Please fork the repository, make your changes, and submit a pull request.
+We welcome contributions! Please follow these steps:
 
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` file (if you add one) or the shield at the top for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-**Now go forth and quiz like you've never quizzed before!** 🌟
+## 🆘 Support
+
+For detailed deployment instructions, see [`VERCEL_DEPLOYMENT.md`](./VERCEL_DEPLOYMENT.md)
+
+For issues and questions, please open a GitHub issue.
+
+---
+
+**Ready to revolutionize your quiz experience? Deploy QuizFlow today!** 🚀
