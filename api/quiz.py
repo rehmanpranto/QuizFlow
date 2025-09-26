@@ -115,7 +115,11 @@ class handler(BaseHTTPRequestHandler):
                         opts = json.loads(q_options) if q_options else []
                     except Exception:
                         opts = []
-                    qtype = q_type or ('written' if not opts else 'multiple_choice')
+                    # Map essay type to written for frontend compatibility
+                    if q_type == 'essay':
+                        qtype = 'written'
+                    else:
+                        qtype = q_type or ('written' if not opts else 'multiple_choice')
                     questions.append({'id': q_id, 'question': q_text, 'type': qtype, 'options': opts, 'correct_answer': q_correct})
             elif has_qtype and not has_options:
                 cursor.execute(
@@ -128,7 +132,11 @@ class handler(BaseHTTPRequestHandler):
                 rows = cursor.fetchall()
                 questions = []
                 for q_id, q_text, q_type, q_correct in rows:
-                    qtype = q_type or 'written'
+                    # Map essay type to written for frontend compatibility
+                    if q_type == 'essay':
+                        qtype = 'written'
+                    else:
+                        qtype = q_type or 'written'
                     questions.append({'id': q_id, 'question': q_text, 'type': qtype, 'options': [], 'correct_answer': q_correct})
             elif not has_qtype and has_options:
                 cursor.execute(

@@ -235,6 +235,15 @@
             font-weight: 500;
         }
 
+        .essay-details {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .essay-details strong {
+            color: #374151;
+        }
+
         .loading {
             text-align: center;
             color: #64748b;
@@ -412,30 +421,57 @@
                     <textarea id="question-text" rows="3" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="option-a">Option A *</label>
-                    <input type="text" id="option-a" required>
-                </div>
-                <div class="form-group">
-                    <label for="option-b">Option B *</label>
-                    <input type="text" id="option-b" required>
-                </div>
-                <div class="form-group">
-                    <label for="option-c">Option C *</label>
-                    <input type="text" id="option-c" required>
-                </div>
-                <div class="form-group">
-                    <label for="option-d">Option D *</label>
-                    <input type="text" id="option-d" required>
-                </div>
-                <div class="form-group">
-                    <label for="correct-answer">Correct Answer *</label>
-                    <select id="correct-answer" required>
-                        <option value="">Select correct answer</option>
-                        <option value="0">Option A</option>
-                        <option value="1">Option B</option>
-                        <option value="2">Option C</option>
-                        <option value="3">Option D</option>
+                    <label for="question-type">Question Type *</label>
+                    <select id="question-type" onchange="toggleQuestionType()" required>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="essay">Essay Question</option>
                     </select>
+                </div>
+                
+                <!-- Multiple Choice Options -->
+                <div id="multiple-choice-options">
+                    <div class="form-group">
+                        <label for="option-a">Option A *</label>
+                        <input type="text" id="option-a">
+                    </div>
+                    <div class="form-group">
+                        <label for="option-b">Option B *</label>
+                        <input type="text" id="option-b">
+                    </div>
+                    <div class="form-group">
+                        <label for="option-c">Option C *</label>
+                        <input type="text" id="option-c">
+                    </div>
+                    <div class="form-group">
+                        <label for="option-d">Option D *</label>
+                        <input type="text" id="option-d">
+                    </div>
+                    <div class="form-group">
+                        <label for="correct-answer">Correct Answer *</label>
+                        <select id="correct-answer">
+                            <option value="">Select correct answer</option>
+                            <option value="0">Option A</option>
+                            <option value="1">Option B</option>
+                            <option value="2">Option C</option>
+                            <option value="3">Option D</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Essay Question Options -->
+                <div id="essay-options" style="display: none;">
+                    <div class="form-group">
+                        <label for="essay-instructions">Instructions for Students</label>
+                        <textarea id="essay-instructions" rows="2" placeholder="e.g., Write a detailed answer in 200-300 words..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="essay-sample-answer">Sample/Model Answer *</label>
+                        <textarea id="essay-sample-answer" rows="4" placeholder="Enter the expected answer or key points that should be covered..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="essay-max-words">Maximum Word Count (optional)</label>
+                        <input type="number" id="essay-max-words" placeholder="e.g., 300" min="50">
+                    </div>
                 </div>
                 <button type="submit" class="btn">Add Question</button>
                 <button type="button" class="btn btn-secondary" onclick="closeModal('add-question-modal')">Cancel</button>
@@ -576,17 +612,38 @@
                 return;
             }
             
-            container.innerHTML = questions.map((q, index) => `
-                <div class="question-item">
-                    <div class="question-text">${index + 1}. ${q.questionText}</div>
-                    <div class="options">
-                        <div class="${q.correctAnswer === 0 ? 'option correct' : ''}">A) ${q.optionA}</div>
-                        <div class="${q.correctAnswer === 1 ? 'option correct' : ''}">B) ${q.optionB}</div>
-                        <div class="${q.correctAnswer === 2 ? 'option correct' : ''}">C) ${q.optionC}</div>
-                        <div class="${q.correctAnswer === 3 ? 'option correct' : ''}">D) ${q.optionD}</div>
-                    </div>
-                </div>
-            `).join('');
+            container.innerHTML = questions.map((q, index) => {
+                let content = `
+                    <div class="question-item">
+                        <div class="question-text">${index + 1}. ${q.questionText}</div>
+                        <div style="margin: 8px 0; font-size: 0.875rem; color: #667eea; font-weight: 500;">
+                            ${q.questionType === 'essay' ? '📝 Essay Question' : '🔘 Multiple Choice'}
+                        </div>
+                `;
+                
+                if (q.questionType === 'essay') {
+                    const options = q.options || {};
+                    content += `
+                        <div class="essay-details" style="margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 6px;">
+                            ${options.instructions ? `<div style="margin-bottom: 8px;"><strong>Instructions:</strong> ${options.instructions}</div>` : ''}
+                            ${options.maxWords ? `<div style="margin-bottom: 8px;"><strong>Max Words:</strong> ${options.maxWords}</div>` : ''}
+                            <div><strong>Sample Answer:</strong> ${q.correctAnswer.substring(0, 150)}${q.correctAnswer.length > 150 ? '...' : ''}</div>
+                        </div>
+                    `;
+                } else {
+                    content += `
+                        <div class="options">
+                            <div class="${q.correctAnswer === 0 ? 'option correct' : ''}">A) ${q.optionA}</div>
+                            <div class="${q.correctAnswer === 1 ? 'option correct' : ''}">B) ${q.optionB}</div>
+                            <div class="${q.correctAnswer === 2 ? 'option correct' : ''}">C) ${q.optionC}</div>
+                            <div class="${q.correctAnswer === 3 ? 'option correct' : ''}">D) ${q.optionD}</div>
+                        </div>
+                    `;
+                }
+                
+                content += '</div>';
+                return content;
+            }).join('');
         }
 
         // Modal functions
@@ -604,6 +661,16 @@
 
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
+            
+            // Reset forms when closing modals
+            if (modalId === 'add-question-modal') {
+                document.getElementById('add-question-form').reset();
+                // Reset to multiple choice and show appropriate fields
+                document.getElementById('question-type').value = 'multiple_choice';
+                toggleQuestionType();
+            } else if (modalId === 'create-quiz-modal') {
+                document.getElementById('create-quiz-form').reset();
+            }
         }
 
         // Form submissions
@@ -643,14 +710,27 @@
         document.getElementById('add-question-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const formData = {
+            const questionType = document.getElementById('question-type').value;
+            let formData = {
                 questionText: document.getElementById('question-text').value,
-                optionA: document.getElementById('option-a').value,
-                optionB: document.getElementById('option-b').value,
-                optionC: document.getElementById('option-c').value,
-                optionD: document.getElementById('option-d').value,
-                correctAnswer: parseInt(document.getElementById('correct-answer').value)
+                question_type: questionType
             };
+            
+            if (questionType === 'essay') {
+                // For essay questions
+                formData.correct_answer = document.getElementById('essay-sample-answer').value;
+                formData.options = {
+                    instructions: document.getElementById('essay-instructions').value,
+                    maxWords: document.getElementById('essay-max-words').value || null
+                };
+            } else {
+                // For multiple choice questions
+                formData.optionA = document.getElementById('option-a').value;
+                formData.optionB = document.getElementById('option-b').value;
+                formData.optionC = document.getElementById('option-c').value;
+                formData.optionD = document.getElementById('option-d').value;
+                formData.correctAnswer = parseInt(document.getElementById('correct-answer').value);
+            }
             
             try {
                 const response = await fetch(`/api/admin/quiz/${currentQuizId}/question`, {
@@ -674,6 +754,41 @@
                 showMessage('Error adding question', 'error');
             }
         });
+
+        // Toggle question type fields
+        function toggleQuestionType() {
+            const questionType = document.getElementById('question-type').value;
+            const multipleChoiceOptions = document.getElementById('multiple-choice-options');
+            const essayOptions = document.getElementById('essay-options');
+            
+            if (questionType === 'essay') {
+                multipleChoiceOptions.style.display = 'none';
+                essayOptions.style.display = 'block';
+                
+                // Remove required attribute from multiple choice fields
+                document.getElementById('option-a').removeAttribute('required');
+                document.getElementById('option-b').removeAttribute('required');
+                document.getElementById('option-c').removeAttribute('required');
+                document.getElementById('option-d').removeAttribute('required');
+                document.getElementById('correct-answer').removeAttribute('required');
+                
+                // Add required attribute to essay fields
+                document.getElementById('essay-sample-answer').setAttribute('required', 'required');
+            } else {
+                multipleChoiceOptions.style.display = 'block';
+                essayOptions.style.display = 'none';
+                
+                // Add required attribute to multiple choice fields
+                document.getElementById('option-a').setAttribute('required', 'required');
+                document.getElementById('option-b').setAttribute('required', 'required');
+                document.getElementById('option-c').setAttribute('required', 'required');
+                document.getElementById('option-d').setAttribute('required', 'required');
+                document.getElementById('correct-answer').setAttribute('required', 'required');
+                
+                // Remove required attribute from essay fields
+                document.getElementById('essay-sample-answer').removeAttribute('required');
+            }
+        }
 
         // Helper functions
         function showMessage(text, type) {

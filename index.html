@@ -915,6 +915,17 @@
             background: rgba(102, 126, 234, 0.1);
         }
 
+        .quality-status.over-limit {
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
         /* Fullscreen mode */
         .textarea-fullscreen {
             position: fixed;
@@ -1299,9 +1310,14 @@
             if (question.type === 'written') {
                 // Written question with enhanced text editor
                 const existingAnswer = userAnswers[index] || '';
+                const instructions = question.options && question.options.instructions ? question.options.instructions : '';
+                const maxWords = question.options && question.options.maxWords ? parseInt(question.options.maxWords) : null;
+                
                 questionHTML = `
                     <div class="question-card written-question">
                         <div class="question-title">${question.question}</div>
+                        ${instructions ? `<div class="essay-instructions" style="margin: 12px 0; padding: 12px; background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 4px; color: #0c4a6e;"><strong>📝 Instructions:</strong> ${instructions}</div>` : ''}
+                        ${maxWords ? `<div class="word-limit-notice" style="margin: 8px 0; font-size: 0.875rem; color: #dc2626;"><strong>Word Limit:</strong> Maximum ${maxWords} words</div>` : ''}
                         <div class="written-question-tools">
                             <div class="writing-stats">
                                 <span id="char-count">0 characters</span>
@@ -1883,25 +1899,52 @@
             const charCount = text.length;
             const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
 
+            // Check if current question has word limit
+            const currentQuestion = currentQuiz.questions[currentQuestionIndex];
+            const maxWords = currentQuestion && currentQuestion.options && currentQuestion.options.maxWords 
+                ? parseInt(currentQuestion.options.maxWords) : null;
+
             // Update counters
             const charCountEl = document.getElementById('char-count');
             const wordCountEl = document.getElementById('word-count');
             
             if (charCountEl) charCountEl.textContent = `${charCount} characters`;
-            if (wordCountEl) wordCountEl.textContent = `${wordCount} words`;
+            
+            // Show word count with limit information
+            if (wordCountEl) {
+                let wordText = `${wordCount} words`;
+                if (maxWords) {
+                    wordText += ` / ${maxWords} max`;
+                    if (wordCount > maxWords) {
+                        wordCountEl.style.color = '#dc2626';
+                        wordCountEl.style.fontWeight = 'bold';
+                    } else if (wordCount > maxWords * 0.9) {
+                        wordCountEl.style.color = '#f59e0b';
+                        wordCountEl.style.fontWeight = 'bold';
+                    } else {
+                        wordCountEl.style.color = '';
+                        wordCountEl.style.fontWeight = '';
+                    }
+                }
+                wordCountEl.textContent = wordText;
+            }
 
             // Update answer quality
-            updateAnswerQuality(text, wordCount);
+            updateAnswerQuality(text, wordCount, maxWords);
         }
 
         // Update answer quality indicator
-        function updateAnswerQuality(text, wordCount) {
+        function updateAnswerQuality(text, wordCount, maxWords = null) {
             const qualityStatus = document.getElementById('quality-status');
             if (!qualityStatus) return;
 
             let quality, className;
             
-            if (wordCount === 0) {
+            // Check for word limit violations first
+            if (maxWords && wordCount > maxWords) {
+                quality = `Over limit! Remove ${wordCount - maxWords} words`;
+                className = 'over-limit';
+            } else if (wordCount === 0) {
                 quality = 'Getting started...';
                 className = '';
             } else if (wordCount < 20) {

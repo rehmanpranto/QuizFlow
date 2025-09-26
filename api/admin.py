@@ -204,23 +204,32 @@ class handler(BaseHTTPRequestHandler):
             question_text = (data.get('question_text') or data.get('questionText') or '').strip()
             question_type = data.get('question_type') or 'multiple_choice'
             
-            # Options can come as optionA-D + correctAnswer index
+            # Handle options based on question type
             options = data.get('options')
-            if not options:
-                optionA = data.get('optionA')
-                optionB = data.get('optionB')
-                optionC = data.get('optionC')
-                optionD = data.get('optionD')
-                options = [opt for opt in [optionA, optionB, optionC, optionD] if opt is not None]
             correct_answer = data.get('correct_answer')
-            if correct_answer is None and 'correctAnswer' in data:
-                idx = data.get('correctAnswer')
-                try:
-                    idx = int(idx)
-                    if isinstance(options, list) and 0 <= idx < len(options):
-                        correct_answer = options[idx]
-                except Exception:
-                    correct_answer = ''
+            
+            if question_type == 'essay':
+                # For essay questions, options contain instructions and maxWords
+                if not options:
+                    options = {}
+                # correct_answer should already be set for essay questions
+            else:
+                # For multiple choice questions - Options can come as optionA-D + correctAnswer index
+                if not options:
+                    optionA = data.get('optionA')
+                    optionB = data.get('optionB')
+                    optionC = data.get('optionC')
+                    optionD = data.get('optionD')
+                    options = [opt for opt in [optionA, optionB, optionC, optionD] if opt is not None]
+                    
+                if correct_answer is None and 'correctAnswer' in data:
+                    idx = data.get('correctAnswer')
+                    try:
+                        idx = int(idx)
+                        if isinstance(options, list) and 0 <= idx < len(options):
+                            correct_answer = options[idx]
+                    except Exception:
+                        correct_answer = ''
             
             if not all([quiz_id, question_text, correct_answer]):
                 self.send_json_response({'success': False, 'message': 'All fields are required'})
@@ -272,19 +281,33 @@ class handler(BaseHTTPRequestHandler):
                     opts = json.loads(q_options) if q_options else []
                 except Exception:
                     opts = []
-                # Map to admin UI shape
-                correct_index = -1
-                if isinstance(opts, list) and q_correct in opts:
-                    correct_index = opts.index(q_correct)
-                questions.append({
+                
+                question_data = {
                     'id': q_id,
                     'questionText': q_text,
-                    'optionA': opts[0] if len(opts) > 0 else '',
-                    'optionB': opts[1] if len(opts) > 1 else '',
-                    'optionC': opts[2] if len(opts) > 2 else '',
-                    'optionD': opts[3] if len(opts) > 3 else '',
-                    'correctAnswer': correct_index
-                })
+                    'questionType': q_type or 'multiple_choice',
+                    'correctAnswer': q_correct
+                }
+                
+                if q_type == 'essay':
+                    # For essay questions, options contains instructions and metadata
+                    question_data['options'] = opts if isinstance(opts, dict) else {}
+                    # correctAnswer contains the sample answer for essays
+                else:
+                    # For multiple choice questions - Map to admin UI shape
+                    correct_index = -1
+                    if isinstance(opts, list) and q_correct in opts:
+                        correct_index = opts.index(q_correct)
+                    question_data.update({
+                        'optionA': opts[0] if len(opts) > 0 else '',
+                        'optionB': opts[1] if len(opts) > 1 else '',
+                        'optionC': opts[2] if len(opts) > 2 else '',
+                        'optionD': opts[3] if len(opts) > 3 else '',
+                        'correctAnswer': correct_index,
+                        'options': opts
+                    })
+                
+                questions.append(question_data)
             
             self.send_json_response({'success': True, 'questions': questions})
             cursor.close()
