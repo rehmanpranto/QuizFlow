@@ -27,6 +27,15 @@ class handler(BaseHTTPRequestHandler):
         # Handle quiz submission - all POST requests go to submit
         self.handle_submit_quiz()
     
+    def _connect_db(self):
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            raise Exception('Database not configured')
+        kwargs = {}
+        if 'sslmode=' not in database_url.lower():
+            kwargs['sslmode'] = 'require'
+        return psycopg2.connect(database_url, **kwargs)
+
     def handle_get_questions(self):
         try:
             # Debug logging
@@ -38,7 +47,7 @@ class handler(BaseHTTPRequestHandler):
             
             print(f"DEBUG: Quiz ID requested: {quiz_id}")
             
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             # If no quiz_id provided, get the first available quiz
@@ -113,7 +122,7 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_get_quizzes(self):
         try:
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             cursor.execute("SELECT id, title, description FROM quizzes ORDER BY id")
@@ -151,7 +160,7 @@ class handler(BaseHTTPRequestHandler):
                 self.send_json_response({'success': False, 'message': 'Missing required data'})
                 return
             
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             # Fetch questions to align indexes and compute details

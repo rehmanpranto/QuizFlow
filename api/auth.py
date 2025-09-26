@@ -12,6 +12,15 @@ class handler(BaseHTTPRequestHandler):
         # Handle all POST requests to this auth endpoint
         self.handle_login()
     
+    def _connect_db(self):
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            raise Exception('Database not configured')
+        kwargs = {}
+        if 'sslmode=' not in database_url.lower():
+            kwargs['sslmode'] = 'require'
+        return psycopg2.connect(database_url, **kwargs)
+    
     def handle_login(self):
         try:
             content_length = int(self.headers['Content-Length'])
@@ -41,7 +50,7 @@ class handler(BaseHTTPRequestHandler):
             
             # Connect to database
             try:
-                conn = psycopg2.connect(database_url)
+                conn = self._connect_db()
                 cursor = conn.cursor()
             except Exception as db_error:
                 self.send_json_response({'success': False, 'message': f'Database connection failed: {str(db_error)}'})

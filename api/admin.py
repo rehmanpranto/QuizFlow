@@ -8,6 +8,15 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 class handler(BaseHTTPRequestHandler):
+    def _connect_db(self):
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            raise Exception('Database not configured')
+        kwargs = {}
+        if 'sslmode=' not in database_url.lower():
+            kwargs['sslmode'] = 'require'
+        return psycopg2.connect(database_url, **kwargs)
+
     def do_GET(self):
         path = urlparse(self.path).path
         
@@ -80,7 +89,7 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_get_quizzes(self):
         try:
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             cursor.execute("""
@@ -113,7 +122,7 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_get_students(self):
         try:
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             cursor.execute("""
@@ -160,7 +169,7 @@ class handler(BaseHTTPRequestHandler):
                 self.send_json_response({'success': False, 'message': 'Quiz title is required'})
                 return
             
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             cursor.execute("""
@@ -217,7 +226,7 @@ class handler(BaseHTTPRequestHandler):
                 self.send_json_response({'success': False, 'message': 'All fields are required'})
                 return
             
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             cursor.execute("""
@@ -243,7 +252,7 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_get_questions_for_quiz(self, quiz_id):
         try:
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             cursor.execute(
@@ -285,7 +294,7 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_delete_quiz(self, quiz_id):
         try:
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             # Delete questions first (foreign key constraint)
@@ -308,7 +317,7 @@ class handler(BaseHTTPRequestHandler):
     
     def handle_delete_question(self, question_id):
         try:
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             cursor.execute("DELETE FROM questions WHERE id = %s", (question_id,))
@@ -338,7 +347,7 @@ class handler(BaseHTTPRequestHandler):
                 self.send_json_response({'success': False, 'message': 'Subject and message are required'})
                 return
             
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            conn = self._connect_db()
             cursor = conn.cursor()
             
             # Get all student emails
