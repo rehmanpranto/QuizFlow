@@ -17,6 +17,10 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8fafc;
             min-height: 100vh;
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
             padding: 20px;
         }
 
@@ -126,6 +130,12 @@
 
         .btn-danger:hover {
             background: #dc2626;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            margin: 0;
         }
 
         .form-group {
@@ -554,6 +564,10 @@
                         <button class="btn ${quiz.isActive ? 'btn-danger' : ''}" onclick="toggleQuizStatus(${quiz.id}, ${quiz.isActive})">
                             ${quiz.isActive ? 'Deactivate' : 'Activate'}
                         </button>
+                        <button class="btn btn-danger" onclick="confirmDeleteQuiz(${quiz.id}, '${quiz.title.replace(/'/g, '\\\'')}')" 
+                                style="background: #dc2626; margin-left: 8px;" title="Delete Quiz">
+                            🗑️ Delete
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -615,7 +629,14 @@
             container.innerHTML = questions.map((q, index) => {
                 let content = `
                     <div class="question-item">
-                        <div class="question-text">${index + 1}. ${q.questionText}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div class="question-text" style="flex: 1;">${index + 1}. ${q.questionText}</div>
+                            <button class="btn btn-danger" onclick="confirmDeleteQuestion(${q.id}, ${index + 1})" 
+                                    style="background: #dc2626; padding: 4px 8px; font-size: 0.75rem; margin-left: 12px;" 
+                                    title="Delete Question">
+                                🗑️
+                            </button>
+                        </div>
                         <div style="margin: 8px 0; font-size: 0.875rem; color: #667eea; font-weight: 500;">
                             ${q.questionType === 'essay' ? '📝 Essay Question' : '🔘 Multiple Choice'}
                         </div>
@@ -787,6 +808,68 @@
                 
                 // Remove required attribute from essay fields
                 document.getElementById('essay-sample-answer').removeAttribute('required');
+            }
+        }
+
+        // Delete quiz functionality
+        function confirmDeleteQuiz(quizId, quizTitle) {
+            if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"?\n\nThis will permanently delete:\n• The quiz\n• All its questions\n• All student submissions\n\nThis action cannot be undone!`)) {
+                deleteQuiz(quizId);
+            }
+        }
+
+        async function deleteQuiz(quizId) {
+            try {
+                const response = await fetch(`/api/admin/quiz/${quizId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Quiz deleted successfully!', 'success');
+                    loadQuizzes(); // Reload the quiz list
+                    
+                    // If this quiz was selected in the questions tab, reset it
+                    const quizSelect = document.getElementById('quiz-select');
+                    if (quizSelect && quizSelect.value == quizId) {
+                        quizSelect.value = '';
+                        loadQuestions(); // This will show "Select a quiz" message
+                    }
+                } else {
+                    showMessage(data.message || 'Failed to delete quiz', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting quiz:', error);
+                showMessage('Error deleting quiz', 'error');
+            }
+        }
+
+        // Delete question functionality
+        function confirmDeleteQuestion(questionId, questionNumber) {
+            if (confirm(`Are you sure you want to delete Question ${questionNumber}?\n\nThis action cannot be undone!`)) {
+                deleteQuestion(questionId);
+            }
+        }
+
+        async function deleteQuestion(questionId) {
+            try {
+                const response = await fetch(`/api/admin/question/${questionId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Question deleted successfully!', 'success');
+                    loadQuestions(); // Reload the questions list
+                    loadQuizzes(); // Reload quizzes to update question counts
+                } else {
+                    showMessage(data.message || 'Failed to delete question', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting question:', error);
+                showMessage('Error deleting question', 'error');
             }
         }
 
