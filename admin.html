@@ -1458,6 +1458,9 @@
                 toggleEditQuestionType();
             } else if (modalId === 'ai-generate-modal') {
                 document.getElementById('ai-generate-form').reset();
+            } else if (modalId === 'ai-review-modal') {
+                // Clear generated questions container
+                document.getElementById('generated-questions-container').innerHTML = '';
             }
         }
 
@@ -1693,241 +1696,243 @@
                 return;
             }
             
-            // Set the question ID
-            document.getElementById('edit-question-id').value = questionId;
-            
-            // Fill the basic fields
-            document.getElementById('edit-question-text').value = question.questionText;
-            document.getElementById('edit-question-type').value = question.questionType || 'multiple_choice';
-            
-            // Fill fields based on question type
-            if (question.questionType === 'essay') {
-                const options = question.options || {};
-                document.getElementById('edit-essay-instructions').value = options.instructions || '';
-                document.getElementById('edit-essay-sample-answer').value = question.correctAnswer || '';
-                document.getElementById('edit-essay-max-words').value = options.maxWords || '';
-            } else {
-                // Multiple choice
-                document.getElementById('edit-option-a').value = question.optionA || '';
-                document.getElementById('edit-option-b').value = question.optionB || '';
-                document.getElementById('edit-option-c').value = question.optionC || '';
-                document.getElementById('edit-option-d').value = question.optionD || '';
-                document.getElementById('edit-correct-answer').value = question.correctAnswer !== undefined ? question.correctAnswer : '';
-            }
-            
-            // Toggle the appropriate fields
-            toggleEditQuestionType();
-            
-            // Show the modal
-            document.getElementById('edit-question-modal').style.display = 'block';
+            // Use the same function as regular edit
+            showEditQuestionModal(questionId, questionNumber);
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-            
-            // Reset forms when closing modals
-            if (modalId === 'add-question-modal') {
-                document.getElementById('add-question-form').reset();
-                // Reset to multiple choice and show appropriate fields
-                document.getElementById('question-type').value = 'multiple_choice';
-                toggleQuestionType();
-            } else if (modalId === 'create-quiz-modal') {
-                document.getElementById('create-quiz-form').reset();
-            } else if (modalId === 'edit-question-modal') {
-                document.getElementById('edit-question-form').reset();
-                // Reset to multiple choice and show appropriate fields
-                document.getElementById('edit-question-type').value = 'multiple_choice';
-                toggleEditQuestionType();
-            } else if (modalId === 'ai-generate-modal') {
-                document.getElementById('ai-generate-form').reset();
-            } else if (modalId === 'ai-review-modal') {
-                // Clear generated questions container
-                document.getElementById('generated-questions-container').innerHTML = '';
-            }
-        }
-
-        // Form submissions
-        document.getElementById('create-quiz-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                title: document.getElementById('quiz-title').value,
-                description: document.getElementById('quiz-description').value,
-                timeLimit: parseInt(document.getElementById('time-limit').value),
-                timePerQuestion: parseInt(document.getElementById('time-per-question').value)
-            };
-            
-            try {
-                const response = await fetch('/api/admin/quiz', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('Quiz created successfully!', 'success');
-                    closeModal('create-quiz-modal');
-                    loadQuizzes();
-                    this.reset();
-                } else {
-                    showMessage(data.message, 'error');
-                }
-            } catch (error) {
-                console.error('Error creating quiz:', error);
-                showMessage('Error creating quiz', 'error');
-            }
-        });
-
-        document.getElementById('add-question-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
+        // Toggle question type fields for adding questions
+        function toggleQuestionType() {
             const questionType = document.getElementById('question-type').value;
-            let formData = {
-                questionText: document.getElementById('question-text').value,
-                question_type: questionType
-            };
+            const multipleChoiceOptions = document.getElementById('multiple-choice-options');
+            const essayOptions = document.getElementById('essay-options');
             
             if (questionType === 'essay') {
-                // For essay questions
-                formData.correct_answer = document.getElementById('essay-sample-answer').value;
-                formData.options = {
-                    instructions: document.getElementById('essay-instructions').value,
-                    maxWords: document.getElementById('essay-max-words').value || null
-                };
+                multipleChoiceOptions.style.display = 'none';
+                essayOptions.style.display = 'block';
+                
+                // Remove required attribute from multiple choice fields
+                document.getElementById('option-a').removeAttribute('required');
+                document.getElementById('option-b').removeAttribute('required');
+                document.getElementById('option-c').removeAttribute('required');
+                document.getElementById('option-d').removeAttribute('required');
+                document.getElementById('correct-answer').removeAttribute('required');
+                
+                // Add required attribute to essay fields
+                document.getElementById('essay-sample-answer').setAttribute('required', 'required');
             } else {
-                // For multiple choice questions
-                formData.optionA = document.getElementById('option-a').value;
-                formData.optionB = document.getElementById('option-b').value;
-                formData.optionC = document.getElementById('option-c').value;
-                formData.optionD = document.getElementById('option-d').value;
-                formData.correctAnswer = parseInt(document.getElementById('correct-answer').value);
+                multipleChoiceOptions.style.display = 'block';
+                essayOptions.style.display = 'none';
+                
+                // Add required attribute to multiple choice fields
+                document.getElementById('option-a').setAttribute('required', 'required');
+                document.getElementById('option-b').setAttribute('required', 'required');
+                document.getElementById('option-c').setAttribute('required', 'required');
+                document.getElementById('option-d').setAttribute('required', 'required');
+                document.getElementById('correct-answer').setAttribute('required', 'required');
+                
+                // Remove required attribute from essay fields
+                document.getElementById('essay-sample-answer').removeAttribute('required');
             }
+        }
+
+        // Toggle edit question type fields
+        function toggleEditQuestionType() {
+            const questionType = document.getElementById('edit-question-type').value;
+            const multipleChoiceOptions = document.getElementById('edit-multiple-choice-options');
+            const essayOptions = document.getElementById('edit-essay-options');
             
+            if (questionType === 'essay') {
+                multipleChoiceOptions.style.display = 'none';
+                essayOptions.style.display = 'block';
+                
+                // Remove required attribute from multiple choice fields
+                document.getElementById('edit-option-a').removeAttribute('required');
+                document.getElementById('edit-option-b').removeAttribute('required');
+                document.getElementById('edit-option-c').removeAttribute('required');
+                document.getElementById('edit-option-d').removeAttribute('required');
+                document.getElementById('edit-correct-answer').removeAttribute('required');
+                
+                // Add required attribute to essay fields
+                document.getElementById('edit-essay-sample-answer').setAttribute('required', 'required');
+            } else {
+                multipleChoiceOptions.style.display = 'block';
+                essayOptions.style.display = 'none';
+                
+                // Add required attribute to multiple choice fields
+                document.getElementById('edit-option-a').setAttribute('required', 'required');
+                document.getElementById('edit-option-b').setAttribute('required', 'required');
+                document.getElementById('edit-option-c').setAttribute('required', 'required');
+                document.getElementById('edit-option-d').setAttribute('required', 'required');
+                document.getElementById('edit-correct-answer').setAttribute('required', 'required');
+                
+                // Remove required attribute from essay fields
+                document.getElementById('edit-essay-sample-answer').removeAttribute('required');
+            }
+        }
+
+        // Delete quiz functionality
+        function confirmDeleteQuiz(quizId, quizTitle) {
+            if (confirm(`Are you sure you want to delete the quiz "${quizTitle}"?\n\nThis will permanently delete:\n• The quiz\n• All its questions\n• All student submissions\n\nThis action cannot be undone!`)) {
+                deleteQuiz(quizId);
+            }
+        }
+
+        async function deleteQuiz(quizId) {
             try {
-                const response = await fetch(`/api/admin/quiz/${currentQuizId}/question`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
+                const response = await fetch(`/api/admin/quiz/${quizId}`, {
+                    method: 'DELETE'
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage('Question added successfully!', 'success');
-                    closeModal('add-question-modal');
-                    loadQuestions();
-                    this.reset();
+                    showMessage('Quiz deleted successfully!', 'success');
+                    loadQuizzes(); // Reload the quiz list
+                    
+                    // If this quiz was selected in the questions tab, reset it
+                    const quizSelect = document.getElementById('quiz-select');
+                    if (quizSelect && quizSelect.value == quizId) {
+                        quizSelect.value = '';
+                        loadQuestions(); // This will show "Select a quiz" message
+                    }
                 } else {
-                    showMessage(data.message, 'error');
+                    showMessage(data.message || 'Failed to delete quiz', 'error');
                 }
             } catch (error) {
-                console.error('Error adding question:', error);
-                showMessage('Error adding question', 'error');
+                console.error('Error deleting quiz:', error);
+                showMessage('Error deleting quiz', 'error');
             }
-        });
+        }
 
-        document.getElementById('edit-question-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const questionId = document.getElementById('edit-question-id').value;
-            const questionType = document.getElementById('edit-question-type').value;
-            let formData = {
-                questionText: document.getElementById('edit-question-text').value,
-                question_type: questionType
-            };
-            
-            if (questionType === 'essay') {
-                // For essay questions
-                formData.correct_answer = document.getElementById('edit-essay-sample-answer').value;
-                formData.options = {
-                    instructions: document.getElementById('edit-essay-instructions').value,
-                    maxWords: document.getElementById('edit-essay-max-words').value || null
-                };
-            } else {
-                // For multiple choice questions
-                formData.optionA = document.getElementById('edit-option-a').value;
-                formData.optionB = document.getElementById('edit-option-b').value;
-                formData.optionC = document.getElementById('edit-option-c').value;
-                formData.optionD = document.getElementById('edit-option-d').value;
-                formData.correctAnswer = parseInt(document.getElementById('edit-correct-answer').value);
+        // Delete question functionality
+        function confirmDeleteQuestion(questionId, questionNumber) {
+            if (confirm(`Are you sure you want to delete Question ${questionNumber}?\n\nThis action cannot be undone!`)) {
+                deleteQuestion(questionId);
             }
-            
+        }
+
+        async function deleteQuestion(questionId) {
             try {
                 const response = await fetch(`/api/admin/question/${questionId}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
+                    method: 'DELETE'
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    showMessage('Question updated successfully!', 'success');
-                    closeModal('edit-question-modal');
-                    loadQuestions();
-                    this.reset();
+                    showMessage('Question deleted successfully!', 'success');
+                    loadQuestions(); // Reload the questions list
+                    loadQuizzes(); // Reload quizzes to update question counts
                 } else {
-                    showMessage(data.message, 'error');
+                    showMessage(data.message || 'Failed to delete question', 'error');
                 }
             } catch (error) {
-                console.error('Error updating question:', error);
-                showMessage('Error updating question', 'error');
+                console.error('Error deleting question:', error);
+                showMessage('Error deleting question', 'error');
             }
-        });
+        }
 
-        document.getElementById('ai-generate-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // Helper functions
+        function showMessage(text, type) {
+            // Remove existing message
+            const existingMessage = document.querySelector('.message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
             
-            const formData = {
-                topic: document.getElementById('ai-topic').value,
-                difficulty: document.getElementById('ai-difficulty').value,
-                questionType: document.getElementById('ai-question-type').value,
-                numQuestions: parseInt(document.getElementById('ai-num-questions').value),
-                context: document.getElementById('ai-context').value
-            };
+            // Create new message
+            const message = document.createElement('div');
+            message.className = `message message-${type}`;
+            message.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                min-width: 300px;
+                text-align: center;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            // Set background color based on type
+            if (type === 'success') {
+                message.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+            } else if (type === 'error') {
+                message.style.background = 'linear-gradient(135deg, #dc3545, #e91e63)';
+            } else {
+                message.style.background = 'linear-gradient(135deg, #007bff, #6f42c1)';
+            }
+            
+            message.textContent = text;
+            document.body.appendChild(message);
+            
+            // Animate in
+            setTimeout(() => {
+                message.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                message.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        message.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        function viewQuestions(quizId, quizTitle) {
+            switchTab('questions');
+            document.getElementById('quiz-select').value = quizId;
+            loadQuestions();
+        }
+
+        // Toggle quiz active/inactive status
+        async function toggleQuizStatus(quizId, currentStatus) {
+            const action = currentStatus ? 'deactivate' : 'activate';
+            
+            if (!confirm(`Are you sure you want to ${action} this quiz?`)) {
+                return;
+            }
             
             try {
-                const response = await fetch('/api/admin/ai/generate-questions', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
-                });
+                // For now, just show a message since we don't have this API endpoint yet
+                showMessage(`Quiz ${action}d successfully! (Feature coming soon)`, 'success');
                 
-                const data = await response.json();
+                // Reload quizzes to reflect changes
+                setTimeout(() => {
+                    loadQuizzes();
+                }, 1000);
                 
-                if (data.success) {
-                    showMessage('Questions generated successfully!', 'success');
-                    closeModal('ai-generate-modal');
-                    showAIGeneratedQuestions(data.questions);
-                } else {
-                    showMessage(data.message, 'error');
-                }
             } catch (error) {
-                console.error('Error generating questions:', error);
-                showMessage('Error generating questions', 'error');
+                console.error('Error toggling quiz status:', error);
+                showMessage('Error updating quiz status', 'error');
             }
+        }
+
+        // Add selected AI questions function
+        function addSelectedQuestions() {
+            showMessage('Add selected questions feature coming soon!', 'success');
+            closeModal('ai-review-modal');
+        }
+
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
         });
 
-        // Show AI generated questions in review modal
-        function showAIGeneratedQuestions(questions) {
-            const container = document.getElementById('generated-questions-container');
-            container.innerHTML = '';
-            
-            questions.forEach((q, index) => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'question-item';
-                questionDiv.style.marginBottom = '16px';
-                
-                let content = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                        <div class="question-text" style="flex: 1; color: var(--white);">${index + 1}. ${q.questionText}</div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary" onclick="editAIGeneratedQuestion(${q.id}, ${index + 1})" 
-                                    style="background: #667eea; padding: 4px 8px; font-size: 0.75rem;" 
-                                    title="Edit Question">
-                                ✏️
-                            </button>
-                            <button class="btn btn-danger" onclick="confirmDeleteQuestion(${q.id}, ${index + 1})" 
-                                    style="background: #dc2626;
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
