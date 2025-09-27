@@ -806,7 +806,7 @@
                 // Simulate quantum computation delay
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 
-                const response = await fetch('/api/auth', {
+                const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -845,7 +845,34 @@
             } catch (error) {
                 console.error('Quantum Error:', error);
                 
-                // Error animation
+                // Check if it's a network error (server not running)
+                if (error.message.includes('fetch') || error.name === 'TypeError') {
+                    // Fallback: Allow login without backend for demo purposes
+                    console.log('🔧 Backend not available, using demo mode');
+                    
+                    // Simple validation for demo
+                    if (studentName.length >= 2 && quizCode.length >= 3) {
+                        buttonText.textContent = 'Demo Mode Activated!';
+                        loginBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                        
+                        showNotification('⚠️ Demo Mode: Quantum portal bypassed! Proceeding with simulation...', 'warning');
+                        
+                        // Store session data
+                        sessionStorage.setItem('studentName', studentName);
+                        sessionStorage.setItem('quizCode', quizCode);
+                        sessionStorage.setItem('authToken', 'demo-mode');
+                        sessionStorage.setItem('demoMode', 'true');
+                        
+                        // Redirect to quiz
+                        setTimeout(() => {
+                            window.location.href = '/test.html';
+                        }, 2000);
+                        
+                        return; // Exit the catch block
+                    }
+                }
+                
+                // Error animation for actual validation errors
                 buttonText.textContent = 'Quantum Error Detected';
                 loginBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
                 

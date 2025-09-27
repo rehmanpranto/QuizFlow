@@ -795,10 +795,58 @@
                 document.getElementById('quizCode').textContent = quizData.quizCode;
 
                 // Load quiz data
-                const response = await fetch(`/api/quiz/${quizData.quizCode}`);
-                if (!response.ok) throw new Error('Failed to load quiz');
+                const isDemo = sessionStorage.getItem('demoMode') === 'true';
                 
-                const data = await response.json();
+                let data;
+                if (isDemo) {
+                    // Demo mode - use mock data
+                    data = {
+                        title: 'Demo Quiz - O Level Commerce',
+                        time_limit: 15, // 15 minutes for demo
+                        questions: [
+                            {
+                                id: 1,
+                                question: "What is the primary purpose of commerce?",
+                                type: "multiple_choice",
+                                option_a: "To make profit only",
+                                option_b: "To facilitate trade and exchange of goods and services",
+                                option_c: "To employ people",
+                                option_d: "To compete with other businesses",
+                                correct_answer: "B"
+                            },
+                            {
+                                id: 2,
+                                question: "Which of the following is NOT a factor of production?",
+                                type: "multiple_choice",
+                                option_a: "Land",
+                                option_b: "Labor",
+                                option_c: "Capital",
+                                option_d: "Profit"
+                            },
+                            {
+                                id: 3,
+                                question: "Explain the concept of supply and demand in commerce.",
+                                type: "essay"
+                            },
+                            {
+                                id: 4,
+                                question: "What is the role of advertising in commerce?",
+                                type: "multiple_choice",
+                                option_a: "To inform customers about products",
+                                option_b: "To persuade customers to buy",
+                                option_c: "To create brand awareness",
+                                option_d: "All of the above"
+                            }
+                        ]
+                    };
+                    console.log('🎭 Demo mode: Using mock quiz data');
+                } else {
+                    // Normal mode - fetch from server
+                    const response = await fetch(`/api/quiz/${quizData.quizCode}`);
+                    if (!response.ok) throw new Error('Failed to load quiz');
+                    data = await response.json();
+                }
+                
                 quizData.questions = data.questions || [];
                 quizData.quizTitle = data.title || 'Neural Quiz';
                 quizData.timeRemaining = (data.time_limit || 30) * 60; // Convert to seconds
@@ -816,7 +864,31 @@
                 updateProgress();
                 
                 hideLoading();
-                showNotification('🧠 Neural interface activated! Quiz loaded successfully.', 'success');
+                const mode = isDemo ? ' (Demo Mode)' : '';
+                showNotification(`🧠 Neural interface activated! Quiz loaded successfully.${mode}`, 'success');
+                
+                // Add demo mode indicator if in demo
+                if (isDemo) {
+                    const demoIndicator = document.createElement('div');
+                    demoIndicator.style.cssText = `
+                        position: fixed;
+                        top: 10px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                        color: white;
+                        padding: 0.5rem 1rem;
+                        border-radius: 20px;
+                        font-family: 'JetBrains Mono', monospace;
+                        font-weight: 600;
+                        font-size: 0.8rem;
+                        z-index: 10001;
+                        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+                        animation: pulse 2s infinite;
+                    `;
+                    demoIndicator.innerHTML = '🎭 DEMO MODE - Server Offline';
+                    document.body.appendChild(demoIndicator);
+                }
                 
             } catch (error) {
                 console.error('Quiz initialization error:', error);
@@ -997,32 +1069,64 @@
             
             try {
                 const timeSpent = Math.floor((Date.now() - quizData.startTime) / 1000);
+                const isDemo = sessionStorage.getItem('demoMode') === 'true';
                 
-                const response = await fetch('/api/submit-quiz', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        student_name: quizData.studentName,
-                        quiz_code: quizData.quizCode,
-                        answers: quizData.answers,
+                let result;
+                if (isDemo) {
+                    // Demo mode - calculate score locally
+                    const totalQuestions = quizData.questions.length;
+                    let correctAnswers = 0;
+                    
+                    // Simple scoring for demo (only for multiple choice questions with known answers)
+                    Object.keys(quizData.answers).forEach(questionIndex => {
+                        const question = quizData.questions[questionIndex];
+                        if (question && question.correct_answer) {
+                            if (quizData.answers[questionIndex] === question.correct_answer) {
+                                correctAnswers++;
+                            }
+                        }
+                    });
+                    
+                    // For demo, assume 75% score if no correct answers found
+                    const score = totalQuestions > 0 ? correctAnswers / totalQuestions : 0.75;
+                    
+                    result = {
+                        score: score,
                         time_spent: timeSpent,
-                        is_timeout: isTimeout
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    displayResults(result);
-                    if (isTimeout) {
-                        showNotification('⏰ Time expired! Quiz submitted automatically.', 'warning');
-                    } else {
-                        showNotification('✅ Quiz submitted successfully!', 'success');
-                    }
+                        correct_answers: correctAnswers,
+                        total_questions: totalQuestions
+                    };
+                    
+                    console.log('🎭 Demo mode: Local scoring completed');
                 } else {
-                    throw new Error(result.message || 'Submission failed');
+                    // Normal mode - submit to server
+                    const response = await fetch('/api/submit-quiz', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            student_name: quizData.studentName,
+                            quiz_code: quizData.quizCode,
+                            answers: quizData.answers,
+                            time_spent: timeSpent,
+                            is_timeout: isTimeout
+                        })
+                    });
+                    
+                    result = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(result.message || 'Submission failed');
+                    }
+                }
+                
+                displayResults(result);
+                if (isTimeout) {
+                    showNotification('⏰ Time expired! Quiz submitted automatically.', 'warning');
+                } else {
+                    const mode = isDemo ? ' (Demo Mode)' : '';
+                    showNotification(`✅ Quiz submitted successfully!${mode}`, 'success');
                 }
                 
             } catch (error) {
