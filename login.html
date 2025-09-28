@@ -632,6 +632,17 @@
             </div>
 
             <div class="form-group">
+                <label for="student-email">
+                    <i class="fas fa-envelope"></i> Neural Interface Email
+                </label>
+                <div class="input-wrapper">
+                    <input type="email" id="student-email" name="student-email" 
+                           placeholder="Enter your email address" required autocomplete="email">
+                    <i class="input-icon fas fa-envelope"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label for="quiz-code">
                     <i class="fas fa-key"></i> Quantum Access Code
                 </label>
@@ -788,9 +799,10 @@
             const buttonIcon = loginBtn.querySelector('i');
             
             const studentName = document.getElementById('student-name').value.trim();
+            const studentEmail = document.getElementById('student-email').value.trim();
             const quizCode = document.getElementById('quiz-code').value.trim();
             
-            if (!studentName || !quizCode) {
+            if (!studentName || !studentEmail || !quizCode) {
                 showNotification('⚠️ Please fill in all quantum fields!', 'warning');
                 return;
             }
@@ -812,8 +824,9 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        student_name: studentName,
-                        quiz_code: quizCode
+                        name: studentName,
+                        email: studentEmail,
+                        code: quizCode
                     })
                 });
                 
@@ -828,6 +841,7 @@
                     
                     // Store session data
                     sessionStorage.setItem('studentName', studentName);
+                    sessionStorage.setItem('studentEmail', studentEmail);
                     sessionStorage.setItem('quizCode', quizCode);
                     sessionStorage.setItem('authToken', data.token || 'quantum-authorized');
                     
@@ -859,6 +873,7 @@
                         
                         // Store session data
                         sessionStorage.setItem('studentName', studentName);
+                        sessionStorage.setItem('studentEmail', studentEmail);
                         sessionStorage.setItem('quizCode', quizCode);
                         sessionStorage.setItem('authToken', 'demo-mode');
                         sessionStorage.setItem('demoMode', 'true');

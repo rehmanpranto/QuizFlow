@@ -145,13 +145,17 @@ def admin_login():
     if not data:
         return jsonify({"success": False, "message": "Request body must be JSON."}), 400
     
+    username = data.get('username', '')
     password = data.get('password', '')
+    
+    # Admin credentials
+    admin_username = os.getenv('ADMIN_USERNAME', 'admin')
     admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
     
-    if password == admin_password:
+    if username == admin_username and password == admin_password:
         return jsonify({'success': True, 'message': 'Admin login successful'})
     else:
-        return jsonify({'success': False, 'message': 'Invalid admin password'}), 401
+        return jsonify({'success': False, 'message': 'Invalid admin credentials'}), 401
 
 @app.route('/api/admin/quiz/<int:quiz_id>/questions', methods=['GET'])
 def get_quiz_questions(quiz_id):
