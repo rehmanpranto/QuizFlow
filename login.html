@@ -3,31 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizFlow - Quantum Learning Portal 🚀</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <title>QuizFlow - Student Login</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #8b5cf6;
-            --accent: #06b6d4;
+            --primary: #ffffff;
+            --primary-hover: #f5f5f5;
+            --secondary: #666666;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --dark: #0a0f1c;
-            --dark-light: #1e1b4b;
-            --glass-bg: rgba(10, 15, 28, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.15);
+            --dark: #000000;
+            --dark-light: #1a1a1a;
+            --card-bg: #0f0f0f;
+            --border: #333333;
             --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
-            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
-            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --shadow-primary: 0 25px 50px -12px rgba(99, 102, 241, 0.35);
-            --shadow-glow: 0 0 60px rgba(99, 102, 241, 0.4);
-            --shadow-intense: 0 35px 70px -12px rgba(0, 0, 0, 0.6);
+            --text-secondary: #999999;
+            --input-bg: #1a1a1a;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
         * {
@@ -44,369 +38,91 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            position: relative;
-            overflow: hidden;
+            margin: 0;
             color: var(--text-primary);
         }
 
-        /* Animated Cosmic Background */
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -2;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(ellipse at top, rgba(99, 102, 241, 0.15) 0%, transparent 70%),
-                radial-gradient(ellipse at bottom left, rgba(139, 92, 246, 0.2) 0%, transparent 70%),
-                radial-gradient(ellipse at bottom right, rgba(6, 182, 212, 0.15) 0%, transparent 70%),
-                radial-gradient(ellipse at center, rgba(245, 87, 108, 0.1) 0%, transparent 70%);
-            animation: cosmicShift 12s ease-in-out infinite alternate;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="cosmic-grid" width="80" height="80" patternUnits="userSpaceOnUse"><circle cx="40" cy="40" r="1" fill="%23a1a1aa" opacity="0.2"/><circle cx="20" cy="20" r="0.5" fill="%236366f1" opacity="0.3"/><circle cx="60" cy="60" r="0.5" fill="%238b5cf6" opacity="0.3"/></pattern></defs><rect width="100%" height="100%" fill="url(%23cosmic-grid)"/></svg>');
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        @keyframes cosmicShift {
-            0% { 
-                filter: hue-rotate(0deg) brightness(1);
-                transform: scale(1) rotate(0deg);
-            }
-            50% {
-                filter: hue-rotate(180deg) brightness(1.2);
-                transform: scale(1.1) rotate(1deg);
-            }
-            100% { 
-                filter: hue-rotate(360deg) brightness(1);
-                transform: scale(1) rotate(0deg);
-            }
-        }
-
-        /* Floating Orbs */
-        .floating-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(1px);
-            animation: floatOrb 8s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        .orb-1 {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
-            top: 10%;
-            left: 20%;
-            animation-delay: 0s;
-        }
-
-        .orb-2 {
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
-            top: 70%;
-            right: 15%;
-            animation-delay: 3s;
-        }
-
-        .orb-3 {
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%);
-            bottom: 20%;
-            left: 10%;
-            animation-delay: 6s;
-        }
-
-        @keyframes floatOrb {
-            0%, 100% { 
-                transform: translateY(0px) translateX(0px) scale(1);
-                opacity: 0.3;
-            }
-            33% { 
-                transform: translateY(-30px) translateX(20px) scale(1.1);
-                opacity: 0.5;
-            }
-            66% { 
-                transform: translateY(20px) translateX(-15px) scale(0.9);
-                opacity: 0.4;
-            }
-        }
-
         .login-container {
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--glass-border);
-            border-radius: 32px;
-            padding: 4rem 3rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
             width: 100%;
-            max-width: 500px;
-            box-shadow: var(--shadow-intense);
-            position: relative;
-            overflow: hidden;
-            animation: slideInUp 0.8s ease-out;
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0px) scale(1);
-            }
-        }
-
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: var(--gradient-primary);
-            border-radius: 32px 32px 0 0;
-        }
-
-        .login-container::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.8s ease;
-        }
-
-        .login-container:hover::after {
-            left: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
         }
 
         .login-header {
             text-align: center;
-            margin-bottom: 3rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .quantum-logo {
-            width: 100px;
-            height: 100px;
-            background: var(--gradient-primary);
-            border-radius: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 2.5rem;
-            color: white;
-            box-shadow: var(--shadow-primary);
-            animation: quantumPulse 3s ease-in-out infinite;
-            position: relative;
-        }
-
-        .quantum-logo::before {
-            content: '';
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            border: 2px solid rgba(99, 102, 241, 0.3);
-            border-radius: 30px;
-            animation: quantumRotate 4s linear infinite;
-        }
-
-        .quantum-logo::after {
-            content: '';
-            position: absolute;
-            width: 140px;
-            height: 140px;
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            border-radius: 35px;
-            animation: quantumRotate 6s linear infinite reverse;
-        }
-
-        @keyframes quantumPulse {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: var(--shadow-primary);
-            }
-            50% { 
-                transform: scale(1.05);
-                box-shadow: var(--shadow-glow);
-            }
-        }
-
-        @keyframes quantumRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            margin-bottom: 2rem;
         }
 
         .login-header h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
             margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
         }
 
         .login-header .subtitle {
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 400;
-            margin-bottom: 0.5rem;
-        }
-
-        .quantum-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            padding: 0.4rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--primary);
-            animation: badgePulse 2s infinite;
-        }
-
-        @keyframes badgePulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
         }
 
         .form-group {
-            margin-bottom: 2rem;
-            position: relative;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.8rem;
-            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
             color: var(--text-primary);
             font-size: 0.9rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .input-wrapper {
-            position: relative;
         }
 
         .form-group input {
             width: 100%;
-            padding: 1.2rem 1.5rem 1.2rem 3.5rem;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid var(--glass-border);
-            border-radius: 16px;
+            padding: 0.75rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
             font-size: 1rem;
             color: var(--text-primary);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
+            transition: border-color 0.2s ease;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-2px);
         }
 
         .form-group input::placeholder {
             color: var(--text-secondary);
-            font-weight: 400;
         }
 
-        .input-icon {
-            position: absolute;
-            left: 1.2rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus + .input-icon {
-            color: var(--primary);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .quantum-button {
+        .login-button {
             width: 100%;
-            padding: 1.2rem;
-            background: var(--gradient-primary);
+            padding: 0.75rem;
+            background: var(--primary);
+            color: var(--dark);
             border: none;
-            border-radius: 16px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: white;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-primary);
-            margin-bottom: 2rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            transition: background-color 0.2s ease;
+            margin-bottom: 1.5rem;
         }
 
-        .quantum-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.6s ease;
+        .login-button:hover {
+            background: var(--primary-hover);
         }
 
-        .quantum-button:hover::before {
-            left: 100%;
-        }
-
-        .quantum-button:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .quantum-button:active {
-            transform: translateY(-1px);
-        }
-
-        .quantum-button:disabled {
+        .login-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
         .button-content {
@@ -435,40 +151,34 @@
 
         .back-link {
             text-align: center;
-            margin-top: 2rem;
         }
 
         .back-link a {
             color: var(--text-secondary);
             text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
         }
 
         .back-link a:hover {
             color: var(--primary);
-            transform: translateX(-5px);
         }
 
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
             color: var(--text-primary);
-            font-weight: 500;
-            box-shadow: var(--shadow-primary);
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
             transform: translateX(400px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s ease;
             z-index: 1000;
-            max-width: 350px;
+            max-width: 300px;
         }
 
         .notification.show {
@@ -476,261 +186,94 @@
         }
 
         .notification.success {
-            border-left: 4px solid var(--success);
+            border-left: 3px solid var(--success);
         }
 
         .notification.error {
-            border-left: 4px solid var(--danger);
+            border-left: 3px solid var(--danger);
         }
 
         .notification.warning {
-            border-left: 4px solid var(--warning);
+            border-left: 3px solid var(--warning);
         }
 
-        .notification-content {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
 
-        .notification-icon {
-            font-size: 1.2rem;
-        }
-
-        /* Holographic effect */
-        .holographic {
-            position: relative;
-        }
-
-        .holographic::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-            transform: translateX(-100%);
-            transition: transform 0.8s ease;
-        }
-
-        .holographic:hover::before {
-            transform: translateX(100%);
-        }
 
         /* Responsive Design */
         @media (max-width: 768px) {
             .login-container {
-                padding: 2.5rem 2rem;
+                padding: 1.5rem;
                 margin: 1rem;
             }
             
-            .quantum-logo {
-                width: 80px;
-                height: 80px;
-                font-size: 2rem;
-            }
-            
             .login-header h1 {
-                font-size: 1.8rem;
-            }
-            
-            .floating-orb {
-                display: none;
+                font-size: 1.5rem;
             }
         }
 
-        /* Advanced Animations */
-        .pulse-ring {
-            animation: pulseRing 2s infinite;
+        .loading-spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 0, 0, 0.3);
+            border-top: 2px solid var(--dark);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
         }
 
-        @keyframes pulseRing {
-            0% {
-                transform: scale(0.33);
-            }
-            80%, 100% {
-                opacity: 0;
-            }
-        }
-
-        /* Matrix Rain Effect (Optional) */
-        .matrix-rain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-            opacity: 0.1;
-        }
-
-        /* Cyberpunk Glow */
-        .cyber-glow {
-            position: relative;
-        }
-
-        .cyber-glow::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: var(--gradient-primary);
-            border-radius: inherit;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .cyber-glow:hover::after {
-            opacity: 0.7;
-            animation: cyberPulse 1s ease-in-out infinite alternate;
-        }
-
-        @keyframes cyberPulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.02); }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <!-- Particles Background -->
-    <div id="particles-js"></div>
-    
-    <!-- Floating Orbs -->
-    <div class="floating-orb orb-1"></div>
-    <div class="floating-orb orb-2"></div>
-    <div class="floating-orb orb-3"></div>
-
     <!-- Login Container -->
-    <div class="login-container holographic cyber-glow">
+    <div class="login-container">
         <div class="login-header">
-            <div class="quantum-logo">
-                <i class="fas fa-atom"></i>
-            </div>
-            <h1>QuizFlow Portal</h1>
-            <p class="subtitle">Enter the Quantum Learning Dimension</p>
-            <div class="quantum-badge">
-                <i class="fas fa-rocket"></i>
-                AI-Powered Experience
-            </div>
+            <h1>QuizFlow</h1>
+            <p class="subtitle">Student Login</p>
         </div>
 
         <form id="login-form">
             <div class="form-group">
-                <label for="student-name">
-                    <i class="fas fa-user"></i> Student Identity
-                </label>
-                <div class="input-wrapper">
-                    <input type="text" id="student-name" name="student-name" 
-                           placeholder="Enter your full name" required autocomplete="name">
-                    <i class="input-icon fas fa-user"></i>
-                </div>
+                <label for="student-name">Name</label>
+                <input type="text" id="student-name" name="student-name" 
+                       placeholder="Enter your full name" required autocomplete="name">
             </div>
 
             <div class="form-group">
-                <label for="student-email">
-                    <i class="fas fa-envelope"></i> Neural Interface Email
-                </label>
-                <div class="input-wrapper">
-                    <input type="email" id="student-email" name="student-email" 
-                           placeholder="Enter your email address" required autocomplete="email">
-                    <i class="input-icon fas fa-envelope"></i>
-                </div>
+                <label for="student-email">Email</label>
+                <input type="email" id="student-email" name="student-email" 
+                       placeholder="Enter your email address" required autocomplete="email">
             </div>
 
             <div class="form-group">
-                <label for="quiz-code">
-                    <i class="fas fa-key"></i> Quantum Access Code
-                </label>
-                <div class="input-wrapper">
-                    <input type="text" id="quiz-code" name="quiz-code" 
-                           placeholder="Enter your quiz access code" required>
-                    <i class="input-icon fas fa-key"></i>
-                </div>
+                <label for="quiz-code">Access Code</label>
+                <input type="text" id="quiz-code" name="quiz-code" 
+                       placeholder="Enter your quiz access code" required>
             </div>
 
-            <button type="submit" class="quantum-button" id="login-btn">
+            <button type="submit" class="login-button" id="login-btn">
                 <div class="button-content">
                     <div class="loading-spinner"></div>
-                    <i class="fas fa-rocket"></i>
-                    <span>Initialize Quantum Learning</span>
+                    <span>Login</span>
                 </div>
             </button>
         </form>
 
         <div class="back-link">
-            <a href="/index.html">
-                <i class="fas fa-arrow-left"></i>
-                Return to Launch Pad
-            </a>
+            <a href="/index.html">← Back to Home</a>
         </div>
     </div>
 
     <!-- Notification System -->
     <div class="notification" id="notification">
-        <div class="notification-content">
-            <i class="notification-icon"></i>
-            <span class="notification-text"></span>
-        </div>
+        <span class="notification-text"></span>
     </div>
 
     <script>
-        // Initialize Particles.js with cosmic theme
-        particlesJS('particles-js', {
-            particles: {
-                number: { value: 120, density: { enable: true, value_area: 800 } },
-                color: { value: ["#6366f1", "#8b5cf6", "#06b6d4"] },
-                shape: { 
-                    type: ["circle", "triangle"],
-                    stroke: { width: 0.5, color: "#6366f1" }
-                },
-                opacity: { 
-                    value: 0.6, 
-                    random: true,
-                    anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false }
-                },
-                size: { 
-                    value: 3, 
-                    random: true,
-                    anim: { enable: true, speed: 2, size_min: 0.1, sync: false }
-                },
-                line_linked: { 
-                    enable: true, 
-                    distance: 150, 
-                    color: "#6366f1", 
-                    opacity: 0.3, 
-                    width: 1 
-                },
-                move: { 
-                    enable: true, 
-                    speed: 3, 
-                    direction: "none", 
-                    random: true, 
-                    straight: false, 
-                    out_mode: "out", 
-                    bounce: false,
-                    attract: { enable: true, rotateX: 600, rotateY: 1200 }
-                }
-            },
-            interactivity: {
-                detect_on: "canvas",
-                events: { 
-                    onhover: { enable: true, mode: ["repulse", "bubble"] }, 
-                    onclick: { enable: true, mode: "push" }, 
-                    resize: true 
-                },
-                modes: { 
-                    repulse: { distance: 100, duration: 0.4 },
-                    bubble: { distance: 200, size: 6, duration: 2, opacity: 0.8, speed: 3 },
-                    push: { particles_nb: 4 }
-                }
-            },
-            retina_detect: true
-        });
 
         // Pre-fill form if coming from index page
         window.addEventListener('load', () => {
@@ -739,44 +282,17 @@
             
             if (studentName) {
                 document.getElementById('student-name').value = studentName;
-                // Add a cool typewriter effect
-                typeWriter(document.getElementById('student-name'), studentName, 50);
             }
             if (quizCode) {
                 document.getElementById('quiz-code').value = quizCode;
-                typeWriter(document.getElementById('quiz-code'), quizCode, 50);
             }
         });
 
-        // Typewriter Effect
-        function typeWriter(element, text, speed = 100) {
-            element.value = '';
-            let i = 0;
-            const timer = setInterval(() => {
-                if (i < text.length) {
-                    element.value += text.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(timer);
-                }
-            }, speed);
-        }
-
-        // Enhanced Notification System
+        // Simple Notification System
         function showNotification(message, type = 'info', duration = 4000) {
             const notification = document.getElementById('notification');
-            const icon = notification.querySelector('.notification-icon');
             const text = notification.querySelector('.notification-text');
             
-            // Set icon based on type
-            const icons = {
-                success: 'fas fa-check-circle',
-                error: 'fas fa-exclamation-circle',
-                warning: 'fas fa-exclamation-triangle',
-                info: 'fas fa-info-circle'
-            };
-            
-            icon.className = `notification-icon ${icons[type]}`;
             text.textContent = message;
             notification.className = `notification ${type}`;
             
@@ -789,35 +305,29 @@
             }, duration);
         }
 
-        // Enhanced Form Submission
+        // Simple Form Submission
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const loginBtn = document.getElementById('login-btn');
             const spinner = loginBtn.querySelector('.loading-spinner');
             const buttonText = loginBtn.querySelector('span');
-            const buttonIcon = loginBtn.querySelector('i');
             
             const studentName = document.getElementById('student-name').value.trim();
             const studentEmail = document.getElementById('student-email').value.trim();
             const quizCode = document.getElementById('quiz-code').value.trim();
             
             if (!studentName || !studentEmail || !quizCode) {
-                showNotification('⚠️ Please fill in all quantum fields!', 'warning');
+                showNotification('Please fill in all fields', 'warning');
                 return;
             }
             
-            // Start quantum loading sequence
+            // Start loading
             loginBtn.disabled = true;
-            spinner.style.display = 'block';
-            buttonIcon.style.display = 'none';
-            buttonText.textContent = 'Quantum Processing...';
-            loginBtn.style.background = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
+            spinner.style.display = 'inline-block';
+            buttonText.textContent = 'Logging in...';
             
             try {
-                // Simulate quantum computation delay
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
@@ -833,43 +343,33 @@
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    // Success animation
-                    buttonText.textContent = 'Quantum Link Established!';
-                    loginBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-                    
-                    showNotification('🚀 Quantum portal activated! Preparing dimension transfer...', 'success');
+                    buttonText.textContent = 'Success!';
+                    showNotification('Login successful', 'success');
                     
                     // Store session data
                     sessionStorage.setItem('studentName', studentName);
                     sessionStorage.setItem('studentEmail', studentEmail);
                     sessionStorage.setItem('quizCode', quizCode);
-                    sessionStorage.setItem('authToken', data.token || 'quantum-authorized');
-                    
-                    // Quantum transition effect
-                    document.body.style.animation = 'quantumWarp 1s ease-in-out';
+                    sessionStorage.setItem('authToken', data.token || 'authorized');
                     
                     setTimeout(() => {
                         window.location.href = '/test.html';
-                    }, 2000);
+                    }, 1000);
                     
                 } else {
-                    throw new Error(data.message || 'Quantum authentication failed');
+                    throw new Error(data.message || 'Login failed');
                 }
                 
             } catch (error) {
-                console.error('Quantum Error:', error);
+                console.error('Login Error:', error);
                 
                 // Check if it's a network error (server not running)
                 if (error.message.includes('fetch') || error.name === 'TypeError') {
                     // Fallback: Allow login without backend for demo purposes
-                    console.log('🔧 Backend not available, using demo mode');
-                    
-                    // Simple validation for demo
                     if (studentName.length >= 2 && quizCode.length >= 3) {
-                        buttonText.textContent = 'Demo Mode Activated!';
-                        loginBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                        buttonText.textContent = 'Demo Mode';
                         
-                        showNotification('⚠️ Demo Mode: Quantum portal bypassed! Proceeding with simulation...', 'warning');
+                        showNotification('Demo Mode: Proceeding offline', 'warning');
                         
                         // Store session data
                         sessionStorage.setItem('studentName', studentName);
@@ -878,164 +378,28 @@
                         sessionStorage.setItem('authToken', 'demo-mode');
                         sessionStorage.setItem('demoMode', 'true');
                         
-                        // Redirect to quiz
                         setTimeout(() => {
                             window.location.href = '/test.html';
-                        }, 2000);
+                        }, 1000);
                         
-                        return; // Exit the catch block
+                        return;
                     }
                 }
                 
-                // Error animation for actual validation errors
-                buttonText.textContent = 'Quantum Error Detected';
-                loginBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-                
-                showNotification(
-                    `❌ ${error.message || 'Quantum portal malfunction. Please verify your credentials.'}`, 
-                    'error'
-                );
-                
-                // Shake animation
-                loginBtn.style.animation = 'shake 0.5s ease-in-out';
-                setTimeout(() => {
-                    loginBtn.style.animation = '';
-                }, 500);
+                buttonText.textContent = 'Error';
+                showNotification(error.message || 'Login failed. Please try again.', 'error');
                 
             } finally {
                 // Reset button after delay
                 setTimeout(() => {
                     loginBtn.disabled = false;
                     spinner.style.display = 'none';
-                    buttonIcon.style.display = 'inline';
-                    buttonText.textContent = 'Initialize Quantum Learning';
-                    loginBtn.style.background = 'var(--gradient-primary)';
-                }, 3000);
+                    buttonText.textContent = 'Login';
+                }, 2000);
             }
         });
 
-        // Enhanced Input Animations
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.style.transform = 'translateY(-2px)';
-                this.parentElement.style.boxShadow = '0 10px 25px rgba(99, 102, 241, 0.15)';
-            });
-            
-            input.addEventListener('blur', function() {
-                this.parentElement.style.transform = '';
-                this.parentElement.style.boxShadow = '';
-            });
 
-            // Quantum typing effect
-            input.addEventListener('input', function() {
-                const icon = this.nextElementSibling;
-                if (icon) {
-                    icon.style.animation = 'quantumSpin 0.3s ease';
-                    setTimeout(() => {
-                        icon.style.animation = '';
-                    }, 300);
-                }
-            });
-        });
-
-        // Add quantum shake animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-5px); }
-                75% { transform: translateX(5px); }
-            }
-            
-            @keyframes quantumWarp {
-                0% { filter: hue-rotate(0deg) blur(0px); transform: scale(1); }
-                50% { filter: hue-rotate(180deg) blur(2px); transform: scale(1.05); }
-                100% { filter: hue-rotate(360deg) blur(0px); transform: scale(1); }
-            }
-            
-            @keyframes quantumSpin {
-                0% { transform: translateY(-50%) rotate(0deg) scale(1); }
-                50% { transform: translateY(-50%) rotate(180deg) scale(1.2); }
-                100% { transform: translateY(-50%) rotate(360deg) scale(1); }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Quantum Easter Eggs
-        let quantumSequence = [];
-        const quantumCode = ['q', 'u', 'a', 'n', 't', 'u', 'm'];
-        
-        document.addEventListener('keydown', (e) => {
-            quantumSequence.push(e.key.toLowerCase());
-            if (quantumSequence.length > quantumCode.length) {
-                quantumSequence.shift();
-            }
-            
-            if (quantumSequence.join('') === quantumCode.join('')) {
-                // Activate quantum mode!
-                document.body.style.animation = 'quantumWarp 3s infinite';
-                showNotification('🌌 Quantum mode activated! Reality is now flexible...', 'success', 5000);
-                
-                setTimeout(() => {
-                    document.body.style.animation = '';
-                }, 10000);
-            }
-        });
-
-        // Dynamic Background Based on Time
-        function updateQuantumBackground() {
-            const hour = new Date().getHours();
-            const isNight = hour >= 20 || hour <= 6;
-            
-            if (isNight) {
-                document.documentElement.style.setProperty('--primary', '#8b5cf6');
-                document.documentElement.style.setProperty('--secondary', '#06b6d4');
-            } else {
-                document.documentElement.style.setProperty('--primary', '#6366f1');
-                document.documentElement.style.setProperty('--secondary', '#8b5cf6');
-            }
-        }
-
-        updateQuantumBackground();
-        setInterval(updateQuantumBackground, 60000); // Update every minute
-
-        // Add hover sound effects (optional - requires user interaction)
-        document.addEventListener('click', function initAudio() {
-            // Create audio context after user interaction
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            function playQuantumSound(frequency = 440, duration = 200) {
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = frequency;
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + duration / 1000);
-            }
-            
-            // Add sound to buttons
-            document.querySelectorAll('button, input').forEach(element => {
-                element.addEventListener('mouseenter', () => playQuantumSound(800, 100));
-                element.addEventListener('click', () => playQuantumSound(1000, 150));
-            });
-            
-            // Remove this listener after first use
-            document.removeEventListener('click', initAudio);
-        });
-
-        // Performance monitoring
-        console.log('🚀 QuizFlow Quantum Portal initialized');
-        console.log('🌌 Reality distortion field: ACTIVE');
-        console.log('⚡ Quantum processors: ONLINE');
-        console.log('🎯 Learning matrix: SYNCHRONIZED');
     </script>
 </body>
 </html>
