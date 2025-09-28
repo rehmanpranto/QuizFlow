@@ -1128,6 +1128,12 @@ def populate_sample_quiz():
         print("Quiz data already exists, skipping sample data creation")
         return
     
+    # Check if we should skip sample data creation
+    skip_sample = os.getenv('SKIP_SAMPLE_DATA', 'false').lower() in ['true', '1', 'yes']
+    if skip_sample:
+        print("Skipping sample data creation (SKIP_SAMPLE_DATA=true)")
+        return
+    
     print("Creating sample quiz data...")
     
     # Create sample quiz

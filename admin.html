@@ -379,14 +379,26 @@
         .option-input {
             flex: 1;
             padding: 0.5rem;
-            background: var(--card-bg);
+            background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 4px;
             color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        
+        .option-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
         }
 
         .correct-answer-radio {
             margin-left: 0.5rem;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
         }
 
         .question-actions {
@@ -993,7 +1005,8 @@
                     <div class="form-group">
                         <label>Question Text</label>
                         <textarea placeholder="Enter your question here..." rows="2" 
-                                  onchange="updateQuestionText(${index}, this.value)">${question.text}</textarea>
+                                  onchange="updateQuestionText(${index}, this.value)"
+                                  oninput="console.log('Question text input:', this.value)">${question.text}</textarea>
                     </div>
                     
                     <div class="form-group">
@@ -1002,11 +1015,17 @@
                             <div class="option-item">
                                 <div class="option-letter">${String.fromCharCode(65 + optionIndex)}</div>
                                 <input type="text" class="option-input" placeholder="Enter option ${String.fromCharCode(65 + optionIndex)}" 
-                                       value="${option}" onchange="updateOption(${index}, ${optionIndex}, this.value)">
+                                       value="${option}" 
+                                       onchange="updateOption(${index}, ${optionIndex}, this.value)"
+                                       oninput="console.log('Option ${String.fromCharCode(65 + optionIndex)} input:', this.value)"
+                                       onfocus="console.log('Option ${String.fromCharCode(65 + optionIndex)} focused')"
+                                       onclick="console.log('Option ${String.fromCharCode(65 + optionIndex)} clicked')">
                                 <input type="radio" name="correct-${question.id}" class="correct-answer-radio" 
+                                       value="${optionIndex}"
                                        ${question.correctAnswer === optionIndex ? 'checked' : ''} 
-                                       onchange="updateCorrectAnswer(${index}, ${optionIndex})">
-                                <label style="margin: 0; font-size: 0.8rem;">Correct</label>
+                                       onchange="updateCorrectAnswer(${index}, ${optionIndex})"
+                                       onclick="console.log('Radio ${String.fromCharCode(65 + optionIndex)} clicked')">
+                                <label style="margin: 0; font-size: 0.8rem; cursor: pointer;">Correct</label>
                             </div>
                         `).join('')}
                     </div>
@@ -1049,14 +1068,17 @@
         }
 
         function updateQuestionText(index, text) {
+            console.log('Updating question text:', index, text);
             currentQuiz.questions[index].text = text;
         }
 
         function updateOption(questionIndex, optionIndex, text) {
+            console.log('Updating option:', questionIndex, optionIndex, text);
             currentQuiz.questions[questionIndex].options[optionIndex] = text;
         }
 
         function updateCorrectAnswer(questionIndex, optionIndex) {
+            console.log('Setting correct answer:', questionIndex, optionIndex);
             currentQuiz.questions[questionIndex].correctAnswer = optionIndex;
         }
 
