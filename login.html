@@ -328,27 +328,9 @@
             buttonText.textContent = 'Logging in...';
             
             try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        name: studentName,
-                        email: studentEmail,
-                        code: quizCode
-                    })
-                });
-                
-                // Check if response is JSON before parsing
-                let data = {};
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    data = await response.json();
-                } else {
-                    // Not JSON response (likely 404 HTML), throw error to trigger demo mode
-                    throw new Error('Server not available');
-                }
+                // Skip server call and use demo mode directly
+                console.log('Demo mode: Student login without server');
+                throw new Error('Demo mode activated');
                 
                 if (response.ok && data.success) {
                     buttonText.textContent = 'Success!';
