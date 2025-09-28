@@ -331,18 +331,25 @@
                         const contentType = response.headers.get('content-type');
                         if (contentType && contentType.includes('application/json')) {
                             data = await response.json();
+                            // Validate the data has questions
+                            if (data && data.questions && data.questions.length > 0) {
+                                currentQuiz = data;
+                                initializeQuiz();
+                                return;
+                            } else {
+                                throw new Error('No questions in server response');
+                            }
                         } else {
                             throw new Error('Server returned non-JSON response');
                         }
                     } catch (parseError) {
-                        throw new Error('Failed to parse server response');
+                        throw new Error('Failed to parse server response: ' + parseError.message);
                     }
-                    currentQuiz = data;
-                    initializeQuiz();
                 } else {
-                    throw new Error('Failed to load quiz from server');
+                    throw new Error('Server responded with status: ' + response.status);
                 }
             } catch (error) {
+                console.log('Server error:', error.message);
                 console.log('Loading demo quiz...');
                 // Fallback to demo quiz
                 loadDemoQuiz();
@@ -351,8 +358,9 @@
 
         // Demo quiz for when server is unavailable
         function loadDemoQuiz() {
+            console.log('Initializing demo quiz...');
             currentQuiz = {
-                title: 'Sample Commerce Quiz',
+                title: 'Sample Commerce Quiz (Demo Mode)',
                 questions: [
                     {
                         id: 1,
@@ -380,29 +388,68 @@
                         option_c: 'Government Debt Program',
                         option_d: 'Global Distribution Policy',
                         correct_answer: 'B'
+                    },
+                    {
+                        id: 4,
+                        question_text: 'What is supply and demand?',
+                        option_a: 'A government regulation',
+                        option_b: 'An economic principle that determines prices',
+                        option_c: 'A type of business loan',
+                        option_d: 'A marketing strategy',
+                        correct_answer: 'B'
+                    },
+                    {
+                        id: 5,
+                        question_text: 'What does ROI stand for?',
+                        option_a: 'Return on Investment',
+                        option_b: 'Rate of Interest',
+                        option_c: 'Risk of Inflation',
+                        option_d: 'Revenue of Income',
+                        correct_answer: 'A'
                     }
                 ]
             };
+            console.log('Demo quiz loaded with', currentQuiz.questions.length, 'questions');
             initializeQuiz();
         }
 
         // Initialize quiz interface
         function initializeQuiz() {
-            document.getElementById('quiz-title').textContent = currentQuiz.title;
-            document.getElementById('total-questions').textContent = currentQuiz.questions.length;
+            console.log('Initializing quiz interface...');
+            console.log('Current quiz:', currentQuiz);
+            
+            document.getElementById('quiz-title').textContent = currentQuiz.title || 'Quiz';
+            const totalQuestions = currentQuiz.questions && currentQuiz.questions.length ? currentQuiz.questions.length : 0;
+            document.getElementById('total-questions').textContent = totalQuestions;
+            
+            console.log('Total questions:', totalQuestions);
             
             // Hide loading screen
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('question-content').style.display = 'block';
-            document.getElementById('quiz-controls').style.display = 'flex';
+            document.getElementById('quiz-controls').style.display = totalQuestions > 0 ? 'flex' : 'none';
             
-            // Load first question
-            loadQuestion(0);
-            startTimer();
+            // Load first question or show fallback
+            if (totalQuestions > 0) {
+                console.log('Loading first question...');
+                loadQuestion(0);
+                startTimer();
+            } else {
+                console.log('No questions available - showing fallback message');
+                document.getElementById('question-text').textContent = 'No questions available for this quiz.';
+                document.getElementById('options').innerHTML = '';
+            }
         }
 
         // Load a specific question
         function loadQuestion(index) {
+            const totalQuestions = currentQuiz.questions && currentQuiz.questions.length ? currentQuiz.questions.length : 0;
+            if (totalQuestions === 0) {
+                document.getElementById('question-text').textContent = 'No questions available.';
+                document.getElementById('options').innerHTML = '';
+                document.getElementById('quiz-controls').style.display = 'none';
+                return;
+            }
             const question = currentQuiz.questions[index];
             currentQuestionIndex = index;
             
