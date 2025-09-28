@@ -3,32 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizFlow - Administrative Command Center 🛡️</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <title>QuizFlow - Admin Login</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
         :root {
-            --primary: #ff6b6b;
-            --primary-dark: #ff5252;
-            --secondary: #4ecdc4;
-            --accent: #45b7d1;
-            --success: #96ceb4;
-            --warning: #ffeaa7;
-            --danger: #fd79a8;
-            --dark: #0c0c0c;
-            --dark-light: #1a1a2e;
-            --dark-deeper: #16213e;
-            --glass-bg: rgba(12, 12, 12, 0.9);
-            --glass-border: rgba(255, 107, 107, 0.2);
+            --primary: #007bff;
+            --primary-hover: #0056b3;
+            --secondary: #666666;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #000000;
+            --dark-light: #1a1a1a;
+            --card-bg: #0f0f0f;
+            --border: #333333;
             --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --gradient-primary: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%);
-            --gradient-admin: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            --shadow-primary: 0 25px 50px -12px rgba(255, 107, 107, 0.4);
-            --shadow-glow: 0 0 80px rgba(255, 107, 107, 0.6);
-            --shadow-intense: 0 40px 80px -15px rgba(0, 0, 0, 0.8);
+            --text-secondary: #999999;
+            --input-bg: #1a1a1a;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --admin-accent: #007bff;
         }
         
         * {
@@ -45,455 +39,160 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            position: relative;
-            overflow: hidden;
+            margin: 0;
             color: var(--text-primary);
         }
 
-        /* Advanced Cyberpunk Background */
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -3;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(ellipse at top left, rgba(255, 107, 107, 0.15) 0%, transparent 60%),
-                radial-gradient(ellipse at top right, rgba(78, 205, 196, 0.15) 0%, transparent 60%),
-                radial-gradient(ellipse at bottom, rgba(69, 183, 209, 0.1) 0%, transparent 60%),
-                linear-gradient(180deg, var(--dark) 0%, var(--dark-light) 50%, var(--dark-deeper) 100%);
-            animation: adminBackgroundShift 15s ease-in-out infinite alternate;
-            pointer-events: none;
-            z-index: -2;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="admin-grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="%23ff6b6b" stroke-width="0.5" opacity="0.1"/><circle cx="50" cy="50" r="2" fill="%234ecdc4" opacity="0.2"/><rect x="25" y="25" width="2" height="2" fill="%2345b7d1" opacity="0.3"/><rect x="75" y="75" width="1" height="1" fill="%23ff6b6b" opacity="0.4"/></pattern></defs><rect width="100%" height="100%" fill="url(%23admin-grid)"/></svg>');
-            pointer-events: none;
-            z-index: -1;
-            animation: gridPulse 10s ease-in-out infinite;
-        }
-
-        @keyframes adminBackgroundShift {
-            0% { 
-                filter: hue-rotate(0deg) brightness(1);
-                transform: scale(1);
-            }
-            50% {
-                filter: hue-rotate(15deg) brightness(1.1);
-                transform: scale(1.02);
-            }
-            100% { 
-                filter: hue-rotate(30deg) brightness(1.05);
-                transform: scale(1);
-            }
-        }
-
-        @keyframes gridPulse {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
-
-        /* Holographic Command Terminal */
         .admin-container {
-            background: var(--glass-bg);
-            backdrop-filter: blur(40px);
-            border: 2px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 4rem 3.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
             width: 100%;
-            max-width: 600px;
-            box-shadow: var(--shadow-intense);
-            position: relative;
-            overflow: hidden;
-            animation: materialize 1s ease-out;
+            max-width: 400px;
+            box-shadow: var(--shadow);
         }
 
-        @keyframes materialize {
-            from {
-                opacity: 0;
-                transform: translateY(50px) scale(0.9) rotateX(10deg);
-                filter: blur(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0px) scale(1) rotateX(0deg);
-                filter: blur(0px);
-            }
-        }
-
-        .admin-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-            background: var(--gradient-primary);
-            border-radius: 24px 24px 0 0;
-            animation: scanLine 3s ease-in-out infinite;
-        }
-
-        @keyframes scanLine {
-            0%, 100% { background: var(--gradient-primary); }
-            50% { background: var(--gradient-admin); }
-        }
-
-        .admin-container::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.1), transparent);
-            animation: holographicScan 4s ease-in-out infinite;
-        }
-
-        @keyframes holographicScan {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        /* Command Center Header */
         .admin-header {
             text-align: center;
-            margin-bottom: 3.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .command-center-logo {
-            width: 120px;
-            height: 120px;
-            background: var(--gradient-primary);
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 2rem;
-            font-size: 3rem;
-            color: white;
-            box-shadow: var(--shadow-primary);
-            animation: commandPulse 3s ease-in-out infinite;
-            position: relative;
-            border: 3px solid rgba(255, 107, 107, 0.3);
-        }
-
-        .command-center-logo::before {
-            content: '';
-            position: absolute;
-            width: 140px;
-            height: 140px;
-            border: 2px solid rgba(255, 107, 107, 0.2);
-            border-radius: 35px;
-            animation: orbitRotate 8s linear infinite;
-        }
-
-        .command-center-logo::after {
-            content: '';
-            position: absolute;
-            width: 160px;
-            height: 160px;
-            border: 1px solid rgba(78, 205, 196, 0.2);
-            border-radius: 40px;
-            animation: orbitRotate 12s linear infinite reverse;
-        }
-
-        @keyframes commandPulse {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: var(--shadow-primary);
-            }
-            50% { 
-                transform: scale(1.05);
-                box-shadow: var(--shadow-glow);
-            }
-        }
-
-        @keyframes orbitRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            margin-bottom: 2rem;
         }
 
         .admin-header h1 {
-            font-size: 2.5rem;
-            font-weight: 900;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.8rem;
-            letter-spacing: -0.02em;
-            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
         }
 
         .admin-header .subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
+            color: var(--admin-accent);
+            font-size: 0.9rem;
             font-weight: 500;
-            margin-bottom: 1rem;
-            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.5rem;
         }
 
         .security-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.8rem;
-            background: rgba(255, 107, 107, 0.15);
-            border: 2px solid rgba(255, 107, 107, 0.3);
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--primary);
-            animation: securityPulse 2.5s infinite;
-            font-family: 'JetBrains Mono', monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            gap: 0.5rem;
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px solid rgba(0, 123, 255, 0.3);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--admin-accent);
         }
 
-        @keyframes securityPulse {
-            0%, 100% { 
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
-            }
-            50% { 
-                transform: scale(1.02);
-                box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
-            }
-        }
-
-        /* Advanced Form Controls */
         .form-group {
-            margin-bottom: 2.5rem;
-            position: relative;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 1rem;
-            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
             color: var(--text-primary);
-            font-size: 0.95rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .input-container {
-            position: relative;
+            font-size: 0.9rem;
         }
 
         .form-group input {
             width: 100%;
-            padding: 1.5rem 1.8rem 1.5rem 4rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid var(--glass-border);
-            border-radius: 20px;
-            font-size: 1.1rem;
+            padding: 0.75rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
             color: var(--text-primary);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(20px);
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 0.5px;
+            transition: border-color 0.2s ease;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 
-                0 0 0 4px rgba(255, 107, 107, 0.15),
-                0 10px 40px rgba(255, 107, 107, 0.2);
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-3px);
+            border-color: var(--admin-accent);
         }
 
         .form-group input::placeholder {
             color: var(--text-secondary);
-            font-weight: 400;
         }
 
-        .input-icon {
-            position: absolute;
-            left: 1.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            z-index: 1;
-        }
-
-        .form-group input:focus + .input-icon {
-            color: var(--primary);
-            transform: translateY(-50%) scale(1.1) rotate(5deg);
-        }
-
-        /* Command Button */
         .command-button {
             width: 100%;
-            padding: 1.5rem;
-            background: var(--gradient-primary);
-            border: none;
-            border-radius: 20px;
-            font-size: 1.2rem;
-            font-weight: 800;
+            padding: 0.75rem;
+            background: var(--primary);
             color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-primary);
-            margin-bottom: 2.5rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-family: 'JetBrains Mono', monospace;
-            border: 2px solid transparent;
-        }
-
-        .command-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.8s ease;
-        }
-
-        .command-button:hover::before {
-            left: 100%;
+            transition: background-color 0.2s ease;
+            margin-bottom: 1.5rem;
         }
 
         .command-button:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: var(--shadow-glow);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .command-button:active {
-            transform: translateY(-2px) scale(0.98);
+            background: var(--primary-hover);
         }
 
         .command-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
         .button-content {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
+            gap: 0.8rem;
             position: relative;
             z-index: 1;
         }
 
         .loading-sequence {
             display: none;
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
             border-radius: 50%;
-            animation: commandSpin 1.2s linear infinite;
+            animation: spin 1s linear infinite;
         }
 
-        @keyframes commandSpin {
+        @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        /* Security Features */
-        .security-info {
-            text-align: center;
-            margin-top: 2.5rem;
-            padding: 1.5rem;
-            background: rgba(255, 107, 107, 0.1);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 107, 107, 0.2);
-        }
-
-        .security-info h3 {
-            color: var(--primary);
-            font-size: 0.9rem;
-            font-weight: 700;
-            margin-bottom: 0.8rem;
-            font-family: 'JetBrains Mono', monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .security-info p {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            line-height: 1.5;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
         .back-link {
             text-align: center;
-            margin-top: 2rem;
         }
 
         .back-link a {
             color: var(--text-secondary);
             text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.8rem;
-            font-family: 'JetBrains Mono', monospace;
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
         }
 
         .back-link a:hover {
-            color: var(--primary);
-            transform: translateX(-8px);
-            background: rgba(255, 107, 107, 0.1);
-            border-color: rgba(255, 107, 107, 0.3);
+            color: var(--admin-accent);
         }
 
-        /* Holographic Alert System */
         .alert-system {
             position: fixed;
-            top: 30px;
-            right: 30px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            border: 2px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 1.5rem 2rem;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
             color: var(--text-primary);
-            font-weight: 600;
-            box-shadow: var(--shadow-primary);
-            transform: translateX(500px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
             z-index: 1000;
-            max-width: 400px;
-            font-family: 'JetBrains Mono', monospace;
+            max-width: 300px;
         }
 
         .alert-system.show {
@@ -501,380 +200,112 @@
         }
 
         .alert-system.success {
-            border-left: 6px solid var(--success);
+            border-left: 3px solid var(--success);
         }
 
         .alert-system.error {
-            border-left: 6px solid var(--danger);
+            border-left: 3px solid var(--danger);
         }
 
         .alert-system.warning {
-            border-left: 6px solid var(--warning);
-        }
-
-        .alert-content {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .alert-icon {
-            font-size: 1.5rem;
-            animation: alertPulse 1s ease-in-out infinite alternate;
-        }
-
-        @keyframes alertPulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
-        }
-
-        /* Biometric Scanner Effect */
-        .biometric-scanner {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(180deg, transparent 0%, rgba(255, 107, 107, 0.1) 50%, transparent 100%);
-            animation: biometricScan 2s ease-in-out infinite;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .admin-container:hover .biometric-scanner {
-            opacity: 1;
-        }
-
-        @keyframes biometricScan {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
+            border-left: 3px solid var(--warning);
         }
 
         /* Responsive Design */
         @media (max-width: 768px) {
             .admin-container {
-                padding: 3rem 2.5rem;
+                padding: 1.5rem;
                 margin: 1rem;
             }
             
-            .command-center-logo {
-                width: 100px;
-                height: 100px;
-                font-size: 2.5rem;
-            }
-            
             .admin-header h1 {
-                font-size: 2rem;
-            }
-            
-            .form-group input {
-                padding: 1.2rem 1.5rem 1.2rem 3.5rem;
-            }
-        }
-
-        /* Matrix Rain Effect */
-        .matrix-char {
-            position: absolute;
-            color: var(--primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            animation: matrixRain 3s linear infinite;
-            opacity: 0.3;
-        }
-
-        @keyframes matrixRain {
-            0% {
-                transform: translateY(-100vh);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.8;
-            }
-            90% {
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateY(100vh);
-                opacity: 0;
-            }
-        }
-
-        /* Glitch Effect */
-        .glitch {
-            position: relative;
-        }
-
-        .glitch::before,
-        .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: transparent;
-        }
-
-        .glitch::before {
-            animation: glitch-1 0.5s infinite;
-            color: #ff00ff;
-            z-index: -1;
-        }
-
-        .glitch::after {
-            animation: glitch-2 0.5s infinite;
-            color: #00ffff;
-            z-index: -2;
-        }
-
-        @keyframes glitch-1 {
-            0%, 14%, 15%, 49%, 50%, 99%, 100% {
-                transform: translate(0);
-            }
-            15%, 49% {
-                transform: translate(-2px, 0);
-            }
-        }
-
-        @keyframes glitch-2 {
-            0%, 20%, 21%, 62%, 63%, 99%, 100% {
-                transform: translate(0);
-            }
-            21%, 62% {
-                transform: translate(2px, 0);
+                font-size: 1.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Particles Background -->
-    <div id="particles-js"></div>
-
-    <!-- Matrix Rain Characters -->
-    <div id="matrix-container"></div>
-
-    <!-- Admin Command Center -->
+    <!-- Admin Login Container -->
     <div class="admin-container">
-        <div class="biometric-scanner"></div>
-        
         <div class="admin-header">
-            <div class="command-center-logo">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <h1 class="glitch" data-text="ADMIN ACCESS">ADMIN ACCESS</h1>
-            <p class="subtitle">Command Center Authorization</p>
+            <h1>QuizFlow</h1>
+            <p class="subtitle">Administrator Portal</p>
             <div class="security-badge">
-                <i class="fas fa-lock"></i>
-                <span>CLASSIFIED</span>
+                🔒 Secure Access
             </div>
         </div>
 
-        <form id="admin-auth-form">
+        <form id="admin-login-form">
             <div class="form-group">
-                <label for="admin-username">
-                    <i class="fas fa-user-shield"></i> Administrator ID
-                </label>
-                <div class="input-container">
-                    <input type="text" id="admin-username" name="username" 
-                           placeholder="Enter admin username" required autocomplete="username">
-                    <i class="input-icon fas fa-user-shield"></i>
-                </div>
+                <label for="admin-username">Username</label>
+                <input type="text" id="admin-username" name="admin-username" 
+                       placeholder="Enter admin username" required autocomplete="username">
             </div>
 
             <div class="form-group">
-                <label for="admin-password">
-                    <i class="fas fa-key"></i> Security Passphrase
-                </label>
-                <div class="input-container">
-                    <input type="password" id="admin-password" name="password" 
-                           placeholder="Enter secure passphrase" required autocomplete="current-password">
-                    <i class="input-icon fas fa-key"></i>
-                </div>
+                <label for="admin-password">Password</label>
+                <input type="password" id="admin-password" name="admin-password" 
+                       placeholder="Enter admin password" required autocomplete="current-password">
             </div>
 
-            <button type="submit" class="command-button" id="auth-btn">
+            <button type="submit" class="command-button" id="admin-login-btn">
                 <div class="button-content">
                     <div class="loading-sequence"></div>
-                    <i class="fas fa-rocket"></i>
-                    <span>Initiate Admin Protocol</span>
+                    <span>Admin Login</span>
                 </div>
             </button>
         </form>
 
-        <div class="security-info">
-            <h3><i class="fas fa-exclamation-triangle"></i> Security Notice</h3>
-            <p>This is a restricted administrative interface. All access attempts are logged and monitored. Unauthorized access is strictly prohibited.</p>
-        </div>
-
         <div class="back-link">
-            <a href="/index.html">
-                <i class="fas fa-arrow-left"></i>
-                Return to Public Portal
-            </a>
+            <a href="/index.html">← Back to Home</a>
         </div>
     </div>
 
     <!-- Alert System -->
     <div class="alert-system" id="alert-system">
-        <div class="alert-content">
-            <i class="alert-icon"></i>
-            <span class="alert-text"></span>
-        </div>
+        <span class="alert-text"></span>
     </div>
 
     <script>
-        // Initialize Advanced Particles System
-        particlesJS('particles-js', {
-            particles: {
-                number: { value: 150, density: { enable: true, value_area: 800 } },
-                color: { value: ["#ff6b6b", "#4ecdc4", "#45b7d1"] },
-                shape: { 
-                    type: ["circle", "triangle", "edge"],
-                    stroke: { width: 1, color: "#ff6b6b" }
-                },
-                opacity: { 
-                    value: 0.4, 
-                    random: true,
-                    anim: { enable: true, speed: 1.5, opacity_min: 0.1, sync: false }
-                },
-                size: { 
-                    value: 4, 
-                    random: true,
-                    anim: { enable: true, speed: 3, size_min: 0.1, sync: false }
-                },
-                line_linked: { 
-                    enable: true, 
-                    distance: 120, 
-                    color: "#ff6b6b", 
-                    opacity: 0.4, 
-                    width: 1.5 
-                },
-                move: { 
-                    enable: true, 
-                    speed: 4, 
-                    direction: "none", 
-                    random: true, 
-                    straight: false, 
-                    out_mode: "out", 
-                    bounce: false,
-                    attract: { enable: true, rotateX: 800, rotateY: 1600 }
-                }
-            },
-            interactivity: {
-                detect_on: "canvas",
-                events: { 
-                    onhover: { enable: true, mode: ["repulse", "bubble"] }, 
-                    onclick: { enable: true, mode: "push" }, 
-                    resize: true 
-                },
-                modes: { 
-                    repulse: { distance: 120, duration: 0.4 },
-                    bubble: { distance: 250, size: 8, duration: 2, opacity: 0.8, speed: 3 },
-                    push: { particles_nb: 6 }
-                }
-            },
-            retina_detect: true
-        });
-
-        // Matrix Rain Effect
-        function createMatrixRain() {
-            const matrixContainer = document.getElementById('matrix-container');
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
-            
-            for (let i = 0; i < 50; i++) {
-                setTimeout(() => {
-                    const char = document.createElement('div');
-                    char.className = 'matrix-char';
-                    char.textContent = chars[Math.floor(Math.random() * chars.length)];
-                    char.style.left = Math.random() * 100 + 'vw';
-                    char.style.animationDelay = Math.random() * 2 + 's';
-                    char.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                    
-                    matrixContainer.appendChild(char);
-                    
-                    setTimeout(() => {
-                        char.remove();
-                    }, 5000);
-                }, Math.random() * 1000);
-            }
-        }
-
-        // Start matrix rain
-        createMatrixRain();
-        setInterval(createMatrixRain, 8000);
-
-        // Advanced Alert System
-        function showAlert(message, type = 'info', duration = 5000) {
+        // Simple Alert System
+        function showAlert(message, type = 'info', duration = 4000) {
             const alertSystem = document.getElementById('alert-system');
-            const icon = alertSystem.querySelector('.alert-icon');
             const text = alertSystem.querySelector('.alert-text');
             
-            const icons = {
-                success: 'fas fa-check-circle',
-                error: 'fas fa-exclamation-circle',
-                warning: 'fas fa-exclamation-triangle',
-                info: 'fas fa-info-circle'
-            };
-            
-            icon.className = `alert-icon ${icons[type]}`;
             text.textContent = message;
             alertSystem.className = `alert-system ${type}`;
             
+            // Show alert
             setTimeout(() => alertSystem.classList.add('show'), 100);
             
+            // Hide alert
             setTimeout(() => {
                 alertSystem.classList.remove('show');
             }, duration);
         }
 
-        // Biometric Authentication Simulation
-        async function performBiometricScan() {
-            return new Promise(resolve => {
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += Math.random() * 20;
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        resolve(true);
-                    }
-                }, 200);
-            });
-        }
-
-        // Enhanced Form Authentication
-        document.getElementById('admin-auth-form').addEventListener('submit', async function(e) {
+        // Admin Login Form Handler
+        document.getElementById('admin-login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const authBtn = document.getElementById('auth-btn');
-            const spinner = authBtn.querySelector('.loading-sequence');
-            const buttonText = authBtn.querySelector('span');
-            const buttonIcon = authBtn.querySelector('i');
+            const loginBtn = document.getElementById('admin-login-btn');
+            const spinner = loginBtn.querySelector('.loading-sequence');
+            const buttonText = loginBtn.querySelector('span');
             
             const username = document.getElementById('admin-username').value.trim();
             const password = document.getElementById('admin-password').value.trim();
             
             if (!username || !password) {
-                showAlert('⚠️ All security fields must be completed!', 'warning');
+                showAlert('Please fill in all fields', 'warning');
                 return;
             }
             
-            // Start authentication sequence
-            authBtn.disabled = true;
-            spinner.style.display = 'block';
-            buttonIcon.style.display = 'none';
+            // Start loading
+            loginBtn.disabled = true;
+            spinner.style.display = 'inline-block';
             buttonText.textContent = 'Authenticating...';
-            authBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
             
             try {
-                // Biometric scan simulation
-                showAlert('🔍 Initiating biometric scan...', 'info', 2000);
-                await performBiometricScan();
-                
-                showAlert('🛡️ Verifying administrative credentials...', 'info', 2000);
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Attempt authentication
                 const response = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: {
@@ -889,188 +320,59 @@
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    // Authentication successful
                     buttonText.textContent = 'Access Granted!';
-                    authBtn.style.background = 'linear-gradient(135deg, #96ceb4 0%, #4ecdc4 100%)';
-                    
-                    showAlert('✅ Administrative access granted! Preparing command center...', 'success');
+                    showAlert('Admin login successful', 'success');
                     
                     // Store admin session
-                    sessionStorage.setItem('adminAuthenticated', 'true');
-                    sessionStorage.setItem('adminAuthTime', Date.now().toString());
-                    
-                    // Holographic transition effect
-                    document.body.style.animation = 'adminWarp 1.5s ease-in-out';
+                    sessionStorage.setItem('adminAuth', 'true');
+                    sessionStorage.setItem('adminUsername', username);
+                    sessionStorage.setItem('authToken', data.token || 'admin-authorized');
                     
                     setTimeout(() => {
                         window.location.href = '/admin.html';
-                    }, 2500);
+                    }, 1000);
                     
                 } else {
-                    throw new Error(data.message || 'Authentication failed');
+                    throw new Error(data.message || 'Admin login failed');
                 }
                 
             } catch (error) {
-                console.error('Authentication Error:', error);
+                console.error('Admin Login Error:', error);
                 
                 // Check if it's a network error (server not running)
                 if (error.message.includes('fetch') || error.name === 'TypeError') {
-                    // Fallback: Demo admin access
-                    if (password === 'admin123' || password === 'demo') {
-                        console.log('🔧 Backend not available, using demo admin mode');
+                    // Fallback: Allow admin login for demo purposes with correct credentials
+                    if (username === 'admin' && password === 'admin9264') {
+                        buttonText.textContent = 'Demo Mode';
                         
-                        buttonText.textContent = 'Demo Access Granted!';
-                        authBtn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                        showAlert('Demo Mode: Admin access granted', 'warning');
                         
-                        showAlert('⚠️ Demo Mode: Command center accessed offline!', 'warning');
+                        // Store admin session
+                        sessionStorage.setItem('adminAuth', 'true');
+                        sessionStorage.setItem('adminUsername', username);
+                        sessionStorage.setItem('authToken', 'demo-admin');
+                        sessionStorage.setItem('demoMode', 'true');
                         
-                        // Store demo admin session
-                        sessionStorage.setItem('adminAuthenticated', 'true');
-                        sessionStorage.setItem('adminAuthTime', Date.now().toString());
-                        sessionStorage.setItem('demoAdminMode', 'true');
-                        
-                        // Redirect to admin panel
                         setTimeout(() => {
                             window.location.href = '/admin.html';
-                        }, 2500);
+                        }, 1000);
                         
-                        return; // Exit the catch block
+                        return;
                     }
                 }
                 
-                // Authentication failed
                 buttonText.textContent = 'Access Denied';
-                authBtn.style.background = 'linear-gradient(135deg, #fd79a8 0%, #ff6b6b 100%)';
-                
-                showAlert(
-                    `❌ ${error.message || 'Authentication failed. Please verify your credentials.'}`, 
-                    'error'
-                );
-                
-                // Security breach animation
-                authBtn.style.animation = 'securityAlert 0.8s ease-in-out';
-                document.body.style.animation = 'securityFlash 0.5s ease-in-out';
-                
-                setTimeout(() => {
-                    authBtn.style.animation = '';
-                    document.body.style.animation = '';
-                }, 1000);
+                showAlert(error.message || 'Authentication failed. Please check credentials.', 'error');
                 
             } finally {
-                // Reset button
+                // Reset button after delay
                 setTimeout(() => {
-                    authBtn.disabled = false;
+                    loginBtn.disabled = false;
                     spinner.style.display = 'none';
-                    buttonIcon.style.display = 'inline';
-                    buttonText.textContent = 'Initiate Admin Protocol';
-                    authBtn.style.background = 'var(--gradient-primary)';
-                }, 4000);
+                    buttonText.textContent = 'Admin Login';
+                }, 2000);
             }
         });
-
-        // Enhanced Input Effects
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.style.transform = 'translateY(-3px)';
-                this.parentElement.style.filter = 'drop-shadow(0 10px 20px rgba(255, 107, 107, 0.2))';
-            });
-            
-            input.addEventListener('blur', function() {
-                this.parentElement.style.transform = '';
-                this.parentElement.style.filter = '';
-            });
-
-            // Advanced typing effect
-            input.addEventListener('input', function() {
-                const icon = this.nextElementSibling;
-                if (icon) {
-                    icon.style.animation = 'securityScan 0.4s ease';
-                    setTimeout(() => {
-                        icon.style.animation = '';
-                    }, 400);
-                }
-            });
-        });
-
-        // Add advanced animations
-        const advancedStyles = document.createElement('style');
-        advancedStyles.textContent = `
-            @keyframes securityAlert {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-8px); }
-                75% { transform: translateX(8px); }
-            }
-            
-            @keyframes securityFlash {
-                0%, 100% { filter: brightness(1); }
-                50% { filter: brightness(1.5) hue-rotate(45deg); }
-            }
-            
-            @keyframes adminWarp {
-                0% { filter: hue-rotate(0deg) blur(0px); transform: scale(1); }
-                50% { filter: hue-rotate(180deg) blur(3px); transform: scale(1.02); }
-                100% { filter: hue-rotate(360deg) blur(0px); transform: scale(1); }
-            }
-            
-            @keyframes securityScan {
-                0% { transform: translateY(-50%) rotate(0deg) scale(1); color: var(--text-secondary); }
-                50% { transform: translateY(-50%) rotate(180deg) scale(1.3); color: var(--primary); }
-                100% { transform: translateY(-50%) rotate(360deg) scale(1); color: var(--text-secondary); }
-            }
-        `;
-        document.head.appendChild(advancedStyles);
-
-        // Security monitoring system
-        let securityAttempts = 0;
-        const maxAttempts = 3;
-
-        document.getElementById('admin-auth-form').addEventListener('submit', function() {
-            securityAttempts++;
-            if (securityAttempts >= maxAttempts) {
-                showAlert('🚨 Multiple failed attempts detected. Security protocols activated.', 'error', 8000);
-                // Could implement lockout mechanism here
-            }
-        });
-
-        // Advanced Easter Eggs
-        let commandSequence = [];
-        const adminCode = ['a', 'd', 'm', 'i', 'n'];
-        
-        document.addEventListener('keydown', (e) => {
-            commandSequence.push(e.key.toLowerCase());
-            if (commandSequence.length > adminCode.length) {
-                commandSequence.shift();
-            }
-            
-            if (commandSequence.join('') === adminCode.join('')) {
-                // Admin mode easter egg
-                document.body.style.animation = 'adminWarp 3s infinite';
-                showAlert('🎯 Administrative override sequence detected!', 'success', 6000);
-                
-                setTimeout(() => {
-                    document.body.style.animation = '';
-                }, 12000);
-            }
-        });
-
-        // System Status Monitoring
-        function displaySystemStatus() {
-            console.log('🛡️  QuizFlow Administrative Command Center');
-            console.log('🔒 Security Level: MAXIMUM');
-            console.log('📡 Monitoring Systems: ACTIVE');
-            console.log('🚨 Intrusion Detection: ENABLED');
-            console.log('⚡ Quantum Encryption: OPERATIONAL');
-        }
-
-        displaySystemStatus();
-        
-        // Real-time clock for admin interface
-        function updateClock() {
-            const now = new Date();
-            console.log(`⏰ System Time: ${now.toLocaleTimeString()}`);
-        }
-        
-        setInterval(updateClock, 60000); // Update every minute
     </script>
 </body>
 </html>
