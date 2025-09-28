@@ -274,24 +274,38 @@
     </div>
 
     <script>
-
-        // Pre-fill form if coming from index page
-        window.addEventListener('load', () => {
+        // Ensure DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded for login page');
+            
+            // Pre-fill form if coming from index page
             const studentName = sessionStorage.getItem('studentName');
             const quizCode = sessionStorage.getItem('quizCode');
             
             if (studentName) {
-                document.getElementById('student-name').value = studentName;
+                const nameField = document.getElementById('student-name');
+                if (nameField) nameField.value = studentName;
             }
             if (quizCode) {
-                document.getElementById('quiz-code').value = quizCode;
+                const codeField = document.getElementById('quiz-code');
+                if (codeField) codeField.value = quizCode;
             }
+            
+            console.log('Form pre-fill completed');
         });
 
         // Simple Notification System
         function showNotification(message, type = 'info', duration = 4000) {
+            console.log('Showing notification:', message, type);
+            
             const notification = document.getElementById('notification');
             const text = notification.querySelector('.notification-text');
+            
+            if (!notification || !text) {
+                console.error('Notification elements not found');
+                alert(message); // Fallback to alert
+                return;
+            }
             
             text.textContent = message;
             notification.className = `notification ${type}`;
@@ -309,13 +323,23 @@
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            console.log('Form submitted');
+            
             const loginBtn = document.getElementById('login-btn');
             const spinner = loginBtn.querySelector('.loading-spinner');
             const buttonText = loginBtn.querySelector('span');
             
+            if (!loginBtn || !spinner || !buttonText) {
+                console.error('Missing button elements');
+                showNotification('Page loading error. Please refresh.', 'error');
+                return;
+            }
+            
             const studentName = document.getElementById('student-name').value.trim();
             const studentEmail = document.getElementById('student-email').value.trim();
             const quizCode = document.getElementById('quiz-code').value.trim();
+            
+            console.log('Form data:', { studentName, studentEmail, quizCode });
             
             if (!studentName || !studentEmail || !quizCode) {
                 showNotification('Please fill in all fields', 'warning');
@@ -328,9 +352,23 @@
             buttonText.textContent = 'Logging in...';
             
             try {
-                // Skip server call and use demo mode directly
-                console.log('Demo mode: Student login without server');
-                throw new Error('Demo mode activated');
+                // Try server login first
+                console.log('Attempting server login...');
+                
+                const response = await fetch('http://localhost:5001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: studentName,
+                        email: studentEmail,
+                        code: quizCode
+                    })
+                });
+                
+                const data = await response.json();
                 
                 if (response.ok && data.success) {
                     buttonText.textContent = 'Success!';
@@ -353,18 +391,20 @@
             } catch (error) {
                 console.error('Login Error:', error);
                 
-                // Check if it's a network error, JSON parsing error, or server not running
-                if (error.message.includes('fetch') || 
-                    error.name === 'TypeError' || 
-                    error.name === 'SyntaxError' ||
-                    error.message.includes('Server not available')) {
-                    // Fallback: Allow login without backend for demo purposes
+                // Check if it's a network/server error and fallback to demo mode
+                if (error.name === 'TypeError' || 
+                    error.message.includes('fetch') || 
+                    error.message.includes('NetworkError') ||
+                    error.message.includes('Failed to fetch')) {
+                    
+                    console.log('Server unavailable, switching to demo mode');
+                    
+                    // Basic validation for demo mode
                     if (studentName.length >= 2 && quizCode.length >= 3) {
                         buttonText.textContent = 'Demo Mode';
+                        showNotification('Server unavailable - Using demo mode', 'warning');
                         
-                        showNotification('Demo Mode: Proceeding offline', 'warning');
-                        
-                        // Store session data
+                        // Store session data for demo
                         sessionStorage.setItem('studentName', studentName);
                         sessionStorage.setItem('studentEmail', studentEmail);
                         sessionStorage.setItem('quizCode', quizCode);
@@ -373,14 +413,14 @@
                         
                         setTimeout(() => {
                             window.location.href = 'quiz.html';
-                        }, 1000);
+                        }, 1500);
                         
                         return;
                     }
                 }
                 
                 buttonText.textContent = 'Error';
-                showNotification(error.message || 'Login failed. Please try again.', 'error');
+                showNotification(error.message || 'Please check your details and try again.', 'error');
                 
             } finally {
                 // Reset button after delay

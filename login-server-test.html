@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizFlow - Server Test Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #666;
+            color: #fff;
+            border-radius: 4px;
+        }
+        
+        button {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        
+        .debug {
+            background: #333;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .error {
+            color: #ff6b6b;
+        }
+        
+        .success {
+            color: #51cf66;
+        }
+    </style>
+</head>
+<body>
+    <h1>QuizFlow - Server Test Login</h1>
+    
+    <form id="login-form">
+        <div class="form-group">
+            <label for="student-name">Name:</label>
+            <input type="text" id="student-name" value="Test Student" placeholder="Enter your name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="student-email">Email:</label>
+            <input type="email" id="student-email" value="test@example.com" placeholder="Enter your email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="quiz-code">Quiz Code:</label>
+            <input type="text" id="quiz-code" value="12345" placeholder="Enter quiz code" required>
+        </div>
+        
+        <button type="submit">Test Server Login</button>
+        <button type="button" onclick="testDemo()">Test Demo Mode</button>
+    </form>
+    
+    <div class="debug" id="debug-output">
+        Debug output will appear here...
+    </div>
+    
+    <script>
+        const debugOutput = document.getElementById('debug-output');
+        
+        function log(message, isError = false) {
+            console.log(message);
+            debugOutput.innerHTML += `<div class="${isError ? 'error' : 'success'}">${new Date().toLocaleTimeString()}: ${message}</div>`;
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+        
+        function testDemo() {
+            debugOutput.innerHTML = '<strong>Testing Demo Mode...</strong><br>';
+            
+            const studentName = document.getElementById('student-name').value.trim();
+            const studentEmail = document.getElementById('student-email').value.trim();
+            const quizCode = document.getElementById('quiz-code').value.trim();
+            
+            log('✅ Demo mode activated');
+            log('Setting session storage...');
+            
+            sessionStorage.setItem('studentName', studentName);
+            sessionStorage.setItem('studentEmail', studentEmail);
+            sessionStorage.setItem('quizCode', quizCode);
+            sessionStorage.setItem('authToken', 'demo-mode');
+            sessionStorage.setItem('demoMode', 'true');
+            
+            log('✅ Session data stored successfully');
+            log('Redirecting to quiz.html in 2 seconds...');
+            
+            setTimeout(() => {
+                window.location.href = 'quiz.html';
+            }, 2000);
+        }
+        
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            debugOutput.innerHTML = '<strong>Testing Server Login...</strong><br>';
+            
+            const studentName = document.getElementById('student-name').value.trim();
+            const studentEmail = document.getElementById('student-email').value.trim();
+            const quizCode = document.getElementById('quiz-code').value.trim();
+            
+            log(`Testing server at: http://localhost:5001`);
+            log(`Name: "${studentName}"`);
+            log(`Email: "${studentEmail}"`);
+            log(`Code: "${quizCode}"`);
+            
+            // Try server login
+            fetch('http://localhost:5001/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: studentName,
+                    email: studentEmail,
+                    code: quizCode
+                })
+            })
+            .then(response => {
+                log(`Server responded with status: ${response.status}`);
+                return response.text();
+            })
+            .then(text => {
+                log(`Raw response: ${text}`);
+                try {
+                    const data = JSON.parse(text);
+                    log(`Parsed JSON: ${JSON.stringify(data, null, 2)}`);
+                    
+                    if (data.success) {
+                        log('✅ Server login successful!');
+                        sessionStorage.setItem('studentName', studentName);
+                        sessionStorage.setItem('studentEmail', studentEmail);
+                        sessionStorage.setItem('quizCode', quizCode);
+                        sessionStorage.setItem('authToken', data.token || 'authorized');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'quiz.html';
+                        }, 2000);
+                    } else {
+                        log(`❌ Server login failed: ${data.message}`, true);
+                    }
+                } catch (parseError) {
+                    log(`❌ JSON parse error: ${parseError.message}`, true);
+                    log('Response was not valid JSON, falling back to demo mode');
+                    testDemo();
+                }
+            })
+            .catch(error => {
+                log(`❌ Network error: ${error.message}`, true);
+                log('Server not available, falling back to demo mode');
+                testDemo();
+            });
+        });
+    </script>
+</body>
+</html>
