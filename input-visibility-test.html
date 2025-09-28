@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Visibility Test</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --secondary: #666666;
+            --dark: #000000;
+            --card-bg: #0f0f0f;
+            --border: #333333;
+            --text-primary: #ffffff;
+            --input-bg: #1a1a1a;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--dark);
+            color: var(--text-primary);
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+        }
+        
+        .question-item {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .option-letter {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .option-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: #1a1a1a !important;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: #ffffff !important;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .option-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+            background: #222222 !important;
+        }
+        
+        .option-input::placeholder {
+            color: #999999 !important;
+            opacity: 1;
+        }
+        
+        /* Highest specificity rules */
+        .question-item .form-group .option-item input[type="text"].option-input {
+            color: #ffffff !important;
+            background-color: #1a1a1a !important;
+            -webkit-text-fill-color: #ffffff !important;
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            border: 1px solid #333333 !important;
+        }
+        
+        .question-item .form-group .option-item input[type="text"].option-input:focus {
+            color: #ffffff !important;
+            background-color: #222222 !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border-color: #007bff !important;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: #1a1a1a !important;
+            border: 1px solid #333333 !important;
+            border-radius: 4px;
+            color: #ffffff !important;
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            border-color: #007bff !important;
+            background: #222222 !important;
+            color: #ffffff !important;
+        }
+        
+        .status {
+            background: #333;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Input Visibility Test</h1>
+        
+        <div class="status" id="status">
+            Testing text input visibility...
+        </div>
+        
+        <div class="question-item">
+            <div class="form-group">
+                <label>Question Text</label>
+                <textarea placeholder="Type here - you should see the text" rows="2" oninput="updateStatus('Textarea: ' + this.value)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Answer Options</label>
+                
+                <div class="option-item">
+                    <div class="option-letter">A</div>
+                    <input type="text" class="option-input" placeholder="Type here - you should see the text" oninput="updateStatus('Option A: ' + this.value)">
+                </div>
+                
+                <div class="option-item">
+                    <div class="option-letter">B</div>
+                    <input type="text" class="option-input" placeholder="Type here - you should see the text" oninput="updateStatus('Option B: ' + this.value)">
+                </div>
+                
+                <div class="option-item">
+                    <div class="option-letter">C</div>
+                    <input type="text" class="option-input" placeholder="Type here - you should see the text" oninput="updateStatus('Option C: ' + this.value)">
+                </div>
+                
+                <div class="option-item">
+                    <div class="option-letter">D</div>
+                    <input type="text" class="option-input" placeholder="Type here - you should see the text" oninput="updateStatus('Option D: ' + this.value)">
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <h3>Test Instructions:</h3>
+            <ul>
+                <li>Type in the textarea above - you should see white text on dark background</li>
+                <li>Type in each option field - you should see white text on dark background</li>
+                <li>The status area below should update as you type</li>
+                <li>If text is invisible, we need to adjust the CSS further</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        // Test that inputs are working
+        setTimeout(() => {
+            document.getElementById('status').textContent = 'Ready for testing. Try typing in the fields above.';
+        }, 1000);
+    </script>
+</body>
+</html>

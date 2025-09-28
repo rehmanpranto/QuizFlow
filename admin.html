@@ -450,13 +450,33 @@
             opacity: 1 !important;
         }
         
-        /* Debug CSS - temporary red border to identify input fields */
-        .debug-mode .option-input {
-            border: 2px solid red !important;
+        /* FORCE WHITE TEXT - NUCLEAR OPTION */
+        input.option-input,
+        input[type="text"].option-input,
+        .option-input,
+        .question-item input,
+        .question-item textarea,
+        .form-group input,
+        .form-group textarea {
+            color: white !important;
+            background: #000000 !important;
+            -webkit-text-fill-color: white !important;
+            -moz-text-fill-color: white !important;
+            text-shadow: none !important;
         }
         
-        .debug-mode .option-input:focus {
-            border: 2px solid lime !important;
+        input.option-input:focus,
+        input[type="text"].option-input:focus,
+        .option-input:focus,
+        .question-item input:focus,
+        .question-item textarea:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            color: white !important;
+            background: #111111 !important;
+            -webkit-text-fill-color: white !important;
+            -moz-text-fill-color: white !important;
+            border: 2px solid #007bff !important;
         }
 
         .correct-answer-radio {
@@ -1093,6 +1113,12 @@
                     return renderEssayQuestion(question, index);
                 }
             }).join('');
+            
+            // FORCE WHITE TEXT IMMEDIATELY AFTER RENDERING
+            setTimeout(() => {
+                forceWhiteText();
+                console.log('WHITE TEXT FORCED ON ALL INPUTS');
+            }, 100);
         }
 
         function renderMCQQuestion(question, index) {
@@ -1110,6 +1136,7 @@
                     <div class="form-group">
                         <label>Question Text</label>
                         <textarea placeholder="Enter your question here..." rows="2" 
+                                  style="color: white !important; background: #000000 !important;"
                                   onchange="updateQuestionText(${index}, this.value)"
                                   oninput="console.log('Question text input:', this.value)">${question.text}</textarea>
                     </div>
@@ -1121,10 +1148,11 @@
                                 <div class="option-letter">${String.fromCharCode(65 + optionIndex)}</div>
                                 <input type="text" class="option-input" placeholder="Enter option ${String.fromCharCode(65 + optionIndex)}" 
                                        value="${option}" 
+                                       style="color: white !important; background: #000000 !important; -webkit-text-fill-color: white !important;"
                                        onchange="updateOption(${index}, ${optionIndex}, this.value)"
-                                       oninput="console.log('Option ${String.fromCharCode(65 + optionIndex)} input:', this.value)"
-                                       onfocus="console.log('Option ${String.fromCharCode(65 + optionIndex)} focused')"
-                                       onclick="console.log('Option ${String.fromCharCode(65 + optionIndex)} clicked')">
+                                       oninput="this.style.color='white'; this.style.background='#000000'; console.log('Option ${String.fromCharCode(65 + optionIndex)} input:', this.value)"
+                                       onfocus="this.style.color='white'; this.style.background='#111111'; console.log('Option ${String.fromCharCode(65 + optionIndex)} focused')"
+                                       onclick="this.style.color='white'; console.log('Option ${String.fromCharCode(65 + optionIndex)} clicked')">
                                 <input type="radio" name="correct-${question.id}" class="correct-answer-radio" 
                                        value="${optionIndex}"
                                        ${question.correctAnswer === optionIndex ? 'checked' : ''} 
@@ -1401,9 +1429,36 @@
             console.log('Check console above for detailed results');
         }
 
+        // Force white text on all inputs
+        function forceWhiteText() {
+            const inputs = document.querySelectorAll('input[type="text"], textarea, .option-input');
+            inputs.forEach(input => {
+                input.style.color = 'white';
+                input.style.background = '#000000';
+                input.style.webkitTextFillColor = 'white';
+                input.style.mozTextFillColor = 'white';
+                
+                // Add event listeners to maintain white text
+                input.addEventListener('input', function() {
+                    this.style.color = 'white';
+                    this.style.webkitTextFillColor = 'white';
+                });
+                
+                input.addEventListener('focus', function() {
+                    this.style.color = 'white';
+                    this.style.background = '#111111';
+                    this.style.webkitTextFillColor = 'white';
+                });
+            });
+        }
+
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboardStats();
+            // Force white text on page load
+            setTimeout(forceWhiteText, 500);
+            // Keep forcing it periodically
+            setInterval(forceWhiteText, 2000);
         });
     </script>
 </body>
