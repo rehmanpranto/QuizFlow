@@ -284,7 +284,7 @@
                 You scored 17 out of 20 questions correctly
             </div>
             <button class="btn btn-primary" onclick="viewResults()">View Detailed Results</button>
-            <a href="/login.html" class="btn btn-secondary" style="margin-left: 1rem;">Take Another Quiz</a>
+            <a href="login.html" class="btn btn-secondary" style="margin-left: 1rem;">Take Another Quiz</a>
         </div>
     </div>
 
@@ -296,7 +296,7 @@
         if (!studentName || !quizCode) {
             // Smooth redirect with message
             setTimeout(() => {
-                window.location.href = '/login.html';
+                window.location.href = 'login.html';
             }, 100);
             return;
         }
@@ -325,7 +325,18 @@
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
+                    let data;
+                    try {
+                        // Check if response is JSON
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            throw new Error('Server returned non-JSON response');
+                        }
+                    } catch (parseError) {
+                        throw new Error('Failed to parse server response');
+                    }
                     currentQuiz = data;
                     initializeQuiz();
                 } else {
@@ -525,7 +536,21 @@
                 });
                 
                 if (response.ok) {
-                    const data = await response.json();
+                    let data;
+                    try {
+                        // Check if response is JSON
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            // Server returned HTML, likely success but not JSON
+                            console.log('Results submitted (non-JSON response)');
+                            return;
+                        }
+                    } catch (parseError) {
+                        console.log('Results submitted but could not parse response');
+                        return;
+                    }
                     console.log('Results submitted successfully:', data);
                 }
             } catch (error) {

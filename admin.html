@@ -484,7 +484,7 @@
     <script>
         // Check admin authentication
         if (!sessionStorage.getItem('adminAuth')) {
-            window.location.href = '/admin-login.html';
+            window.location.href = 'admin-login.html';
         }
 
         // Tab switching with smooth transitions
@@ -720,7 +720,7 @@
                 sessionStorage.removeItem('adminAuth');
                 sessionStorage.removeItem('adminUsername');
                 sessionStorage.removeItem('authToken');
-                window.location.href = '/admin-login.html';
+                window.location.href = 'admin-login.html';
             }
         }
 

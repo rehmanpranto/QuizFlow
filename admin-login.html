@@ -257,7 +257,7 @@
         </form>
 
         <div class="back-link">
-            <a href="/index.html">← Back to Home</a>
+            <a href="index.html">← Back to Home</a>
         </div>
     </div>
 
@@ -342,7 +342,7 @@
                     sessionStorage.setItem('authToken', data.token || 'admin-authorized');
                     
                     setTimeout(() => {
-                        window.location.href = '/admin.html';
+                        window.location.href = 'admin.html';
                     }, 1000);
                     
                 } else {
@@ -370,7 +370,7 @@
                         sessionStorage.setItem('demoMode', 'true');
                         
                         setTimeout(() => {
-                            window.location.href = '/admin.html';
+                            window.location.href = 'admin.html';
                         }, 1000);
                         
                         return;
