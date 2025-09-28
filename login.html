@@ -340,7 +340,15 @@
                     })
                 });
                 
-                const data = await response.json();
+                // Check if response is JSON before parsing
+                let data = {};
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    // Not JSON response (likely 404 HTML), throw error to trigger demo mode
+                    throw new Error('Server not available');
+                }
                 
                 if (response.ok && data.success) {
                     buttonText.textContent = 'Success!';
@@ -363,8 +371,11 @@
             } catch (error) {
                 console.error('Login Error:', error);
                 
-                // Check if it's a network error (server not running)
-                if (error.message.includes('fetch') || error.name === 'TypeError') {
+                // Check if it's a network error, JSON parsing error, or server not running
+                if (error.message.includes('fetch') || 
+                    error.name === 'TypeError' || 
+                    error.name === 'SyntaxError' ||
+                    error.message.includes('Server not available')) {
                     // Fallback: Allow login without backend for demo purposes
                     if (studentName.length >= 2 && quizCode.length >= 3) {
                         buttonText.textContent = 'Demo Mode';

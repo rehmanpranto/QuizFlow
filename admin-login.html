@@ -317,7 +317,20 @@
                     })
                 });
                 
-                const data = await response.json();
+                let data;
+                try {
+                    // Check if response is JSON
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        // Server returned HTML (likely 404), throw error to trigger demo mode
+                        throw new Error('Server not available - received non-JSON response');
+                    }
+                } catch (parseError) {
+                    // JSON parsing failed, likely server returned HTML error page
+                    throw new Error('Server not available - invalid JSON response');
+                }
                 
                 if (response.ok && data.success) {
                     buttonText.textContent = 'Access Granted!';
@@ -339,8 +352,11 @@
             } catch (error) {
                 console.error('Admin Login Error:', error);
                 
-                // Check if it's a network error (server not running)
-                if (error.message.includes('fetch') || error.name === 'TypeError') {
+                // Check if it's a network error, JSON parsing error, or server not running
+                if (error.message.includes('fetch') || 
+                    error.name === 'TypeError' || 
+                    error.name === 'SyntaxError' ||
+                    error.message.includes('Server not available')) {
                     // Fallback: Allow admin login for demo purposes with correct credentials
                     if (username === 'admin' && password === 'admin9264') {
                         buttonText.textContent = 'Demo Mode';
