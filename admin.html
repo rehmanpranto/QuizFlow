@@ -408,17 +408,55 @@
             opacity: 1;
         }
         
-        /* Additional input styling to ensure visibility */
-        input[type="text"].option-input {
+        /* Additional input styling to ensure visibility - highest specificity */
+        .question-item .form-group .option-item input[type="text"].option-input {
             color: #ffffff !important;
             background-color: #1a1a1a !important;
             -webkit-text-fill-color: #ffffff !important;
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            border: 1px solid #333333 !important;
         }
         
-        input[type="text"].option-input:focus {
+        .question-item .form-group .option-item input[type="text"].option-input:focus {
             color: #ffffff !important;
             background-color: #222222 !important;
             -webkit-text-fill-color: #ffffff !important;
+            border-color: #007bff !important;
+        }
+        
+        .question-item .form-group .option-item input[type="text"].option-input::placeholder {
+            color: #999999 !important;
+            opacity: 1 !important;
+        }
+        
+        /* Question text area styling for visibility */
+        .question-item .form-group textarea {
+            color: #ffffff !important;
+            background-color: #1a1a1a !important;
+            border: 1px solid #333333 !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+        
+        .question-item .form-group textarea:focus {
+            color: #ffffff !important;
+            background-color: #222222 !important;
+            border-color: #007bff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+        
+        .question-item .form-group textarea::placeholder {
+            color: #999999 !important;
+            opacity: 1 !important;
+        }
+        
+        /* Debug CSS - temporary red border to identify input fields */
+        .debug-mode .option-input {
+            border: 2px solid red !important;
+        }
+        
+        .debug-mode .option-input:focus {
+            border: 2px solid lime !important;
         }
 
         .correct-answer-radio {
@@ -1290,6 +1328,37 @@
                 sessionStorage.removeItem('authToken');
                 window.location.href = 'admin-login.html';
             }
+        }
+
+        // Debug input visibility function
+        function debugInputVisibility() {
+            console.log('=== INPUT VISIBILITY DEBUGGING ===');
+            
+            // Add debug class to body
+            document.body.classList.add('debug-mode');
+            
+            // Find all option inputs
+            const inputs = document.querySelectorAll('.option-input');
+            console.log('Found', inputs.length, 'option inputs');
+            
+            inputs.forEach((input, index) => {
+                const computedStyle = window.getComputedStyle(input);
+                console.log(`Input ${index + 1}:`, {
+                    color: computedStyle.color,
+                    backgroundColor: computedStyle.backgroundColor,
+                    border: computedStyle.border,
+                    display: computedStyle.display,
+                    visibility: computedStyle.visibility,
+                    opacity: computedStyle.opacity,
+                    webkitTextFillColor: computedStyle.webkitTextFillColor
+                });
+                
+                // Set a test value
+                input.value = `Test ${index + 1}`;
+                input.style.cssText += 'color: #ffffff !important; background: #1a1a1a !important;';
+            });
+            
+            alert('Debug mode activated. Check console for details. Option inputs should now have red borders and test text.');
         }
 
         // Test all buttons function
