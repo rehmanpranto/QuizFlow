@@ -101,7 +101,7 @@
 
         .main-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
             padding-bottom: 1rem;
@@ -298,6 +298,27 @@
         .hidden {
             display: none;
         }
+
+        /* Smooth transitions */
+        .tab-content {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-content.active {
+            opacity: 1;
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -466,9 +487,9 @@
             window.location.href = '/admin-login.html';
         }
 
-        // Tab switching
+        // Tab switching with smooth transitions
         function switchTab(tabName, clickedElement) {
-            // Hide all tab contents
+            // Hide all tab contents with fade out
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -478,8 +499,10 @@
                 link.classList.remove('active');
             });
             
-            // Show selected tab
-            document.getElementById(tabName).classList.add('active');
+            // Show selected tab with small delay for smooth transition
+            setTimeout(() => {
+                document.getElementById(tabName).classList.add('active');
+            }, 50);
             
             // Add active class to clicked nav link
             if (clickedElement) {
@@ -505,6 +528,13 @@
 
         // Load dashboard statistics
         async function loadDashboardStats() {
+            // Show loading state
+            const statElements = ['total-quizzes', 'active-quizzes', 'total-students', 'total-submissions'];
+            statElements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '...';
+            });
+
             try {
                 const response = await fetch('/api/admin/quizzes');
                 if (response.ok) {
@@ -512,6 +542,21 @@
                     document.getElementById('total-quizzes').textContent = data.quizzes?.length || 0;
                     document.getElementById('active-quizzes').textContent = 
                         data.quizzes?.filter(q => q.is_active).length || 0;
+                    
+                    // Try to get student count
+                    try {
+                        const studentsResponse = await fetch('/api/admin/students');
+                        if (studentsResponse.ok) {
+                            const studentsData = await studentsResponse.json();
+                            document.getElementById('total-students').textContent = studentsData.students?.length || 0;
+                        }
+                    } catch (e) {
+                        document.getElementById('total-students').textContent = '0';
+                    }
+                    
+                    document.getElementById('total-submissions').textContent = '0'; // Will implement later
+                } else {
+                    throw new Error('Failed to load stats');
                 }
             } catch (error) {
                 console.log('Demo mode: Using placeholder stats');

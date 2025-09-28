@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import os
+import json
 from dotenv import load_dotenv
 from datetime import datetime, timezone
 from flask_mail import Mail, Message
@@ -90,7 +91,9 @@ class Submission(db.Model):
     detailed_results = db.Column(db.JSON, nullable=True)  # Store as JSON
     access_code = db.Column(db.String(5), nullable=True)  # Store the 5-digit access code
     quiz_start_time = db.Column(db.DateTime, nullable=True)  # When quiz started
-    quiz_duration_seconds = db.Column(db.Integer, nullable=True)  # Time taken in seconds# Create tables
+    quiz_duration_seconds = db.Column(db.Integer, nullable=True)  # Time taken in seconds
+
+# Create tables
 with app.app_context():
     db.create_all()
 
