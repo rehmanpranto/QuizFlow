@@ -319,6 +319,92 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
+
+        /* Quiz Editor Styles */
+        .question-item {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .question-type-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .question-type-mcq {
+            background: rgba(0, 123, 255, 0.2);
+            color: #007bff;
+        }
+
+        .question-type-essay {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-letter {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .option-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+        }
+
+        .correct-answer-radio {
+            margin-left: 0.5rem;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .text-secondary {
+            color: var(--text-secondary);
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -339,6 +425,11 @@
                 <li class="nav-item">
                     <a href="#" class="nav-link" onclick="switchTab('quizzes', this)">
                         📋 Quizzes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="switchTab('quiz-editor', this)">
+                        ✏️ Quiz Editor
                     </a>
                 </li>
                 <li class="nav-item">
@@ -463,6 +554,63 @@
                 </div>
             </div>
 
+            <!-- Quiz Editor Tab -->
+            <div id="quiz-editor" class="tab-content">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Quiz Editor</h3>
+                        <div>
+                            <button class="btn btn-primary" onclick="createNewQuiz()">New Quiz</button>
+                            <button class="btn btn-secondary" onclick="loadExistingQuiz()">Load Quiz</button>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Basic Info -->
+                    <div class="card" style="margin-bottom: 2rem;">
+                        <h4>Quiz Information</h4>
+                        <div class="form-group">
+                            <label for="quiz-title">Quiz Title</label>
+                            <input type="text" id="quiz-title" placeholder="Enter quiz title" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="quiz-description">Description</label>
+                            <textarea id="quiz-description" placeholder="Enter quiz description" rows="3"></textarea>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label for="quiz-time-limit">Time Limit (minutes)</label>
+                                <input type="number" id="quiz-time-limit" placeholder="30" min="1" max="300">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label for="quiz-pass-score">Passing Score (%)</label>
+                                <input type="number" id="quiz-pass-score" placeholder="70" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Questions Section -->
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h4>Questions</h4>
+                            <div>
+                                <button class="btn btn-primary" onclick="addMCQQuestion()">+ Add MCQ</button>
+                                <button class="btn btn-primary" onclick="addEssayQuestion()">+ Add Essay</button>
+                            </div>
+                        </div>
+                        
+                        <div id="questions-container">
+                            <p class="text-secondary">No questions added yet. Click "Add MCQ" or "Add Essay" to start building your quiz.</p>
+                        </div>
+                    </div>
+
+                    <!-- Save Quiz -->
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button class="btn btn-success" onclick="saveQuiz()" style="margin-right: 1rem;">Save Quiz</button>
+                        <button class="btn btn-secondary" onclick="previewQuiz()">Preview Quiz</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Settings Tab -->
             <div id="settings" class="tab-content">
                 <div class="card">
@@ -513,6 +661,7 @@
             const titles = {
                 'dashboard': 'Dashboard',
                 'quizzes': 'Quiz Management',
+                'quiz-editor': 'Quiz Editor',
                 'students': 'Student Management',
                 'settings': 'Settings'
             };
@@ -712,6 +861,325 @@
 
         function viewStudent(studentId) {
             alert(`View student ${studentId} - Feature coming soon!`);
+        }
+
+        // Quiz Editor Functions
+        let currentQuiz = {
+            title: '',
+            description: '',
+            timeLimit: 30,
+            passingScore: 70,
+            questions: []
+        };
+
+        function createNewQuiz() {
+            currentQuiz = {
+                title: '',
+                description: '',
+                timeLimit: 30,
+                passingScore: 70,
+                questions: []
+            };
+            
+            document.getElementById('quiz-title').value = '';
+            document.getElementById('quiz-description').value = '';
+            document.getElementById('quiz-time-limit').value = '30';
+            document.getElementById('quiz-pass-score').value = '70';
+            document.getElementById('questions-container').innerHTML = '<p class="text-secondary">No questions added yet. Click "Add MCQ" or "Add Essay" to start building your quiz.</p>';
+            
+            console.log('New quiz created');
+        }
+
+        function loadExistingQuiz() {
+            // Demo: Load a sample quiz
+            currentQuiz = {
+                title: 'Sample Commerce Quiz',
+                description: 'A demonstration quiz covering basic commerce concepts',
+                timeLimit: 45,
+                passingScore: 80,
+                questions: [
+                    {
+                        id: 1,
+                        type: 'mcq',
+                        text: 'What is the primary purpose of marketing?',
+                        options: [
+                            'To increase production costs',
+                            'To satisfy customer needs and wants',
+                            'To reduce competition',
+                            'To eliminate profit margins'
+                        ],
+                        correctAnswer: 1
+                    },
+                    {
+                        id: 2,
+                        type: 'essay',
+                        text: 'Explain the concept of supply and demand and how it affects pricing in a free market economy.',
+                        minWords: 100,
+                        maxWords: 500
+                    }
+                ]
+            };
+            
+            loadQuizToEditor();
+            console.log('Demo quiz loaded');
+        }
+
+        function loadQuizToEditor() {
+            document.getElementById('quiz-title').value = currentQuiz.title;
+            document.getElementById('quiz-description').value = currentQuiz.description;
+            document.getElementById('quiz-time-limit').value = currentQuiz.timeLimit;
+            document.getElementById('quiz-pass-score').value = currentQuiz.passingScore;
+            
+            renderQuestions();
+        }
+
+        function addMCQQuestion() {
+            const questionId = Date.now();
+            const question = {
+                id: questionId,
+                type: 'mcq',
+                text: '',
+                options: ['', '', '', ''],
+                correctAnswer: 0
+            };
+            
+            currentQuiz.questions.push(question);
+            renderQuestions();
+        }
+
+        function addEssayQuestion() {
+            const questionId = Date.now();
+            const question = {
+                id: questionId,
+                type: 'essay',
+                text: '',
+                minWords: 50,
+                maxWords: 300
+            };
+            
+            currentQuiz.questions.push(question);
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            if (currentQuiz.questions.length === 0) {
+                container.innerHTML = '<p class="text-secondary">No questions added yet. Click "Add MCQ" or "Add Essay" to start building your quiz.</p>';
+                return;
+            }
+            
+            container.innerHTML = currentQuiz.questions.map((question, index) => {
+                if (question.type === 'mcq') {
+                    return renderMCQQuestion(question, index);
+                } else {
+                    return renderEssayQuestion(question, index);
+                }
+            }).join('');
+        }
+
+        function renderMCQQuestion(question, index) {
+            return `
+                <div class="question-item">
+                    <div class="question-header">
+                        <span class="question-type-badge question-type-mcq">MCQ Question ${index + 1}</span>
+                        <div class="question-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="moveQuestion(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>↑</button>
+                            <button class="btn btn-sm btn-secondary" onclick="moveQuestion(${index}, 'down')" ${index === currentQuiz.questions.length - 1 ? 'disabled' : ''}>↓</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${index})">Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Question Text</label>
+                        <textarea placeholder="Enter your question here..." rows="2" 
+                                  onchange="updateQuestionText(${index}, this.value)">${question.text}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Answer Options</label>
+                        ${question.options.map((option, optionIndex) => `
+                            <div class="option-item">
+                                <div class="option-letter">${String.fromCharCode(65 + optionIndex)}</div>
+                                <input type="text" class="option-input" placeholder="Enter option ${String.fromCharCode(65 + optionIndex)}" 
+                                       value="${option}" onchange="updateOption(${index}, ${optionIndex}, this.value)">
+                                <input type="radio" name="correct-${question.id}" class="correct-answer-radio" 
+                                       ${question.correctAnswer === optionIndex ? 'checked' : ''} 
+                                       onchange="updateCorrectAnswer(${index}, ${optionIndex})">
+                                <label style="margin: 0; font-size: 0.8rem;">Correct</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderEssayQuestion(question, index) {
+            return `
+                <div class="question-item">
+                    <div class="question-header">
+                        <span class="question-type-badge question-type-essay">Essay Question ${index + 1}</span>
+                        <div class="question-actions">
+                            <button class="btn btn-sm btn-secondary" onclick="moveQuestion(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>↑</button>
+                            <button class="btn btn-sm btn-secondary" onclick="moveQuestion(${index}, 'down')" ${index === currentQuiz.questions.length - 1 ? 'disabled' : ''}>↓</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${index})">Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Question Text</label>
+                        <textarea placeholder="Enter your essay question here..." rows="3" 
+                                  onchange="updateQuestionText(${index}, this.value)">${question.text}</textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Minimum Words</label>
+                            <input type="number" min="10" max="1000" value="${question.minWords || 50}" 
+                                   onchange="updateEssayConstraint(${index}, 'minWords', this.value)">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Maximum Words</label>
+                            <input type="number" min="50" max="2000" value="${question.maxWords || 300}" 
+                                   onchange="updateEssayConstraint(${index}, 'maxWords', this.value)">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateQuestionText(index, text) {
+            currentQuiz.questions[index].text = text;
+        }
+
+        function updateOption(questionIndex, optionIndex, text) {
+            currentQuiz.questions[questionIndex].options[optionIndex] = text;
+        }
+
+        function updateCorrectAnswer(questionIndex, optionIndex) {
+            currentQuiz.questions[questionIndex].correctAnswer = optionIndex;
+        }
+
+        function updateEssayConstraint(questionIndex, field, value) {
+            currentQuiz.questions[questionIndex][field] = parseInt(value);
+        }
+
+        function moveQuestion(index, direction) {
+            if (direction === 'up' && index > 0) {
+                [currentQuiz.questions[index], currentQuiz.questions[index - 1]] = 
+                [currentQuiz.questions[index - 1], currentQuiz.questions[index]];
+            } else if (direction === 'down' && index < currentQuiz.questions.length - 1) {
+                [currentQuiz.questions[index], currentQuiz.questions[index + 1]] = 
+                [currentQuiz.questions[index + 1], currentQuiz.questions[index]];
+            }
+            renderQuestions();
+        }
+
+        function deleteQuestion(index) {
+            if (confirm('Are you sure you want to delete this question?')) {
+                currentQuiz.questions.splice(index, 1);
+                renderQuestions();
+            }
+        }
+
+        function saveQuiz() {
+            // Update quiz basic info
+            currentQuiz.title = document.getElementById('quiz-title').value;
+            currentQuiz.description = document.getElementById('quiz-description').value;
+            currentQuiz.timeLimit = parseInt(document.getElementById('quiz-time-limit').value) || 30;
+            currentQuiz.passingScore = parseInt(document.getElementById('quiz-pass-score').value) || 70;
+            
+            // Validate quiz
+            if (!currentQuiz.title.trim()) {
+                alert('Please enter a quiz title');
+                return;
+            }
+            
+            if (currentQuiz.questions.length === 0) {
+                alert('Please add at least one question');
+                return;
+            }
+            
+            // Check if all questions are properly filled
+            for (let i = 0; i < currentQuiz.questions.length; i++) {
+                const question = currentQuiz.questions[i];
+                if (!question.text.trim()) {
+                    alert(`Please enter text for question ${i + 1}`);
+                    return;
+                }
+                
+                if (question.type === 'mcq') {
+                    if (question.options.some(opt => !opt.trim())) {
+                        alert(`Please fill all options for question ${i + 1}`);
+                        return;
+                    }
+                }
+            }
+            
+            // Demo: Save to localStorage
+            const quizId = 'quiz_' + Date.now();
+            localStorage.setItem(quizId, JSON.stringify(currentQuiz));
+            
+            alert(`Quiz "${currentQuiz.title}" saved successfully!\n\nQuiz ID: ${quizId}\nQuestions: ${currentQuiz.questions.length}\nTime Limit: ${currentQuiz.timeLimit} minutes`);
+            console.log('Quiz saved:', currentQuiz);
+        }
+
+        function previewQuiz() {
+            if (currentQuiz.questions.length === 0) {
+                alert('Please add at least one question to preview');
+                return;
+            }
+            
+            const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+            previewWindow.document.write(`
+                <html>
+                <head>
+                    <title>Quiz Preview: ${currentQuiz.title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; background: #000; color: #fff; }
+                        .question { margin-bottom: 2rem; padding: 1rem; border: 1px solid #333; border-radius: 8px; }
+                        .question-type { background: #333; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; }
+                        .options { margin-top: 1rem; }
+                        .option { margin: 0.5rem 0; padding: 0.5rem; background: #1a1a1a; border-radius: 4px; }
+                        .essay-constraints { color: #999; font-size: 0.9rem; margin-top: 0.5rem; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${currentQuiz.title}</h1>
+                    <p><strong>Description:</strong> ${currentQuiz.description}</p>
+                    <p><strong>Time Limit:</strong> ${currentQuiz.timeLimit} minutes | <strong>Passing Score:</strong> ${currentQuiz.passingScore}%</p>
+                    <hr>
+                    ${currentQuiz.questions.map((q, i) => {
+                        if (q.type === 'mcq') {
+                            return `
+                                <div class="question">
+                                    <span class="question-type">MCQ Question ${i + 1}</span>
+                                    <h3>${q.text}</h3>
+                                    <div class="options">
+                                        ${q.options.map((opt, j) => `
+                                            <div class="option">
+                                                ${String.fromCharCode(65 + j)}) ${opt} 
+                                                ${j === q.correctAnswer ? '<strong>(Correct Answer)</strong>' : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="question">
+                                    <span class="question-type">Essay Question ${i + 1}</span>
+                                    <h3>${q.text}</h3>
+                                    <div class="essay-constraints">
+                                        Word limit: ${q.minWords} - ${q.maxWords} words
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }).join('')}
+                </body>
+                </html>
+            `);
         }
 
         // Logout function
