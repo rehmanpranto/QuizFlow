@@ -5,20 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuizFlow</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --primary: #ffffff;
-            --primary-hover: #f5f5f5;
-            --secondary: #666666;
-            --dark: #000000;
-            --card-bg: #0f0f0f;
-            --border: #333333;
-            --text-primary: #ffffff;
-            --text-secondary: #999999;
-            --input-bg: #1a1a1a;
-            --accent: #007bff;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
         
         * {
             margin: 0;
@@ -27,88 +14,67 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--dark);
-            color: var(--text-primary);
-            line-height: 1.6;
-            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
         }
 
         .container {
-            max-width: 500px;
-            width: 100%;
-            padding: 2rem;
             text-align: center;
+            max-width: 400px;
+            padding: 2rem;
         }
 
-        /* Header */
-        .header {
-            margin-bottom: 3rem;
-        }
-
-        .header h1 {
+        h1 {
             font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
         }
 
-        .header .subtitle {
+        .subtitle {
+            color: #999999;
+            margin-bottom: 3rem;
             font-size: 1rem;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
+        }
         }
 
-        /* Main Actions */
-        .main-actions {
+        .buttons {
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            margin-bottom: 3rem;
         }
 
         .btn {
             display: block;
-            width: 100%;
-            padding: 1rem;
-            background: var(--primary);
-            color: var(--dark);
+            padding: 1rem 2rem;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 4px;
             font-weight: 600;
             transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
             font-size: 1rem;
         }
 
-        .btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
+        .btn-primary {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .btn-primary:hover {
+            background: #f5f5f5;
         }
 
         .btn-secondary {
             background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--border);
+            color: #ffffff;
+            border: 1px solid #333333;
         }
 
         .btn-secondary:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* Footer */
-        .footer {
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+            border-color: #ffffff;
         }
 
         /* Responsive */
@@ -117,7 +83,7 @@
                 padding: 1rem;
             }
             
-            .header h1 {
+            h1 {
                 font-size: 2.5rem;
             }
         }
@@ -125,29 +91,13 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>QuizFlow</h1>
-            <p class="subtitle">Simple quiz platform for students and educators</p>
-        </div>
-
-        <!-- Main Actions -->
-        <div class="main-actions">
-            <a href="login.html" class="btn">Take a Quiz</a>
+        <h1>QuizFlow</h1>
+        <p class="subtitle">Simple quiz platform</p>
+        
+        <div class="buttons">
+            <a href="login.html" class="btn btn-primary">Take a Quiz</a>
             <a href="admin-login.html" class="btn btn-secondary">Admin Access</a>
         </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>&copy; 2024 QuizFlow</p>
-        </div>
     </div>
-
-    <script>
-        // Clear any stored session data when landing on home page
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('QuizFlow platform ready');
-        });
-    </script>
 </body>
 </html>
