@@ -254,6 +254,7 @@
         <div id="loading-screen" class="loading-screen">
             <div class="loading-spinner"></div>
             <p>Loading your quiz...</p>
+            <button onclick="loadDemoQuiz()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #fff; color: #000; border: none; border-radius: 4px; cursor: pointer;">Force Load Demo Quiz</button>
         </div>
 
         <!-- Question Content -->
@@ -289,16 +290,20 @@
     </div>
 
     <script>
-        // Check authentication
-        const studentName = sessionStorage.getItem('studentName');
-        const quizCode = sessionStorage.getItem('quizCode');
+        // Check authentication (demo mode bypass)
+        let studentName = sessionStorage.getItem('studentName');
+        let quizCode = sessionStorage.getItem('quizCode');
         
+        // Demo mode: Set default values if not present
         if (!studentName || !quizCode) {
-            // Smooth redirect with message
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 100);
-            return;
+            console.log('Demo mode: Setting default student data');
+            studentName = 'Demo Student';
+            quizCode = 'DEMO123';
+            sessionStorage.setItem('studentName', studentName);
+            sessionStorage.setItem('quizCode', quizCode);
+            sessionStorage.setItem('studentEmail', 'demo@example.com');
+            sessionStorage.setItem('authToken', 'demo-authorized');
+            sessionStorage.setItem('demoMode', 'true');
         }
 
         // Quiz state
@@ -309,14 +314,32 @@
 
         // Initialize quiz
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, starting quiz initialization...');
+            console.log('Student name:', studentName);
+            console.log('Quiz code:', quizCode);
             loadQuiz();
+            
+            // Backup initialization after 2 seconds if nothing happened
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen && loadingScreen.style.display !== 'none') {
+                    console.log('Backup initialization triggered - quiz may not have loaded');
+                    loadDemoQuiz();
+                }
+            }, 2000);
         });
 
         // Load quiz data
         async function loadQuiz() {
             // Skip server check and go directly to demo mode
             console.log('Loading demo quiz (server check skipped)...');
-            loadDemoQuiz();
+            
+            // Force demo quiz load with timeout to ensure DOM is ready
+            setTimeout(() => {
+                console.log('Timeout triggered - forcing demo quiz load');
+                loadDemoQuiz();
+            }, 100);
+            
             return;
             
             try {
