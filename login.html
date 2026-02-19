@@ -8,22 +8,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #09090b;
-            --surface: #18181b;
-            --surface-2: #27272a;
-            --border: #3f3f46;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --accent-light: rgba(99,102,241,0.12);
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #fafafa;
-            --text-muted: #a1a1aa;
-            --text-dim: #52525b;
-            --radius: 12px;
-            --radius-sm: 8px;
-            --shadow: 0 8px 32px rgba(0,0,0,0.5);
+            --bg: #050507;
+            --bg-2: #0a0a0f;
+            --surface: rgba(255,255,255,0.03);
+            --surface-hover: rgba(255,255,255,0.06);
+            --border: rgba(255,255,255,0.08);
+            --border-hover: rgba(139,92,246,0.5);
+            --accent: #8b5cf6;
+            --accent-2: #6366f1;
+            --accent-grad: linear-gradient(135deg, #8b5cf6, #6366f1);
+            --accent-glow: 0 0 20px rgba(139,92,246,0.35);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --text-dim: #475569;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 25px 50px rgba(0,0,0,0.6);
+            --card-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -35,71 +39,133 @@
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
         }
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.12;
+            pointer-events: none;
+            animation: drift 12s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+        body::before {
+            width: 600px; height: 600px;
+            background: #8b5cf6;
+            top: -200px; left: -200px;
+        }
+        body::after {
+            width: 500px; height: 500px;
+            background: #6366f1;
+            bottom: -150px; right: -150px;
+            animation-delay: -6s;
+        }
+        @keyframes drift {
+            from { transform: translate(0,0) scale(1); }
+            to   { transform: translate(40px,30px) scale(1.1); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .login-container {
             background: var(--surface);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 2rem;
+            padding: 2.5rem;
             width: 100%;
             max-width: 420px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--card-shadow);
+            position: relative;
+            z-index: 1;
+            animation: fadeUp 0.5s ease forwards;
         }
-        .brand-link {
-            display: block;
-            text-align: center;
+
+        /* Top nav */
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .back-link-top {
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 500;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 1.25rem;
-            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: color 0.25s;
         }
-        .brand-link:hover { color: var(--accent); }
+        .back-link-top:hover { color: var(--text); }
+        .brand-mark {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: -0.01em;
+        }
+        .brand-mark svg { opacity: 0.8; }
+
         .login-header {
             text-align: center;
             margin-bottom: 2rem;
         }
         .login-header h2 {
-            font-size: 1.6rem;
+            font-size: 1.7rem;
             font-weight: 700;
+            letter-spacing: -0.03em;
             margin-bottom: 0.4rem;
         }
         .login-header .subtitle {
             color: var(--text-muted);
             font-size: 0.9rem;
         }
+
         .form-group { margin-bottom: 1.25rem; }
         .form-group label {
             display: block;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.45rem;
             font-weight: 500;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             color: var(--text);
         }
         .form-group input {
             width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
+            padding: 0.8rem 1rem;
+            background: #0f0f12;
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: var(--radius-sm);
             font-size: 0.95rem;
             color: var(--text);
             font-family: 'Inter', sans-serif;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
         .form-group input:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-light);
+            box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
         }
         .form-group input::placeholder { color: var(--text-dim); }
+        .form-group input.code-field {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            letter-spacing: 0.1em;
+            font-size: 0.95rem;
+        }
+
         .login-button {
             width: 100%;
-            padding: 0.875rem;
-            background: var(--accent);
+            padding: 0.9rem;
+            background: var(--accent-grad);
             color: #fff;
             border: none;
             border-radius: var(--radius-sm);
@@ -107,11 +173,16 @@
             font-weight: 600;
             font-family: 'Inter', sans-serif;
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.1s ease;
+            transition: all 0.25s ease;
             margin-bottom: 1.5rem;
+            box-shadow: var(--accent-glow);
         }
-        .login-button:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 32px rgba(139,92,246,0.5);
+        }
         .login-button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
         .button-content {
             display: flex;
             align-items: center;
@@ -127,29 +198,30 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .back-link {
-            text-align: center;
-        }
+
+        .back-link { text-align: center; }
         .back-link a {
             color: var(--text-muted);
             text-decoration: none;
             font-size: 0.875rem;
-            transition: color 0.2s;
+            transition: color 0.25s;
         }
         .back-link a:hover { color: var(--text); }
+
+        /* Notification */
         .notification {
             position: fixed;
             top: 1.25rem;
             right: 1.25rem;
-            background: var(--surface);
+            background: rgba(10,10,15,0.9);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            padding: 0.875rem 1rem;
+            padding: 0.875rem 1.1rem;
             color: var(--text);
             font-size: 0.875rem;
             font-family: 'Inter', sans-serif;
-            box-shadow: var(--shadow);
+            box-shadow: var(--card-shadow);
             transform: translateX(calc(100% + 2rem));
             transition: transform 0.3s ease;
             z-index: 1000;
@@ -157,19 +229,34 @@
         }
         .notification.show { transform: translateX(0); }
         .notification.success { border-left: 3px solid var(--success); }
-        .notification.error { border-left: 3px solid var(--danger); }
+        .notification.error   { border-left: 3px solid var(--danger); }
         .notification.warning { border-left: 3px solid var(--warning); }
+
         @media (max-width: 480px) {
-            .login-container { padding: 1.5rem; }
+            .login-container { padding: 1.75rem 1.5rem; }
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <a href="index.html" class="brand-link">QuizFlow</a>
+        <div class="card-top">
+            <a href="index.html" class="back-link-top">← Back</a>
+            <div class="brand-mark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="url(#blg)" stroke="url(#blg)" stroke-width="1.2" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="blg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#6366f1"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                QuizFlow
+            </div>
+        </div>
+
         <div class="login-header">
-            <h2>Student Login</h2>
-            <p class="subtitle">Enter your details to begin</p>
+            <h2>Welcome back</h2>
+            <p class="subtitle">Enter your details to begin your quiz</p>
         </div>
 
         <form id="login-form">
@@ -185,7 +272,7 @@
             </div>
             <div class="form-group">
                 <label for="quiz-code">Access Code</label>
-                <input type="text" id="quiz-code" name="quiz-code"
+                <input type="text" id="quiz-code" name="quiz-code" class="code-field"
                        placeholder="Enter your quiz access code" required>
             </div>
             <button type="submit" class="login-button" id="login-btn">
