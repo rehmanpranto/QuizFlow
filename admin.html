@@ -626,8 +626,13 @@
             <!-- Students Tab -->
             <div id="students" class="tab-content">
                 <div class="card">
-                    <h3>Student Management</h3>
-                    <button class="btn btn-primary" onclick="loadStudents()">Refresh Students</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>Student Management</h3>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button class="btn btn-primary" onclick="loadStudents()">Refresh Students</button>
+                            <button class="btn btn-success" onclick="downloadResults()" style="background: #10b981; border-color: #10b981;">⬇ Download Results CSV</button>
+                        </div>
+                    </div>
                     
                     <div class="table-container" style="margin-top: 1rem;">
                         <table id="students-table">
@@ -861,6 +866,16 @@
                     </td>
                 </tr>
             `).join('');
+        }
+
+        // Download results as CSV
+        function downloadResults() {
+            const a = document.createElement('a');
+            a.href = '/api/admin/results/download';
+            a.download = '';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         // Load students
@@ -1429,34 +1444,68 @@
             console.log('Check console above for detailed results');
         }
 
-        // Force white text on all inputs
+        // Force white text on all inputs - AGGRESSIVE VERSION
         function forceWhiteText() {
-            const inputs = document.querySelectorAll('input[type="text"], textarea, .option-input');
-            inputs.forEach(input => {
-                input.style.color = 'white';
-                input.style.background = '#000000';
-                input.style.webkitTextFillColor = 'white';
-                input.style.mozTextFillColor = 'white';
+            const inputs = document.querySelectorAll('input[type="text"], textarea, .option-input, input.option-input');
+            console.log('ForceWhiteText found inputs:', inputs.length);
+            
+            inputs.forEach((input, index) => {
+                console.log(`Styling input ${index}:`, input);
                 
-                // Add event listeners to maintain white text
-                input.addEventListener('input', function() {
-                    this.style.color = 'white';
-                    this.style.webkitTextFillColor = 'white';
-                });
+                // Set all possible color properties aggressively
+                input.style.setProperty('color', 'white', 'important');
+                input.style.setProperty('background-color', '#000000', 'important');
+                input.style.setProperty('background', '#000000', 'important');
+                input.style.setProperty('-webkit-text-fill-color', 'white', 'important');
+                input.style.setProperty('-moz-text-fill-color', 'white', 'important');
+                input.style.setProperty('text-shadow', 'none', 'important');
+                input.style.setProperty('opacity', '1', 'important');
                 
-                input.addEventListener('focus', function() {
-                    this.style.color = 'white';
-                    this.style.background = '#111111';
-                    this.style.webkitTextFillColor = 'white';
-                });
+                // Remove any event listeners first
+                input.removeEventListener('input', arguments.callee);
+                input.removeEventListener('focus', arguments.callee);
+                input.removeEventListener('keyup', arguments.callee);
+                input.removeEventListener('change', arguments.callee);
+                
+                // Add aggressive event listeners
+                const forceStyle = function() {
+                    this.style.setProperty('color', 'white', 'important');
+                    this.style.setProperty('-webkit-text-fill-color', 'white', 'important');
+                    console.log('Forced white text on:', this);
+                };
+                
+                input.addEventListener('input', forceStyle);
+                input.addEventListener('focus', forceStyle);
+                input.addEventListener('keyup', forceStyle);
+                input.addEventListener('change', forceStyle);
+                input.addEventListener('blur', forceStyle);
+            });
+        }
+        
+        // Ultra aggressive text forcing - runs every second
+        function ultraForceText() {
+            const optionInputs = document.querySelectorAll('.option-input');
+            optionInputs.forEach(input => {
+                if (input.value && input.value.length > 0) {
+                    input.style.setProperty('color', '#ffffff', 'important');
+                    input.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+                    input.style.setProperty('opacity', '1', 'important');
+                }
             });
         }
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboardStats();
-            // Force white text on page load
+            // Force white text on page load - multiple attempts
+            setTimeout(forceWhiteText, 100);
             setTimeout(forceWhiteText, 500);
+            setTimeout(forceWhiteText, 1000);
+            
+            // Ultra aggressive - force every second
+            setInterval(ultraForceText, 1000);
+            setInterval(forceWhiteText, 3000);
+            
             // Keep forcing it periodically
             setInterval(forceWhiteText, 2000);
         });

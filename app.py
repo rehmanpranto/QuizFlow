@@ -1,8 +1,10 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, Response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import os
 import json
+import csv
+import io
 from dotenv import load_dotenv
 from datetime import datetime, timezone
 from flask_mail import Mail, Message
@@ -359,8 +361,45 @@ def get_all_students():
     
     return jsonify({"success": True, "students": student_list})
 
-@app.route('/api/admin/send-email', methods=['POST'])
-def send_custom_email():
+@app.route('/api/admin/results/download', methods=['GET'])
+def download_results():
+    """Download all quiz submission results as a CSV file"""
+    submissions = Submission.query.order_by(Submission.submitted_at.desc()).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header row
+    writer.writerow([
+        'Submission ID', 'Student Name', 'Email', 'Access Code',
+        'Score', 'Total Questions', 'Percentage (%)', 'Feedback',
+        'Duration (seconds)', 'Submitted At'
+    ])
+
+    for sub in submissions:
+        user = User.query.get(sub.user_id)
+        writer.writerow([
+            sub.submission_id,
+            user.name if user else 'N/A',
+            user.email if user else 'N/A',
+            sub.access_code or 'N/A',
+            sub.score,
+            sub.total_questions,
+            f"{sub.percentage:.2f}",
+            sub.feedback or '',
+            sub.quiz_duration_seconds or '',
+            sub.submitted_at.strftime('%Y-%m-%d %H:%M:%S') if sub.submitted_at else ''
+        ])
+
+    output.seek(0)
+    filename = f"quizflow_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+    )
+
+
     """Send custom email to students"""
     data = request.get_json()
     if not data:
