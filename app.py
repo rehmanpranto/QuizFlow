@@ -58,6 +58,7 @@ class Quiz(db.Model):
     time_limit = db.Column(db.Integer, default=1200)  # Global time limit in seconds
     time_per_question = db.Column(db.Integer, default=30)  # Time per question in seconds
     is_active = db.Column(db.Boolean, default=True)
+    quiz_access_code = db.Column(db.String(20), unique=True, nullable=True)  # Unique student access code
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationship with questions
@@ -95,9 +96,16 @@ class Submission(db.Model):
     quiz_start_time = db.Column(db.DateTime, nullable=True)  # When quiz started
     quiz_duration_seconds = db.Column(db.Integer, nullable=True)  # Time taken in seconds
 
-# Create tables
+# Create tables and run migrations on startup
 with app.app_context():
     db.create_all()
+    # Add quiz_access_code column if it doesn't exist yet
+    try:
+        with db.engine.connect() as _conn:
+            _conn.execute(db.text("ALTER TABLE quizzes ADD COLUMN quiz_access_code VARCHAR(20) UNIQUE"))
+            _conn.commit()
+    except Exception:
+        pass  # Column already exists
 
 # --- Helper function to find submission by ID ---
 def find_submission_by_id(submission_id):
@@ -136,6 +144,7 @@ def get_all_quizzes():
             "timeLimit": quiz.time_limit,
             "timePerQuestion": quiz.time_per_question,
             "isActive": quiz.is_active,
+            "accessCode": quiz.quiz_access_code or "",
             "questionCount": question_count,
             "createdAt": quiz.created_at.isoformat() if quiz.created_at else None
         })
@@ -204,15 +213,23 @@ def create_quiz():
     description = data.get('description', '').strip()
     time_limit = data.get('timeLimit', 1200)
     time_per_question = data.get('timePerQuestion', 30)
+    access_code = data.get('accessCode', '').strip() or None
     
     if not title:
         return jsonify({"success": False, "message": "Quiz title is required"}), 400
+    
+    # Validate access code uniqueness
+    if access_code:
+        existing = Quiz.query.filter_by(quiz_access_code=access_code).first()
+        if existing:
+            return jsonify({"success": False, "message": f"Access code '{access_code}' is already in use by another quiz"}), 400
     
     new_quiz = Quiz(
         title=title,
         description=description,
         time_limit=time_limit,
         time_per_question=time_per_question,
+        quiz_access_code=access_code,
         is_active=False  # Start as inactive
     )
     
@@ -225,7 +242,8 @@ def create_quiz():
         "quiz": {
             "id": new_quiz.id,
             "title": new_quiz.title,
-            "description": new_quiz.description
+            "description": new_quiz.description,
+            "accessCode": new_quiz.quiz_access_code or ""
         }
     })
 
@@ -311,6 +329,38 @@ def add_question(quiz_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": f"Database error: {str(e)}"}), 500
+
+@app.route('/api/admin/quiz/<int:quiz_id>/settings', methods=['PUT'])
+def update_quiz_settings(quiz_id):
+    """Update quiz settings including the access code"""
+    quiz = Quiz.query.get_or_404(quiz_id)
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "Request body must be JSON."}), 400
+
+    if 'title' in data and data['title'].strip():
+        quiz.title = data['title'].strip()
+    if 'description' in data:
+        quiz.description = data['description'].strip()
+    if 'timeLimit' in data:
+        quiz.time_limit = int(data['timeLimit'])
+    if 'timePerQuestion' in data:
+        quiz.time_per_question = int(data['timePerQuestion'])
+
+    new_code = data.get('accessCode', '').strip() or None
+    if new_code != quiz.quiz_access_code:
+        if new_code:
+            existing = Quiz.query.filter(Quiz.quiz_access_code == new_code, Quiz.id != quiz_id).first()
+            if existing:
+                return jsonify({"success": False, "message": f"Access code '{new_code}' is already used by another quiz"}), 400
+        quiz.quiz_access_code = new_code
+
+    db.session.commit()
+    return jsonify({
+        "success": True,
+        "message": "Quiz settings updated",
+        "quiz": {"id": quiz.id, "title": quiz.title, "accessCode": quiz.quiz_access_code or ""}
+    })
 
 @app.route('/api/admin/quiz/<int:quiz_id>/activate', methods=['POST'])
 def toggle_quiz_status(quiz_id):
@@ -502,15 +552,18 @@ def login_user():
     if not re.match(email_pattern, student_email):
         return jsonify({"success": False, "message": "Please enter a valid email address"}), 400
 
-    # Validate the 5-digit code format
-    if not login_code.isdigit() or len(login_code) != 5:
-        return jsonify({"success": False, "message": "Invalid code format. Please enter a 5-digit code."}), 400
+    # Validate the code format
+    if not login_code.isdigit() or len(login_code) < 4:
+        return jsonify({"success": False, "message": "Invalid code format. Please enter a valid access code."}), 400
 
-    # Check if the code is valid (you can modify this list with your valid codes)
-    valid_codes = os.getenv('VALID_LOGIN_CODES', '12345,67890,11111,22222,33333').split(',')
+    # First: check if code matches a specific quiz's access code
+    quiz_by_code = Quiz.query.filter_by(quiz_access_code=login_code).first()
     
-    if login_code not in valid_codes:
-        return jsonify({"success": False, "message": "Invalid login code. Please check your code and try again."}), 401
+    # Fallback: check global VALID_LOGIN_CODES
+    if not quiz_by_code:
+        valid_codes = os.getenv('VALID_LOGIN_CODES', '12345,67890,11111,22222,33333').split(',')
+        if login_code not in valid_codes:
+            return jsonify({"success": False, "message": "Invalid access code. Please check your code and try again."}), 401
 
     # Check if this student has already taken the quiz with this email and code combination
     existing_user = User.query.filter_by(email=student_email).first()
@@ -519,8 +572,8 @@ def login_user():
         # Check if user has already submitted quiz
         submission = Submission.query.filter_by(user_id=existing_user.id).first()
         if submission:
-            # Get quiz title from database
-            quiz = Quiz.query.filter_by(is_active=True).first()
+            # Get quiz title — prefer the quiz matched by access code
+            quiz = quiz_by_code or Quiz.query.filter_by(is_active=True).first()
             quiz_title = quiz.title if quiz else "the quiz"
             
             return jsonify({
@@ -611,14 +664,16 @@ The QuizFlow Team
 
 @app.route('/api/quiz', methods=['GET'])
 def get_quiz():
-    # Get the first active quiz (you can modify this to select specific quiz)
-    quiz = Quiz.query.filter_by(is_active=True).first()
-    
-    if not quiz:
-        return jsonify({
-            "success": False,
-            "message": "No active quiz found"
-        }), 404
+    # Look up quiz by access code first, then fall back to active quiz
+    code = request.args.get('code', '').strip()
+    if code:
+        quiz = Quiz.query.filter_by(quiz_access_code=code).first()
+        if not quiz:
+            return jsonify({"success": False, "message": "No quiz found for this access code"}), 404
+    else:
+        quiz = Quiz.query.filter_by(is_active=True).first()
+        if not quiz:
+            return jsonify({"success": False, "message": "No active quiz found"}), 404
     
     # Get questions for this quiz, ordered by order_index
     questions = Question.query.filter_by(quiz_id=quiz.id).order_by(Question.order_index.asc()).all()
@@ -1153,6 +1208,13 @@ def migrate_database():
             try:
                 conn.execute(db.text("ALTER TABLE submissions ADD COLUMN quiz_duration_seconds INTEGER"))
                 print("Added quiz_duration_seconds column to submissions table")
+            except Exception:
+                pass  # Column already exists
+
+            # Add quiz_access_code column to quizzes if it doesn't exist
+            try:
+                conn.execute(db.text("ALTER TABLE quizzes ADD COLUMN quiz_access_code VARCHAR(20) UNIQUE"))
+                print("Added quiz_access_code column to quizzes table")
             except Exception:
                 pass  # Column already exists
             

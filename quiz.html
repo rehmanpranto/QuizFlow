@@ -529,7 +529,8 @@
 
         async function loadQuiz() {
             try {
-                const response = await fetch('/api/quiz', {
+                const codeParam = quizCode ? `?code=${encodeURIComponent(quizCode)}` : '';
+                const response = await fetch(`/api/quiz${codeParam}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': sessionStorage.getItem('authToken') || '',

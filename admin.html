@@ -524,6 +524,7 @@
                             <thead>
                                 <tr>
                                     <th>Quiz Name</th>
+                                    <th>Access Code</th>
                                     <th>Questions</th>
                                     <th>Status</th>
                                     <th>Created</th>
@@ -532,7 +533,7 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">
+                                    <td colspan="6" style="text-align: center; color: var(--text-secondary);">
                                         Loading quizzes...
                                     </td>
                                 </tr>
@@ -552,6 +553,13 @@
                         <div class="form-group">
                             <label for="create-quiz-description">Description</label>
                             <textarea id="create-quiz-description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-quiz-code">Access Code <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem;">(students use this to join)</span></label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="create-quiz-code" placeholder="e.g. 48291" maxlength="20" style="flex:1;font-family:monospace;letter-spacing:0.1em;">
+                                <button type="button" class="btn btn-secondary" onclick="generateCode('create-quiz-code')" style="white-space:nowrap;">🎲 Generate</button>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Create Quiz</button>
                         <button type="button" class="btn btn-secondary" onclick="hideCreateQuiz()">Cancel</button>
@@ -614,6 +622,13 @@
                         <div class="form-group">
                             <label for="editor-quiz-description">Description</label>
                             <textarea id="editor-quiz-description" placeholder="Enter quiz description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editor-quiz-code">Access Code <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem;">(students enter this to join)</span></label>
+                            <div style="display:flex;gap:0.5rem;">
+                                <input type="text" id="editor-quiz-code" placeholder="e.g. 48291" maxlength="20" style="flex:1;font-family:monospace;letter-spacing:0.1em;">
+                                <button type="button" class="btn btn-secondary" onclick="generateCode('editor-quiz-code')" style="white-space:nowrap;">🎲 Generate</button>
+                            </div>
                         </div>
                         <div style="display: flex; gap: 1rem;">
                             <div class="form-group" style="flex: 1;">
@@ -784,18 +799,22 @@
             const tableBody = document.querySelector('#quizzes-table tbody');
             
             if (quizzes.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No quizzes found</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No quizzes found</td></tr>';
                 return;
             }
             
             tableBody.innerHTML = quizzes.map(quiz => `
                 <tr>
                     <td>${quiz.title}</td>
-                    <td>${quiz.question_count || 0}</td>
-                    <td><span style="color: ${quiz.is_active ? 'var(--success)' : 'var(--warning)'}">
-                        ${quiz.is_active ? 'Active' : 'Inactive'}
+                    <td>${quiz.accessCode
+                        ? `<span style="font-family:monospace;background:var(--accent-light);color:var(--accent);padding:0.2rem 0.6rem;border-radius:6px;letter-spacing:0.08em;">${quiz.accessCode}</span>`
+                        : `<span style="color:var(--text-dim);font-size:0.85rem;">— none —</span>`
+                    }</td>
+                    <td>${quiz.questionCount || 0}</td>
+                    <td><span style="color: ${quiz.isActive ? 'var(--success)' : 'var(--warning)'}">
+                        ${quiz.isActive ? '● Active' : '○ Inactive'}
                     </span></td>
-                    <td>${new Date(quiz.created_at).toLocaleDateString()}</td>
+                    <td>${new Date(quiz.createdAt).toLocaleDateString()}</td>
                     <td>
                         <button class="btn btn-primary" onclick="editQuiz(${quiz.id})">Edit</button>
                         <button class="btn btn-danger" onclick="deleteQuiz(${quiz.id})">Delete</button>
@@ -869,40 +888,40 @@
             document.getElementById('create-quiz-form').classList.add('hidden');
             document.getElementById('create-quiz-title').value = '';
             document.getElementById('create-quiz-description').value = '';
+            document.getElementById('create-quiz-code').value = '';
+        }
+
+        function generateCode(inputId) {
+            const code = Math.floor(10000 + Math.random() * 90000).toString();
+            document.getElementById(inputId).value = code;
         }
 
         async function createQuiz(event) {
             event.preventDefault();
-            console.log('Create quiz called');
-            
             const title = document.getElementById('create-quiz-title').value.trim();
             const description = document.getElementById('create-quiz-description').value.trim();
+            const accessCode = document.getElementById('create-quiz-code').value.trim();
             
-            if (!title) {
-                alert('Please enter a quiz title');
-                return;
-            }
+            if (!title) { alert('Please enter a quiz title'); return; }
             
             try {
                 const response = await fetch('/api/admin/quiz', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, description })
+                    body: JSON.stringify({ title, description, accessCode })
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    alert(`Quiz "${title}" created successfully!`);
+                    alert(`Quiz "${title}" created!\nAccess Code: ${data.quiz.accessCode || '(none set)'}`);
                     hideCreateQuiz();
                     loadQuizzes();
                 } else {
-                    throw new Error('Failed to create quiz');
+                    const err = await response.json();
+                    throw new Error(err.message || 'Failed to create quiz');
                 }
             } catch (error) {
-                console.log('Demo mode: Quiz creation simulated');
-                alert(`Demo: Quiz "${title}" created successfully!\nDescription: ${description || 'No description'}`);
-                hideCreateQuiz();
-                loadQuizzes();
+                alert(error.message);
             }
         }
 
