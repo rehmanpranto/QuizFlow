@@ -3,209 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizFlow</title>
+    <title>QuizFlow - Modern Quiz Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --bg: #050507;
-            --bg-2: #0a0a0f;
-            --surface: rgba(255,255,255,0.03);
-            --surface-hover: rgba(255,255,255,0.06);
-            --border: rgba(255,255,255,0.08);
-            --border-hover: rgba(139,92,246,0.5);
-            --accent: #8b5cf6;
-            --accent-2: #6366f1;
-            --accent-grad: linear-gradient(135deg, #8b5cf6, #6366f1);
-            --accent-glow: 0 0 20px rgba(139,92,246,0.35);
-            --success: #34d399;
-            --warning: #fbbf24;
-            --danger: #f87171;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --text-dim: #475569;
-            --radius: 16px;
-            --radius-sm: 10px;
-            --shadow: 0 25px 50px rgba(0,0,0,0.6);
-            --card-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        /* Page-specific styles */
+        .hero-section {
+            animation: fadeUp 0.6s ease forwards;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-        body::before, body::after {
-            content: '';
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.12;
-            pointer-events: none;
-            animation: drift 12s ease-in-out infinite alternate;
-            z-index: 0;
-        }
-        body::before {
-            width: 600px; height: 600px;
-            background: #8b5cf6;
-            top: -200px; left: -200px;
-        }
-        body::after {
-            width: 500px; height: 500px;
-            background: #6366f1;
-            bottom: -150px; right: -150px;
-            animation-delay: -6s;
-        }
-        @keyframes drift {
-            from { transform: translate(0,0) scale(1); }
-            to   { transform: translate(40px,30px) scale(1.1); }
-        }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-            0%   { background-position: -200% center; }
-            100% { background-position:  200% center; }
-        }
-
-        /* Floating badge */
-        .live-badge {
-            position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 0.4rem 0.9rem;
-            font-size: 0.78rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            z-index: 10;
-        }
-        .live-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 6px var(--success);
-            animation: pulse-dot 2s ease-in-out infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50%       { opacity: 0.4; }
-        }
-
-        .container {
-            text-align: center;
-            max-width: 420px;
-            padding: 2.5rem 2rem;
-            position: relative;
-            z-index: 1;
-            animation: fadeUp 0.5s ease forwards;
-        }
-
-        /* Logo */
-        .logo-wrap {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
+        
         .logo-box {
-            width: 72px;
-            height: 72px;
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-hover);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--accent-glow), var(--card-shadow);
-            position: relative;
+            animation: scaleIn 0.8s ease forwards;
         }
-        .logo-box::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border-radius: 20px;
-            background: var(--accent-grad);
-            opacity: 0.35;
-            z-index: -1;
+        
+        .hero-title {
+            animation: fadeUp 0.8s ease 0.1s forwards;
+            opacity: 0;
         }
-
-        h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            margin-bottom: 0.6rem;
-            background: var(--accent-grad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        
+        .hero-subtitle {
+            animation: fadeUp 0.8s ease 0.2s forwards;
+            opacity: 0;
         }
-        .subtitle {
-            color: var(--text-muted);
-            margin-bottom: 2.75rem;
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.6;
+        
+        .button-group {
+            animation: fadeUp 0.8s ease 0.3s forwards;
+            opacity: 0;
+        }
+        
+        .footer-text {
+            animation: fadeUp 0.8s ease 0.4s forwards;
+            opacity: 0;
         }
 
-        /* Buttons */
-        .buttons {
+        /* Enhanced logo glow effect */
+        .logo-box {
+            transition: all 0.4s ease;
+        }
+        
+        .logo-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Feature highlights */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .feature-item {
             display: flex;
             flex-direction: column;
-            gap: 0.85rem;
-            margin-bottom: 2.25rem;
-        }
-        .btn {
-            display: block;
-            padding: 0.9rem 2rem;
-            text-decoration: none;
-            border-radius: var(--radius-sm);
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.25s ease;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-        }
-        .btn-primary {
-            background: var(--accent-grad);
-            color: #fff;
-            box-shadow: var(--accent-glow);
-            border: none;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 0 32px rgba(139,92,246,0.55);
-        }
-        .btn-secondary {
+            align-items: center;
+            text-align: center;
+            padding: 1.5rem;
             background: var(--surface);
             backdrop-filter: blur(20px);
-            color: var(--text);
             border: 1px solid var(--border);
-        }
-        .btn-secondary:hover {
-            background: var(--surface-hover);
-            border-color: var(--border-hover);
-            transform: translateY(-2px);
+            border-radius: var(--radius);
+            transition: all var(--transition);
         }
 
-        .footer-text {
-            color: var(--text-dim);
-            font-size: 0.78rem;
-            letter-spacing: 0.08em;
+        .feature-item:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-grad);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .feature-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-desc {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -215,27 +115,84 @@
         ✦ Now Live
     </div>
 
-    <div class="container">
-        <div class="logo-wrap">
-            <div class="logo-box">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="url(#lg)" stroke="url(#lg)" stroke-width="1.2" stroke-linejoin="round"/>
-                    <defs>
-                        <linearGradient id="lg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#8b5cf6"/>
-                            <stop offset="1" stop-color="#6366f1"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
+    <div class="center-screen">
+        <div class="hero-section">
+            <div class="logo-wrap">
+                <div class="logo-box">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" 
+                              fill="url(#lg)" stroke="url(#lg)" stroke-width="1.2" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="lg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#8b5cf6"/>
+                                <stop offset="1" stop-color="#6366f1"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
             </div>
+            
+            <h1 class="hero-title">QuizFlow</h1>
+            <p class="hero-subtitle">
+                The intelligent quiz platform designed for modern educators and students.
+                Create, manage, and take quizzes with seamless ease.
+            </p>
+            
+            <div class="button-group">
+                <a href="login.html" class="btn btn-primary btn-lg">
+                    <span>Take a Quiz</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <a href="admin-login.html" class="btn btn-secondary btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Admin Access
+                </a>
+            </div>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <span class="feature-title">Timed Quizzes</span>
+                    <p class="feature-desc">Built-in timer with flexible limits</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <span class="feature-title">Instant Results</span>
+                    <p class="feature-desc">Automatic grading & feedback</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <span class="feature-title">Secure Access</span>
+                    <p class="feature-desc">Protected quiz codes</p>
+                </div>
+            </div>
+            
+            <p class="footer-text">
+                ✦ Secure · Fast · Reliable ✦
+            </p>
         </div>
-        <h1>QuizFlow</h1>
-        <p class="subtitle">The intelligent quiz platform for modern educators.</p>
-        <div class="buttons">
-            <a href="login.html" class="btn btn-primary">Take a Quiz →</a>
-            <a href="admin-login.html" class="btn btn-secondary">🔒 Admin Access</a>
-        </div>
-        <p class="footer-text">Secure · Fast · Reliable</p>
     </div>
 </body>
 </html>

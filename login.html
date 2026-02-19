@@ -6,293 +6,178 @@
     <title>QuizFlow - Student Login</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --bg: #050507;
-            --bg-2: #0a0a0f;
-            --surface: rgba(255,255,255,0.03);
-            --surface-hover: rgba(255,255,255,0.06);
-            --border: rgba(255,255,255,0.08);
-            --border-hover: rgba(139,92,246,0.5);
-            --accent: #8b5cf6;
-            --accent-2: #6366f1;
-            --accent-grad: linear-gradient(135deg, #8b5cf6, #6366f1);
-            --accent-glow: 0 0 20px rgba(139,92,246,0.35);
-            --success: #34d399;
-            --warning: #fbbf24;
-            --danger: #f87171;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --text-dim: #475569;
-            --radius: 16px;
-            --radius-sm: 10px;
-            --shadow: 0 25px 50px rgba(0,0,0,0.6);
-            --card-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        body::before, body::after {
-            content: '';
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.12;
-            pointer-events: none;
-            animation: drift 12s ease-in-out infinite alternate;
-            z-index: 0;
-        }
-        body::before {
-            width: 600px; height: 600px;
-            background: #8b5cf6;
-            top: -200px; left: -200px;
-        }
-        body::after {
-            width: 500px; height: 500px;
-            background: #6366f1;
-            bottom: -150px; right: -150px;
-            animation-delay: -6s;
-        }
-        @keyframes drift {
-            from { transform: translate(0,0) scale(1); }
-            to   { transform: translate(40px,30px) scale(1.1); }
-        }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
+        /* Page-specific styles */
         .login-container {
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: var(--card-shadow);
-            position: relative;
-            z-index: 1;
             animation: fadeUp 0.5s ease forwards;
         }
-
-        /* Top nav */
-        .card-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
-        .back-link-top {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-            transition: color 0.25s;
-        }
-        .back-link-top:hover { color: var(--text); }
-        .brand-mark {
-            display: flex;
-            align-items: center;
-            gap: 0.45rem;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: -0.01em;
-        }
-        .brand-mark svg { opacity: 0.8; }
-
+        
         .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
+            animation: fadeUp 0.5s ease 0.1s forwards;
+            opacity: 0;
         }
-        .login-header h2 {
-            font-size: 1.7rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            margin-bottom: 0.4rem;
+        
+        .form-group {
+            animation: fadeUp 0.5s ease 0.2s forwards;
+            opacity: 0;
         }
-        .login-header .subtitle {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .form-group { margin-bottom: 1.25rem; }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.45rem;
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: var(--text);
-        }
-        .form-group input {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            background: #0f0f12;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: var(--radius-sm);
-            font-size: 0.95rem;
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            transition: border-color 0.25s ease, box-shadow 0.25s ease;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
-        }
-        .form-group input::placeholder { color: var(--text-dim); }
-        .form-group input.code-field {
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            letter-spacing: 0.1em;
-            font-size: 0.95rem;
-        }
-
+        
         .login-button {
-            width: 100%;
-            padding: 0.9rem;
-            background: var(--accent-grad);
-            color: #fff;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 1rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--accent-glow);
+            animation: fadeUp 0.5s ease 0.3s forwards;
+            opacity: 0;
         }
-        .login-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 32px rgba(139,92,246,0.5);
-        }
-        .login-button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-        .button-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-        }
-        .loading-spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        
+        .back-link {
+            animation: fadeUp 0.5s ease 0.4s forwards;
+            opacity: 0;
         }
 
-        .back-link { text-align: center; }
-        .back-link a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.25s;
+        /* Input focus enhancement */
+        .form-input:focus {
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
         }
-        .back-link a:hover { color: var(--text); }
 
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 1.25rem;
-            right: 1.25rem;
-            background: rgba(10,10,15,0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 0.875rem 1.1rem;
-            color: var(--text);
-            font-size: 0.875rem;
-            font-family: 'Inter', sans-serif;
-            box-shadow: var(--card-shadow);
-            transform: translateX(calc(100% + 2rem));
-            transition: transform 0.3s ease;
-            z-index: 1000;
-            max-width: 300px;
+        /* Code field special styling */
+        .code-field {
+            letter-spacing: 0.15em !important;
+            font-size: 1rem !important;
         }
-        .notification.show { transform: translateX(0); }
-        .notification.success { border-left: 3px solid var(--success); }
-        .notification.error   { border-left: 3px solid var(--danger); }
-        .notification.warning { border-left: 3px solid var(--warning); }
 
-        @media (max-width: 480px) {
-            .login-container { padding: 1.75rem 1.5rem; }
+        /* Form group hover effect */
+        .form-group:hover .form-label {
+            color: var(--accent);
+            transition: color 0.2s ease;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="card-top">
-            <a href="index.html" class="back-link-top">← Back</a>
-            <div class="brand-mark">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="url(#blg)" stroke="url(#blg)" stroke-width="1.2" stroke-linejoin="round"/>
-                    <defs>
-                        <linearGradient id="blg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#6366f1"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-                QuizFlow
-            </div>
-        </div>
-
-        <div class="login-header">
-            <h2>Welcome back</h2>
-            <p class="subtitle">Enter your details to begin your quiz</p>
-        </div>
-
-        <form id="login-form">
-            <div class="form-group">
-                <label for="student-name">Name</label>
-                <input type="text" id="student-name" name="student-name"
-                       placeholder="Enter your full name" required autocomplete="name">
-            </div>
-            <div class="form-group">
-                <label for="student-email">Email</label>
-                <input type="email" id="student-email" name="student-email"
-                       placeholder="Enter your email address" required autocomplete="email">
-            </div>
-            <div class="form-group">
-                <label for="quiz-code">Access Code</label>
-                <input type="text" id="quiz-code" name="quiz-code" class="code-field"
-                       placeholder="Enter your quiz access code" required>
-            </div>
-            <button type="submit" class="login-button" id="login-btn">
-                <div class="button-content">
-                    <div class="loading-spinner"></div>
-                    <span>Login</span>
+    <div class="center-screen">
+        <div class="login-container card" style="max-width: 440px; width: 100%;">
+            <div class="card-header">
+                <a href="index.html" class="back-link-top" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem; transition: color 0.2s;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back
+                </a>
+                <div class="logo-small">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" 
+                              fill="url(#blg)" stroke="url(#blg)" stroke-width="1.2" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="blg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#8b5cf6"/>
+                                <stop offset="1" stop-color="#6366f1"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    QuizFlow
                 </div>
-            </button>
-        </form>
+            </div>
 
-        <div class="back-link">
-            <a href="index.html">← Back to Home</a>
+            <div class="login-header" style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.5rem;">
+                    Welcome back
+                </h2>
+                <p style="color: var(--text-muted); font-size: 0.9375rem; margin: 0;">
+                    Enter your details to begin your quiz
+                </p>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="student-name">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 0.375rem;">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        Full Name
+                    </label>
+                    <input type="text" 
+                           class="form-input" 
+                           id="student-name" 
+                           name="student-name"
+                           placeholder="Enter your full name" 
+                           required 
+                           autocomplete="name">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="student-email">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 0.375rem;">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        Email Address
+                    </label>
+                    <input type="email" 
+                           class="form-input" 
+                           id="student-email" 
+                           name="student-email"
+                           placeholder="Enter your email address" 
+                           required 
+                           autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="quiz-code">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 0.375rem;">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        Access Code
+                    </label>
+                    <input type="text" 
+                           class="form-input code-field" 
+                           id="quiz-code" 
+                           name="quiz-code"
+                           placeholder="Enter your quiz access code" 
+                           required
+                           maxlength="10">
+                    <p class="form-hint">Enter the 5-digit code provided by your instructor</p>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block" id="login-btn">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <div class="loading-spinner" style="display: none;"></div>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon-svg">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                            <polyline points="10 17 15 12 10 7"/>
+                            <line x1="15" y1="12" x2="3" y2="12"/>
+                        </svg>
+                        <span>Start Quiz</span>
+                    </div>
+                </button>
+            </form>
+
+            <div class="back-link" style="text-align: center; margin-top: 1.5rem;">
+                <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">
+                    ← Back to Home
+                </a>
+            </div>
         </div>
     </div>
 
+    <!-- Notification Container -->
     <div class="notification" id="notification">
-        <span class="notification-text"></span>
+        <svg class="notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span class="notification-content" id="notification-text"></span>
+        <button class="notification-close" onclick="hideNotification()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
     </div>
 
     <script>
+        // Auto-fill from session storage
         document.addEventListener('DOMContentLoaded', function() {
             const studentName = sessionStorage.getItem('studentName');
             const quizCode = sessionStorage.getItem('quizCode');
@@ -306,21 +191,44 @@
             }
         });
 
+        // Notification system
         function showNotification(message, type = 'info', duration = 4000) {
             const notification = document.getElementById('notification');
-            const text = notification.querySelector('.notification-text');
+            const text = document.getElementById('notification-text');
+            const icon = notification.querySelector('.notification-icon');
+            
             if (!notification || !text) { alert(message); return; }
+            
             text.textContent = message;
             notification.className = `notification ${type}`;
+            
+            // Update icon based on type
+            const icons = {
+                success: '<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>',
+                error: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+                warning: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+                info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
+            };
+            icon.innerHTML = icons[type] || icons.info;
+            
             setTimeout(() => notification.classList.add('show'), 100);
             setTimeout(() => notification.classList.remove('show'), duration);
         }
 
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.classList.remove('show');
+            }
+        }
+
+        // Form submission
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const loginBtn = document.getElementById('login-btn');
             const spinner = loginBtn.querySelector('.loading-spinner');
             const buttonText = loginBtn.querySelector('span');
+            const btnIcon = loginBtn.querySelector('.btn-icon-svg');
             const studentName = document.getElementById('student-name').value.trim();
             const studentEmail = document.getElementById('student-email').value.trim();
             const quizCode = document.getElementById('quiz-code').value.trim();
@@ -332,37 +240,53 @@
 
             loginBtn.disabled = true;
             spinner.style.display = 'inline-block';
+            btnIcon.style.display = 'none';
             buttonText.textContent = 'Logging in...';
 
             try {
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({ name: studentName, email: studentEmail, code: quizCode })
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Accept': 'application/json' 
+                    },
+                    body: JSON.stringify({ 
+                        name: studentName, 
+                        email: studentEmail, 
+                        code: quizCode 
+                    })
                 });
 
                 const data = await response.json();
 
                 if (response.ok && data.success) {
                     buttonText.textContent = 'Success!';
-                    showNotification('Login successful', 'success');
+                    showNotification('Login successful! Redirecting...', 'success', 1500);
                     sessionStorage.setItem('studentName', studentName);
                     sessionStorage.setItem('studentEmail', studentEmail);
                     sessionStorage.setItem('quizCode', quizCode);
                     sessionStorage.setItem('authToken', data.token || 'authorized');
+                    
+                    // Store user ID if provided
+                    if (data.userId) {
+                        sessionStorage.setItem('userId', data.userId);
+                    }
+                    
                     setTimeout(() => { window.location.href = 'quiz.html'; }, 1000);
                 } else {
                     throw new Error(data.message || 'Login failed');
                 }
             } catch (error) {
                 console.error('Login Error:', error);
+                
+                // Check for network errors and enable demo mode
                 if (error.name === 'TypeError' ||
                     error.message.includes('fetch') ||
                     error.message.includes('NetworkError') ||
                     error.message.includes('Failed to fetch')) {
                     if (studentName.length >= 2 && quizCode.length >= 3) {
                         buttonText.textContent = 'Demo Mode';
-                        showNotification('Server unavailable - Using demo mode', 'warning');
+                        showNotification('Server unavailable - Using demo mode', 'warning', 3000);
                         sessionStorage.setItem('studentName', studentName);
                         sessionStorage.setItem('studentEmail', studentEmail);
                         sessionStorage.setItem('quizCode', quizCode);
@@ -372,15 +296,22 @@
                         return;
                     }
                 }
-                buttonText.textContent = 'Error';
+                
+                buttonText.textContent = 'Try Again';
                 showNotification(error.message || 'Please check your details and try again.', 'error');
             } finally {
                 setTimeout(() => {
                     loginBtn.disabled = false;
                     spinner.style.display = 'none';
-                    buttonText.textContent = 'Login';
+                    btnIcon.style.display = 'inline-block';
+                    buttonText.textContent = 'Start Quiz';
                 }, 2000);
             }
+        });
+
+        // Input validation - code field should be numeric
+        document.getElementById('quiz-code').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
         });
     </script>
 </body>

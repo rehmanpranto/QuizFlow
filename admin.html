@@ -1,352 +1,168 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuizFlow - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        :root {
-            --bg: #050507;
-            --bg-2: #0a0a0f;
-            --surface: rgba(255,255,255,0.03);
-            --surface-2: rgba(255,255,255,0.05);
-            --surface-hover: rgba(255,255,255,0.06);
-            --border: rgba(255,255,255,0.08);
-            --border-hover: rgba(139,92,246,0.5);
-            --accent: #8b5cf6;
-            --accent-2: #6366f1;
-            --accent-grad: linear-gradient(135deg, #8b5cf6, #6366f1);
-            --accent-glow: 0 0 20px rgba(139,92,246,0.35);
-            --accent-light: rgba(139,92,246,0.1);
-            --success: #34d399;
-            --success-light: rgba(52,211,153,0.1);
-            --warning: #fbbf24;
-            --danger: #f87171;
-            --danger-light: rgba(248,113,113,0.1);
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --text-dim: #475569;
-            --radius: 16px;
-            --radius-sm: 10px;
-            --shadow: 0 25px 50px rgba(0,0,0,0.6);
-            --card-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
-            /* Legacy aliases — keep for existing JS/inline styles */
-            --primary: var(--accent);
-            --primary-hover: var(--accent-2);
-            --secondary: #475569;
-            --dark: var(--bg);
-            --dark-light: #0f0f12;
-            --card-bg: rgba(255,255,255,0.03);
-            --input-bg: #0f0f12;
-            --text-primary: var(--text);
-            --text-secondary: var(--text-muted);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
-
+        /* Admin-specific custom styles */
         .admin-layout {
             display: flex;
             min-height: 100vh;
         }
 
-        /* ── Sidebar ──────────────────────────────────────── */
-        .sidebar {
-            width: 250px;
-            background: rgba(255,255,255,0.02);
-            backdrop-filter: blur(20px);
+        .admin-sidebar {
+            width: 260px;
+            background: var(--bg-2);
             border-right: 1px solid var(--border);
-            padding: 2rem 0;
-            flex-shrink: 0;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: var(--z-sticky);
         }
 
-        .sidebar-header {
+        .admin-sidebar-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            padding: 0 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
             margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
         }
 
-        .sidebar-header h1 {
-            font-size: 1.35rem;
+        .admin-sidebar-header h1 {
+            font-size: 1.5rem;
             font-weight: 800;
             letter-spacing: -0.03em;
-            margin-bottom: 0.2rem;
             background: var(--accent-grad);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            margin-bottom: 0.25rem;
         }
 
-        .sidebar-header .subtitle {
+        .admin-sidebar-header .subtitle {
             color: var(--text-dim);
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             font-weight: 500;
         }
 
-        .nav-menu { list-style: none; padding: 0; }
-        .nav-item  { margin: 0.2rem 0.75rem; }
+        .admin-nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
 
-        .nav-link {
+        .admin-nav-item {
+            margin: 0;
+        }
+
+        .admin-nav-link {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
-            padding: 0.65rem 0.875rem;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
             color: var(--text-muted);
             text-decoration: none;
             border-radius: var(--radius-sm);
             font-size: 0.875rem;
             font-weight: 500;
-            transition: all 0.25s ease;
-            position: relative;
-        }
-        .nav-link:hover {
-            background: var(--surface-hover);
-            color: var(--text);
-        }
-        .nav-link.active {
-            background: var(--accent-light);
-            color: #c4b5fd;
-            border-left: 3px solid var(--accent);
-            padding-left: calc(0.875rem - 3px);
+            transition: all var(--transition-fast);
         }
 
-        /* ── Main Content ─────────────────────────────────── */
-        .main-content {
-            flex: 1;
+        .admin-nav-link:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .admin-nav-link.active {
+            background: var(--surface-active);
+            color: var(--accent);
+            border: 1px solid var(--border-hover);
+        }
+
+        .admin-main-content {
+            margin-left: 260px;
+            min-height: 100vh;
             padding: 2rem;
-            overflow-x: hidden;
             background: var(--bg);
         }
 
-        .main-header {
+        .admin-main-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border);
         }
-        .main-header h2 {
-            font-size: 1.5rem;
+
+        .admin-main-header h2 {
+            font-size: 1.75rem;
             font-weight: 700;
             letter-spacing: -0.03em;
         }
 
-        .logout-btn {
-            background: var(--danger-light);
+        .admin-logout-btn {
+            background: var(--danger-bg);
             color: var(--danger);
-            border: 1px solid rgba(248,113,113,0.2);
-            padding: 0.5rem 1rem;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            padding: 0.625rem 1.25rem;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.875rem;
             font-weight: 600;
             font-family: 'Inter', sans-serif;
-            transition: all 0.25s ease;
-        }
-        .logout-btn:hover {
-            background: var(--danger);
-            color: #fff;
-            box-shadow: 0 0 14px rgba(248,113,113,0.35);
+            transition: all var(--transition);
         }
 
-        /* ── Tab Content ──────────────────────────────────── */
+        .admin-logout-btn:hover {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(248, 113, 113, 0.35);
+        }
+
+        /* Tab content transitions */
         .tab-content {
             display: none;
             opacity: 0;
             transition: opacity 0.25s ease;
         }
+
         .tab-content.active {
             display: block;
             opacity: 1;
             animation: tabFadeUp 0.3s ease forwards;
         }
+
         @keyframes tabFadeUp {
             from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Cards ────────────────────────────────────────── */
-        .card {
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--card-shadow);
-        }
-        .card h3 {
-            margin-bottom: 1rem;
-            font-size: 1.05rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-        }
-
-        /* ── Stats Grid ───────────────────────────────────── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            text-align: center;
-            transition: border-color 0.25s, box-shadow 0.25s;
-        }
-        .stat-card:hover {
-            border-color: var(--border-hover);
-            box-shadow: var(--accent-glow);
-        }
-        .stat-number {
-            font-size: 2.2rem;
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            margin-bottom: 0.4rem;
-            background: var(--accent-grad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .stat-label {
-            color: var(--text-muted);
-            font-size: 0.82rem;
-            font-weight: 500;
-        }
-
-        /* ── Forms ────────────────────────────────────────── */
-        .form-group { margin-bottom: 1rem; }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.45rem;
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: var(--text);
-        }
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: #0f0f12 !important;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: var(--radius-sm);
-            color: var(--text) !important;
-            font-size: 0.9rem;
-            font-family: 'Inter', sans-serif;
-            -webkit-text-fill-color: var(--text) !important;
-            transition: border-color 0.25s, box-shadow 0.25s;
-        }
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
-            background: #0f0f12 !important;
-        }
-        .form-group input::placeholder,
-        .form-group textarea::placeholder {
-            color: var(--text-dim) !important;
-            opacity: 1;
-        }
-
-        /* ── Buttons ──────────────────────────────────────── */
-        .btn {
-            padding: 0.65rem 1.25rem;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.875rem;
-            font-family: 'Inter', sans-serif;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: all 0.25s ease;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .btn-primary {
-            background: var(--accent-grad);
-            color: #fff;
-            box-shadow: 0 0 12px rgba(139,92,246,0.25);
-        }
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--accent-glow);
-        }
-        .btn-success { background: var(--success); color: #050507; font-weight: 700; }
-        .btn-success:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-danger  { background: var(--danger); color: #fff; }
-        .btn-danger:hover  { opacity: 0.9; transform: translateY(-1px); }
-        .btn-secondary {
-            background: var(--surface);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        .btn-secondary:hover {
-            background: var(--surface-hover);
-            border-color: rgba(255,255,255,0.15);
-        }
-        .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
-
-        /* ── Tables ───────────────────────────────────────── */
-        .table-container { overflow-x: auto; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: transparent;
-            border-radius: var(--radius);
-            overflow: hidden;
-        }
-        th, td {
-            padding: 0.875rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        th {
-            background: rgba(139,92,246,0.06);
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: #c4b5fd;
-        }
-        td { color: var(--text-muted); font-size: 0.88rem; }
-        tr:last-child td { border-bottom: none; }
-        tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
-        tr:hover td { background: rgba(139,92,246,0.04); color: var(--text); }
-
-        /* Hidden */
-        .hidden { display: none; }
-        .loading { opacity: 0.6; pointer-events: none; }
-
-        /* ── Quiz Editor ──────────────────────────────────── */
+        /* Quiz editor specific styles */
         .question-item {
-            background: rgba(255,255,255,0.025);
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             margin-bottom: 1rem;
             padding: 1.5rem;
-            transition: border-color 0.25s;
+            transition: border-color var(--transition);
         }
-        .question-item:hover { border-color: rgba(255,255,255,0.12); }
+
+        .question-item:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+        }
 
         .question-header {
             display: flex;
@@ -358,14 +174,24 @@
         }
 
         .question-type-badge {
-            padding: 0.2rem 0.65rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 999px;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 600;
             letter-spacing: 0.02em;
         }
-        .question-type-mcq   { background: var(--accent-light); color: #c4b5fd; }
-        .question-type-essay { background: var(--success-light); color: var(--success); }
+
+        .question-type-mcq {
+            background: rgba(139, 92, 246, 0.15);
+            color: #c4b5fd;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .question-type-essay {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
 
         .option-item {
             display: flex;
@@ -373,59 +199,59 @@
             gap: 0.5rem;
             margin-bottom: 0.5rem;
         }
+
         .option-letter {
-            width: 24px; height: 24px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background: rgba(139,92,246,0.12);
+            background: rgba(139, 92, 246, 0.12);
             color: #c4b5fd;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             flex-shrink: 0;
+            border: 1px solid rgba(139, 92, 246, 0.2);
         }
+
         .option-input {
             flex: 1;
-            padding: 0.5rem 0.75rem;
-            background: #0f0f12 !important;
-            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.625rem 0.875rem;
+            background: var(--bg-elevated) !important;
+            border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             color: var(--text) !important;
             font-size: 0.875rem;
             outline: none;
             font-family: 'Inter', sans-serif;
             -webkit-text-fill-color: var(--text) !important;
-            transition: border-color 0.25s, box-shadow 0.25s;
+            transition: all var(--transition-fast);
         }
+
         .option-input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(139,92,246,0.15);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+            background: var(--bg-elevated) !important;
         }
-        .option-input::placeholder { color: var(--text-dim) !important; opacity: 1; }
 
-        /* Force text visibility */
-        input, textarea, select,
-        input.option-input,
-        .question-item input,
-        .question-item textarea {
-            color: var(--text) !important;
-            -webkit-text-fill-color: var(--text) !important;
-        }
-        input::placeholder, textarea::placeholder {
+        .option-input::placeholder {
             color: var(--text-dim) !important;
-            opacity: 1 !important;
+            opacity: 1;
         }
 
         .correct-answer-radio {
             margin-left: 0.5rem;
-            width: 16px; height: 16px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
             accent-color: var(--accent);
         }
 
-        .question-actions { display: flex; gap: 0.5rem; }
-        .btn-sm { padding: 0.25rem 0.65rem; font-size: 0.775rem; }
+        .question-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
 
         .text-secondary {
             color: var(--text-muted);
@@ -434,93 +260,211 @@
             padding: 2rem;
         }
 
+        .access-code-display {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent);
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            letter-spacing: 0.08em;
+            font-size: 0.875rem;
+        }
+
+        .access-code-none {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            color: var(--success);
+        }
+
+        .status-inactive {
+            color: var(--warning);
+        }
+
+        .editor-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform var(--transition);
+            }
+
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+
+            .admin-main-content {
+                margin-left: 0;
+            }
+        }
+
         @media (max-width: 768px) {
-            .sidebar { width: 200px; }
-            .main-content { padding: 1rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .admin-main-content {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .admin-main-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="admin-layout">
         <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
                 <h1>QuizFlow</h1>
                 <p class="subtitle">Admin Dashboard</p>
             </div>
-            
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="#" class="nav-link active" onclick="switchTab('dashboard', this)">
-                        📊 Dashboard
+
+            <ul class="admin-nav-menu">
+                <li class="admin-nav-item">
+                    <a href="#" class="admin-nav-link active" onclick="switchTab('dashboard', this)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        Dashboard
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="switchTab('quizzes', this)">
-                        📋 Quizzes
+                <li class="admin-nav-item">
+                    <a href="#" class="admin-nav-link" onclick="switchTab('quizzes', this)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Quizzes
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="switchTab('quiz-editor', this)">
-                        ✏️ Quiz Editor
+                <li class="admin-nav-item">
+                    <a href="#" class="admin-nav-link" onclick="switchTab('quiz-editor', this)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Quiz Editor
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="switchTab('students', this)">
-                        👥 Students
+                <li class="admin-nav-item">
+                    <a href="#" class="admin-nav-link" onclick="switchTab('students', this)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        Students
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="switchTab('settings', this)">
-                        ⚙️ Settings
+                <li class="admin-nav-item">
+                    <a href="#" class="admin-nav-link" onclick="switchTab('settings', this)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        Settings
                     </a>
                 </li>
             </ul>
-        </div>
+        </aside>
 
         <!-- Main Content -->
-        <div class="main-content">
-            <div class="main-header">
+        <main class="admin-main-content">
+            <header class="admin-main-header">
                 <h2 id="current-tab-title">Dashboard</h2>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
+                <button class="admin-logout-btn" onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:0.35rem">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Logout
+                </button>
+            </header>
 
             <!-- Dashboard Tab -->
             <div id="dashboard" class="tab-content active">
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-number" id="total-quizzes">0</div>
                         <div class="stat-label">Total Quizzes</div>
+                        <div class="stat-value" id="total-quizzes">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="total-students">0</div>
                         <div class="stat-label">Total Students</div>
+                        <div class="stat-value" id="total-students">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="total-submissions">0</div>
                         <div class="stat-label">Submissions</div>
+                        <div class="stat-value" id="total-submissions">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="active-quizzes">0</div>
                         <div class="stat-label">Active Quizzes</div>
+                        <div class="stat-value" id="active-quizzes">0</div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3>Recent Activity</h3>
-                    <p>Welcome to the QuizFlow Admin Dashboard. Use the sidebar to navigate between different sections.</p>
+                    <div class="card-header">
+                        <h3>Recent Activity</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Welcome to the QuizFlow Admin Dashboard. Use the sidebar to navigate between different sections to manage quizzes, questions, students, and view results.</p>
+                    </div>
                 </div>
             </div>
 
             <!-- Quizzes Tab -->
             <div id="quizzes" class="tab-content">
                 <div class="card">
-                    <h3>Quiz Management</h3>
-                    <button class="btn btn-primary" onclick="showCreateQuiz()">Create New Quiz</button>
-                    
+                    <div class="card-header">
+                        <h3>Quiz Management</h3>
+                        <button class="btn btn-primary" onclick="showCreateQuiz()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Create New Quiz
+                        </button>
+                    </div>
+
                     <div class="table-container" style="margin-top: 1rem;">
-                        <table id="quizzes-table">
+                        <table class="table" id="quizzes-table">
                             <thead>
                                 <tr>
                                     <th>Quiz Name</th>
@@ -533,7 +477,7 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="6" style="text-align: center; color: var(--text-secondary);">
+                                    <td colspan="6" class="text-center text-muted">
                                         Loading quizzes...
                                     </td>
                                 </tr>
@@ -544,42 +488,176 @@
 
                 <!-- Create Quiz Form -->
                 <div id="create-quiz-form" class="card hidden">
-                    <h3>Create New Quiz</h3>
+                    <div class="card-header">
+                        <h3>Create New Quiz</h3>
+                    </div>
                     <form onsubmit="createQuiz(event)">
                         <div class="form-group">
-                            <label for="create-quiz-title">Quiz Title</label>
-                            <input type="text" id="create-quiz-title" required>
+                            <label class="form-label" for="create-quiz-title">Quiz Title</label>
+                            <input type="text" class="form-input" id="create-quiz-title" required placeholder="Enter quiz title">
                         </div>
                         <div class="form-group">
-                            <label for="create-quiz-description">Description</label>
-                            <textarea id="create-quiz-description" rows="3"></textarea>
+                            <label class="form-label" for="create-quiz-description">Description</label>
+                            <textarea class="form-textarea" id="create-quiz-description" rows="3" placeholder="Enter quiz description"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="create-quiz-code">Access Code <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem;">(students use this to join)</span></label>
-                            <div style="display:flex;gap:0.5rem;">
-                                <input type="text" id="create-quiz-code" placeholder="e.g. 48291" maxlength="20" style="flex:1;font-family:monospace;letter-spacing:0.1em;">
-                                <button type="button" class="btn btn-secondary" onclick="generateCode('create-quiz-code')" style="white-space:nowrap;">🎲 Generate</button>
+                            <label class="form-label" for="create-quiz-code">Access Code <span class="text-muted" style="font-weight:400;font-size:0.85rem;">(students use this to join)</span></label>
+                            <div style="display:flex;gap:0.75rem;">
+                                <input type="text" class="form-input code-field" id="create-quiz-code" placeholder="e.g. 48291" maxlength="20" style="flex:1;">
+                                <button type="button" class="btn btn-secondary" onclick="generateCode('create-quiz-code')" style="white-space:nowrap;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                                    </svg>
+                                    Generate
+                                </button>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Create Quiz</button>
-                        <button type="button" class="btn btn-secondary" onclick="hideCreateQuiz()">Cancel</button>
+                        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                            <button type="submit" class="btn btn-primary">Create Quiz</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideCreateQuiz()">Cancel</button>
+                        </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- Quiz Editor Tab -->
+            <div id="quiz-editor" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Quiz Editor</h3>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button class="btn btn-primary" onclick="createNewQuiz()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                New Quiz
+                            </button>
+                            <button class="btn btn-secondary" onclick="loadExistingQuiz()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Load Quiz
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Basic Info -->
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="margin-bottom: 1rem;">Quiz Information</h4>
+                        <div class="form-group">
+                            <label class="form-label" for="editor-quiz-title">Quiz Title</label>
+                            <input type="text" class="form-input" id="editor-quiz-title" placeholder="Enter quiz title">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editor-quiz-description">Description</label>
+                            <textarea class="form-textarea" id="editor-quiz-description" placeholder="Enter quiz description" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editor-quiz-code">Access Code <span class="text-muted" style="font-weight:400;font-size:0.85rem;">(students enter this to join)</span></label>
+                            <div style="display:flex;gap:0.75rem;">
+                                <input type="text" class="form-input code-field" id="editor-quiz-code" placeholder="e.g. 48291" maxlength="20" style="flex:1;">
+                                <button type="button" class="btn btn-secondary" onclick="generateCode('editor-quiz-code')" style="white-space:nowrap;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                                    </svg>
+                                    Generate
+                                </button>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label" for="editor-quiz-time-limit">Time Limit (minutes)</label>
+                                <input type="number" class="form-input" id="editor-quiz-time-limit" placeholder="30" min="1" max="300">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label" for="editor-quiz-pass-score">Passing Score (%)</label>
+                                <input type="number" class="form-input" id="editor-quiz-pass-score" placeholder="70" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Questions Section -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h4 style="margin: 0;">Questions</h4>
+                            <div style="display: flex; gap: 0.75rem;">
+                                <button class="btn btn-primary" onclick="addMCQQuestion()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Add MCQ
+                                </button>
+                                <button class="btn btn-primary" onclick="addEssayQuestion()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Add Essay
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="questions-container">
+                            <p class="text-secondary">No questions added yet. Click "Add MCQ" or "Add Essay" to start building your quiz.</p>
+                        </div>
+                    </div>
+
+                    <!-- Save Quiz -->
+                    <div class="editor-actions">
+                        <button class="btn btn-success" onclick="saveQuiz()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            Save Quiz
+                        </button>
+                        <button class="btn btn-secondary" onclick="previewQuiz()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            Preview Quiz
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Students Tab -->
             <div id="students" class="tab-content">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div class="card-header">
                         <h3>Student Management</h3>
                         <div style="display: flex; gap: 0.75rem;">
-                            <button class="btn btn-primary" onclick="loadStudents()">Refresh Students</button>
-                            <button class="btn btn-success" onclick="downloadResults()" style="background: #10b981; border-color: #10b981;">⬇ Download Results CSV</button>
+                            <button class="btn btn-primary" onclick="loadStudents()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <polyline points="1 20 1 14 7 14"></polyline>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                                Refresh
+                            </button>
+                            <button class="btn btn-success" onclick="downloadResults()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download CSV
+                            </button>
                         </div>
                     </div>
-                    
+
                     <div class="table-container" style="margin-top: 1rem;">
-                        <table id="students-table">
+                        <table class="table" id="students-table">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -591,8 +669,8 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">
-                                        Click "Refresh Students" to load student data
+                                    <td colspan="5" class="text-center text-muted">
+                                        Click "Refresh" to load student data
                                     </td>
                                 </tr>
                             </tbody>
@@ -601,86 +679,33 @@
                 </div>
             </div>
 
-            <!-- Quiz Editor Tab -->
-            <div id="quiz-editor" class="tab-content">
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h3>Quiz Editor</h3>
-                        <div>
-                            <button class="btn btn-primary" onclick="createNewQuiz()">New Quiz</button>
-                            <button class="btn btn-secondary" onclick="loadExistingQuiz()">Load Quiz</button>
-                        </div>
-                    </div>
-
-                    <!-- Quiz Basic Info -->
-                    <div class="card" style="margin-bottom: 2rem;">
-                        <h4>Quiz Information</h4>
-                        <div class="form-group">
-                            <label for="editor-quiz-title">Quiz Title</label>
-                            <input type="text" id="editor-quiz-title" placeholder="Enter quiz title" value="">
-                        </div>
-                        <div class="form-group">
-                            <label for="editor-quiz-description">Description</label>
-                            <textarea id="editor-quiz-description" placeholder="Enter quiz description" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="editor-quiz-code">Access Code <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem;">(students enter this to join)</span></label>
-                            <div style="display:flex;gap:0.5rem;">
-                                <input type="text" id="editor-quiz-code" placeholder="e.g. 48291" maxlength="20" style="flex:1;font-family:monospace;letter-spacing:0.1em;">
-                                <button type="button" class="btn btn-secondary" onclick="generateCode('editor-quiz-code')" style="white-space:nowrap;">🎲 Generate</button>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 1rem;">
-                            <div class="form-group" style="flex: 1;">
-                                <label for="editor-quiz-time-limit">Time Limit (minutes)</label>
-                                <input type="number" id="editor-quiz-time-limit" placeholder="30" min="1" max="300">
-                            </div>
-                            <div class="form-group" style="flex: 1;">
-                                <label for="editor-quiz-pass-score">Passing Score (%)</label>
-                                <input type="number" id="editor-quiz-pass-score" placeholder="70" min="0" max="100">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Questions Section -->
-                    <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h4>Questions</h4>
-                            <div>
-                                <button class="btn btn-primary" onclick="addMCQQuestion()">+ Add MCQ</button>
-                                <button class="btn btn-primary" onclick="addEssayQuestion()">+ Add Essay</button>
-                            </div>
-                        </div>
-                        
-                        <div id="questions-container">
-                            <p class="text-secondary">No questions added yet. Click "Add MCQ" or "Add Essay" to start building your quiz.</p>
-                        </div>
-                    </div>
-
-                    <!-- Save Quiz -->
-                    <div style="text-align: center; margin-top: 2rem;">
-                        <button class="btn btn-success" onclick="saveQuiz()" style="margin-right: 1rem;">Save Quiz</button>
-                        <button class="btn btn-secondary" onclick="previewQuiz()">Preview Quiz</button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Settings Tab -->
             <div id="settings" class="tab-content">
                 <div class="card">
-                    <h3>Application Settings</h3>
-                    <div class="form-group">
-                        <label for="app-name">Application Name</label>
-                        <input type="text" id="app-name" value="QuizFlow">
+                    <div class="card-header">
+                        <h3>Application Settings</h3>
                     </div>
-                    <div class="form-group">
-                        <label for="admin-email">Admin Email</label>
-                        <input type="email" id="admin-email" placeholder="admin@quizflow.com">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label" for="app-name">Application Name</label>
+                            <input type="text" class="form-input" id="app-name" value="QuizFlow">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="admin-email">Admin Email</label>
+                            <input type="email" class="form-input" id="admin-email" placeholder="admin@quizflow.com">
+                        </div>
+                        <button class="btn btn-primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            Save Settings
+                        </button>
                     </div>
-                    <button class="btn btn-primary">Save Settings</button>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
@@ -695,22 +720,22 @@
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // Remove active class from all nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
+            document.querySelectorAll('.admin-nav-link').forEach(link => {
                 link.classList.remove('active');
             });
-            
+
             // Show selected tab with small delay for smooth transition
             setTimeout(() => {
                 document.getElementById(tabName).classList.add('active');
             }, 50);
-            
+
             // Add active class to clicked nav link
             if (clickedElement) {
                 clickedElement.classList.add('active');
             }
-            
+
             // Update tab title
             const titles = {
                 'dashboard': 'Dashboard',
@@ -720,7 +745,7 @@
                 'settings': 'Settings'
             };
             document.getElementById('current-tab-title').textContent = titles[tabName] || tabName;
-            
+
             // Load tab-specific data
             if (tabName === 'dashboard') {
                 loadDashboardStats();
@@ -743,9 +768,9 @@
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('total-quizzes').textContent = data.quizzes?.length || 0;
-                    document.getElementById('active-quizzes').textContent = 
+                    document.getElementById('active-quizzes').textContent =
                         data.quizzes?.filter(q => q.is_active).length || 0;
-                    
+
                     // Try to get student count
                     try {
                         const studentsResponse = await fetch('/api/admin/students');
@@ -756,7 +781,7 @@
                     } catch (e) {
                         document.getElementById('total-students').textContent = '0';
                     }
-                    
+
                     document.getElementById('total-submissions').textContent = '0'; // Will implement later
                 } else {
                     throw new Error('Failed to load stats');
@@ -773,8 +798,8 @@
         // Load quizzes
         async function loadQuizzes() {
             const tableBody = document.querySelector('#quizzes-table tbody');
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading...</td></tr>';
-            
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading...</td></tr>';
+
             try {
                 const response = await fetch('/api/admin/quizzes');
                 if (response.ok) {
@@ -797,27 +822,27 @@
         // Display quizzes in table
         function displayQuizzes(quizzes) {
             const tableBody = document.querySelector('#quizzes-table tbody');
-            
+
             if (quizzes.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No quizzes found</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No quizzes found</td></tr>';
                 return;
             }
-            
+
             tableBody.innerHTML = quizzes.map(quiz => `
                 <tr>
                     <td>${quiz.title}</td>
                     <td>${quiz.accessCode
-                        ? `<span style="font-family:monospace;background:var(--accent-light);color:var(--accent);padding:0.2rem 0.6rem;border-radius:6px;letter-spacing:0.08em;">${quiz.accessCode}</span>`
-                        : `<span style="color:var(--text-dim);font-size:0.85rem;">— none —</span>`
+                        ? `<span class="access-code-display">${quiz.accessCode}</span>`
+                        : `<span class="access-code-none">— none —</span>`
                     }</td>
                     <td>${quiz.questionCount || 0}</td>
-                    <td><span style="color: ${quiz.isActive ? 'var(--success)' : 'var(--warning)'}">
+                    <td><span class="status-badge ${quiz.isActive ? 'status-active' : 'status-inactive'}">
                         ${quiz.isActive ? '● Active' : '○ Inactive'}
                     </span></td>
                     <td>${new Date(quiz.createdAt).toLocaleDateString()}</td>
                     <td>
-                        <button class="btn btn-primary" onclick="editQuiz(${quiz.id})">Edit</button>
-                        <button class="btn btn-danger" onclick="deleteQuiz(${quiz.id})">Delete</button>
+                        <button class="btn btn-primary btn-sm" onclick="editQuiz(${quiz.id})">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteQuiz(${quiz.id})">Delete</button>
                     </td>
                 </tr>
             `).join('');
@@ -836,8 +861,8 @@
         // Load students
         async function loadStudents() {
             const tableBody = document.querySelector('#students-table tbody');
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading...</td></tr>';
-            
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Loading...</td></tr>';
+
             try {
                 const response = await fetch('/api/admin/students');
                 if (response.ok) {
@@ -860,12 +885,12 @@
         // Display students in table
         function displayStudents(students) {
             const tableBody = document.querySelector('#students-table tbody');
-            
+
             if (students.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No students found</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No students found</td></tr>';
                 return;
             }
-            
+
             tableBody.innerHTML = students.map(student => `
                 <tr>
                     <td>${student.name}</td>
@@ -873,7 +898,7 @@
                     <td>${new Date(student.last_access).toLocaleDateString()}</td>
                     <td>${student.submission_count || 0}</td>
                     <td>
-                        <button class="btn btn-primary" onclick="viewStudent(${student.id})">View</button>
+                        <button class="btn btn-primary btn-sm" onclick="viewStudent(${student.id})">View</button>
                     </td>
                 </tr>
             `).join('');
@@ -901,16 +926,16 @@
             const title = document.getElementById('create-quiz-title').value.trim();
             const description = document.getElementById('create-quiz-description').value.trim();
             const accessCode = document.getElementById('create-quiz-code').value.trim();
-            
+
             if (!title) { alert('Please enter a quiz title'); return; }
-            
+
             try {
                 const response = await fetch('/api/admin/quiz', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, description, accessCode })
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     alert(`Quiz "${title}" created!\nAccess Code: ${data.quiz.accessCode || '(none set)'}`);
@@ -945,7 +970,7 @@
                     const response = await fetch(`/api/admin/quiz/${quizId}`, {
                         method: 'DELETE'
                     });
-                    
+
                     if (response.ok) {
                         alert('Quiz deleted successfully!');
                         loadQuizzes();
@@ -983,13 +1008,13 @@
                 passingScore: 70,
                 questions: []
             };
-            
+
             document.getElementById('editor-quiz-title').value = '';
             document.getElementById('editor-quiz-description').value = '';
             document.getElementById('editor-quiz-time-limit').value = '30';
             document.getElementById('editor-quiz-pass-score').value = '70';
             document.getElementById('questions-container').innerHTML = '<p class="text-secondary">No questions added yet. Click "Add MCQ" or "Add Essay" to start building your quiz.</p>';
-            
+
             console.log('New quiz created');
         }
 
@@ -1022,7 +1047,7 @@
                     }
                 ]
             };
-            
+
             loadQuizToEditor();
             console.log('Demo quiz loaded');
         }
@@ -1032,7 +1057,7 @@
             document.getElementById('editor-quiz-description').value = currentQuiz.description;
             document.getElementById('editor-quiz-time-limit').value = currentQuiz.timeLimit;
             document.getElementById('editor-quiz-pass-score').value = currentQuiz.passingScore;
-            
+
             renderQuestions();
         }
 
@@ -1046,7 +1071,7 @@
                 options: ['', '', '', ''],
                 correctAnswer: 0
             };
-            
+
             currentQuiz.questions.push(question);
             console.log('MCQ question added. Total questions:', currentQuiz.questions.length);
             renderQuestions();
@@ -1062,7 +1087,7 @@
                 minWords: 50,
                 maxWords: 300
             };
-            
+
             currentQuiz.questions.push(question);
             console.log('Essay question added. Total questions:', currentQuiz.questions.length);
             renderQuestions();
@@ -1070,12 +1095,12 @@
 
         function renderQuestions() {
             const container = document.getElementById('questions-container');
-            
+
             if (currentQuiz.questions.length === 0) {
                 container.innerHTML = '<p class="text-secondary">No questions added yet. Click "Add MCQ" or "Add Essay" to start building your quiz.</p>';
                 return;
             }
-            
+
             container.innerHTML = currentQuiz.questions.map((question, index) => {
                 if (question.type === 'mcq') {
                     return renderMCQQuestion(question, index);
@@ -1083,7 +1108,7 @@
                     return renderEssayQuestion(question, index);
                 }
             }).join('');
-            
+
             // FORCE WHITE TEXT IMMEDIATELY AFTER RENDERING
             setTimeout(() => {
                 forceWhiteText();
@@ -1097,35 +1122,33 @@
                     <div class="question-header">
                         <span class="question-type-badge question-type-mcq">MCQ Question ${index + 1}</span>
                         <div class="question-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="moveQuestion(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>↑</button>
-                            <button class="btn btn-sm btn-secondary" onclick="moveQuestion(${index}, 'down')" ${index === currentQuiz.questions.length - 1 ? 'disabled' : ''}>↓</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${index})">Delete</button>
+                            <button class="btn btn-secondary btn-sm" onclick="moveQuestion(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>↑</button>
+                            <button class="btn btn-secondary btn-sm" onclick="moveQuestion(${index}, 'down')" ${index === currentQuiz.questions.length - 1 ? 'disabled' : ''}>↓</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${index})">Delete</button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Question Text</label>
-                        <textarea placeholder="Enter your question here..." rows="2" 
-                                  style="color: white !important; background: #000000 !important;"
+                        <label class="form-label">Question Text</label>
+                        <textarea class="form-textarea" placeholder="Enter your question here..." rows="2"
                                   onchange="updateQuestionText(${index}, this.value)"
                                   oninput="console.log('Question text input:', this.value)">${question.text}</textarea>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Answer Options</label>
+                        <label class="form-label">Answer Options</label>
                         ${question.options.map((option, optionIndex) => `
                             <div class="option-item">
                                 <div class="option-letter">${String.fromCharCode(65 + optionIndex)}</div>
-                                <input type="text" class="option-input" placeholder="Enter option ${String.fromCharCode(65 + optionIndex)}" 
-                                       value="${option}" 
-                                       style="color: white !important; background: #000000 !important; -webkit-text-fill-color: white !important;"
+                                <input type="text" class="option-input" placeholder="Enter option ${String.fromCharCode(65 + optionIndex)}"
+                                       value="${option}"
                                        onchange="updateOption(${index}, ${optionIndex}, this.value)"
-                                       oninput="this.style.color='white'; this.style.background='#000000'; console.log('Option ${String.fromCharCode(65 + optionIndex)} input:', this.value)"
+                                       oninput="this.style.color='white'; this.style.background='#0f0f12'; console.log('Option ${String.fromCharCode(65 + optionIndex)} input:', this.value)"
                                        onfocus="this.style.color='white'; this.style.background='#111111'; console.log('Option ${String.fromCharCode(65 + optionIndex)} focused')"
                                        onclick="this.style.color='white'; console.log('Option ${String.fromCharCode(65 + optionIndex)} clicked')">
-                                <input type="radio" name="correct-${question.id}" class="correct-answer-radio" 
+                                <input type="radio" name="correct-${question.id}" class="correct-answer-radio"
                                        value="${optionIndex}"
-                                       ${question.correctAnswer === optionIndex ? 'checked' : ''} 
+                                       ${question.correctAnswer === optionIndex ? 'checked' : ''}
                                        onchange="updateCorrectAnswer(${index}, ${optionIndex})"
                                        onclick="console.log('Radio ${String.fromCharCode(65 + optionIndex)} clicked')">
                                 <label style="margin: 0; font-size: 0.8rem; cursor: pointer;">Correct</label>
@@ -1142,27 +1165,27 @@
                     <div class="question-header">
                         <span class="question-type-badge question-type-essay">Essay Question ${index + 1}</span>
                         <div class="question-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="moveQuestion(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>↑</button>
-                            <button class="btn btn-sm btn-secondary" onclick="moveQuestion(${index}, 'down')" ${index === currentQuiz.questions.length - 1 ? 'disabled' : ''}>↓</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${index})">Delete</button>
+                            <button class="btn btn-secondary btn-sm" onclick="moveQuestion(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>↑</button>
+                            <button class="btn btn-secondary btn-sm" onclick="moveQuestion(${index}, 'down')" ${index === currentQuiz.questions.length - 1 ? 'disabled' : ''}>↓</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${index})">Delete</button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Question Text</label>
-                        <textarea placeholder="Enter your essay question here..." rows="3" 
+                        <label class="form-label">Question Text</label>
+                        <textarea class="form-textarea" placeholder="Enter your essay question here..." rows="3"
                                   onchange="updateQuestionText(${index}, this.value)">${question.text}</textarea>
                     </div>
-                    
+
                     <div style="display: flex; gap: 1rem;">
                         <div class="form-group" style="flex: 1;">
-                            <label>Minimum Words</label>
-                            <input type="number" min="10" max="1000" value="${question.minWords || 50}" 
+                            <label class="form-label">Minimum Words</label>
+                            <input type="number" class="form-input" min="10" max="1000" value="${question.minWords || 50}"
                                    onchange="updateEssayConstraint(${index}, 'minWords', this.value)">
                         </div>
                         <div class="form-group" style="flex: 1;">
-                            <label>Maximum Words</label>
-                            <input type="number" min="50" max="2000" value="${question.maxWords || 300}" 
+                            <label class="form-label">Maximum Words</label>
+                            <input type="number" class="form-input" min="50" max="2000" value="${question.maxWords || 300}"
                                    onchange="updateEssayConstraint(${index}, 'maxWords', this.value)">
                         </div>
                     </div>
@@ -1176,7 +1199,6 @@
         }
 
         function updateOption(questionIndex, optionIndex, text) {
-            console.log('Updating option:', questionIndex, optionIndex, text);
             currentQuiz.questions[questionIndex].options[optionIndex] = text;
         }
 
@@ -1191,13 +1213,13 @@
 
         function moveQuestion(index, direction) {
             console.log('Move question called:', index, direction);
-            
+
             if (direction === 'up' && index > 0) {
-                [currentQuiz.questions[index], currentQuiz.questions[index - 1]] = 
+                [currentQuiz.questions[index], currentQuiz.questions[index - 1]] =
                 [currentQuiz.questions[index - 1], currentQuiz.questions[index]];
                 console.log('Question moved up');
             } else if (direction === 'down' && index < currentQuiz.questions.length - 1) {
-                [currentQuiz.questions[index], currentQuiz.questions[index + 1]] = 
+                [currentQuiz.questions[index], currentQuiz.questions[index + 1]] =
                 [currentQuiz.questions[index + 1], currentQuiz.questions[index]];
                 console.log('Question moved down');
             } else {
@@ -1210,7 +1232,7 @@
         function deleteQuestion(index) {
             console.log('Delete question called for index:', index);
             console.log('Current questions:', currentQuiz.questions.length);
-            
+
             if (confirm(`Are you sure you want to delete question ${index + 1}?`)) {
                 currentQuiz.questions.splice(index, 1);
                 console.log('Question deleted. Remaining questions:', currentQuiz.questions.length);
@@ -1224,18 +1246,18 @@
             currentQuiz.description = document.getElementById('editor-quiz-description').value;
             currentQuiz.timeLimit = parseInt(document.getElementById('editor-quiz-time-limit').value) || 30;
             currentQuiz.passingScore = parseInt(document.getElementById('editor-quiz-pass-score').value) || 70;
-            
+
             // Validate quiz
             if (!currentQuiz.title.trim()) {
                 alert('Please enter a quiz title');
                 return;
             }
-            
+
             if (currentQuiz.questions.length === 0) {
                 alert('Please add at least one question');
                 return;
             }
-            
+
             // Check if all questions are properly filled
             for (let i = 0; i < currentQuiz.questions.length; i++) {
                 const question = currentQuiz.questions[i];
@@ -1243,7 +1265,7 @@
                     alert(`Please enter text for question ${i + 1}`);
                     return;
                 }
-                
+
                 if (question.type === 'mcq') {
                     if (question.options.some(opt => !opt.trim())) {
                         alert(`Please fill all options for question ${i + 1}`);
@@ -1251,11 +1273,11 @@
                     }
                 }
             }
-            
+
             // Demo: Save to localStorage
             const quizId = 'quiz_' + Date.now();
             localStorage.setItem(quizId, JSON.stringify(currentQuiz));
-            
+
             alert(`Quiz "${currentQuiz.title}" saved successfully!\n\nQuiz ID: ${quizId}\nQuestions: ${currentQuiz.questions.length}\nTime Limit: ${currentQuiz.timeLimit} minutes`);
             console.log('Quiz saved:', currentQuiz);
         }
@@ -1265,7 +1287,7 @@
                 alert('Please add at least one question to preview');
                 return;
             }
-            
+
             const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
             previewWindow.document.write(`
                 <html>
@@ -1294,7 +1316,7 @@
                                     <div class="options">
                                         ${q.options.map((opt, j) => `
                                             <div class="option">
-                                                ${String.fromCharCode(65 + j)}) ${opt} 
+                                                ${String.fromCharCode(65 + j)}) ${opt}
                                                 ${j === q.correctAnswer ? '<strong>(Correct Answer)</strong>' : ''}
                                             </div>
                                         `).join('')}
@@ -1328,85 +1350,14 @@
             }
         }
 
-        // Debug input visibility function
-        function debugInputVisibility() {
-            console.log('=== INPUT VISIBILITY DEBUGGING ===');
-            
-            // Add debug class to body
-            document.body.classList.add('debug-mode');
-            
-            // Find all option inputs
-            const inputs = document.querySelectorAll('.option-input');
-            console.log('Found', inputs.length, 'option inputs');
-            
-            inputs.forEach((input, index) => {
-                const computedStyle = window.getComputedStyle(input);
-                console.log(`Input ${index + 1}:`, {
-                    color: computedStyle.color,
-                    backgroundColor: computedStyle.backgroundColor,
-                    border: computedStyle.border,
-                    display: computedStyle.display,
-                    visibility: computedStyle.visibility,
-                    opacity: computedStyle.opacity,
-                    webkitTextFillColor: computedStyle.webkitTextFillColor
-                });
-                
-                // Set a test value
-                input.value = `Test ${index + 1}`;
-                input.style.cssText += 'color: #ffffff !important; background: #1a1a1a !important;';
-            });
-            
-            alert('Debug mode activated. Check console for details. Option inputs should now have red borders and test text.');
-        }
-
-        // Test all buttons function
-        function testAllButtons() {
-            console.log('=== BUTTON TEST RESULTS ===');
-            
-            // Test quiz editor buttons
-            console.log('Testing Quiz Editor Buttons:');
-            try {
-                addMCQQuestion();
-                console.log('✅ Add MCQ Question - Working');
-            } catch (e) {
-                console.log('❌ Add MCQ Question - Error:', e);
-            }
-            
-            try {
-                addEssayQuestion();
-                console.log('✅ Add Essay Question - Working');
-            } catch (e) {
-                console.log('❌ Add Essay Question - Error:', e);
-            }
-            
-            if (currentQuiz.questions.length > 0) {
-                try {
-                    deleteQuestion(0);
-                    console.log('✅ Delete Question - Working (check if confirmation appears)');
-                } catch (e) {
-                    console.log('❌ Delete Question - Error:', e);
-                }
-            }
-            
-            try {
-                saveQuiz();
-                console.log('✅ Save Quiz - Working (check for validation alerts)');
-            } catch (e) {
-                console.log('❌ Save Quiz - Error:', e);
-            }
-            
-            console.log('=== END BUTTON TEST ===');
-            console.log('Check console above for detailed results');
-        }
-
         // Force white text on all inputs - AGGRESSIVE VERSION
         function forceWhiteText() {
             const inputs = document.querySelectorAll('input[type="text"], textarea, .option-input, input.option-input');
             console.log('ForceWhiteText found inputs:', inputs.length);
-            
+
             inputs.forEach((input, index) => {
                 console.log(`Styling input ${index}:`, input);
-                
+
                 // Set all possible color properties aggressively
                 input.style.setProperty('color', 'white', 'important');
                 input.style.setProperty('background-color', '#000000', 'important');
@@ -1415,20 +1366,14 @@
                 input.style.setProperty('-moz-text-fill-color', 'white', 'important');
                 input.style.setProperty('text-shadow', 'none', 'important');
                 input.style.setProperty('opacity', '1', 'important');
-                
-                // Remove any event listeners first
-                input.removeEventListener('input', arguments.callee);
-                input.removeEventListener('focus', arguments.callee);
-                input.removeEventListener('keyup', arguments.callee);
-                input.removeEventListener('change', arguments.callee);
-                
+
                 // Add aggressive event listeners
                 const forceStyle = function() {
                     this.style.setProperty('color', 'white', 'important');
                     this.style.setProperty('-webkit-text-fill-color', 'white', 'important');
                     console.log('Forced white text on:', this);
                 };
-                
+
                 input.addEventListener('input', forceStyle);
                 input.addEventListener('focus', forceStyle);
                 input.addEventListener('keyup', forceStyle);
@@ -1436,7 +1381,7 @@
                 input.addEventListener('blur', forceStyle);
             });
         }
-        
+
         // Ultra aggressive text forcing - runs every second
         function ultraForceText() {
             const optionInputs = document.querySelectorAll('.option-input');
@@ -1456,11 +1401,11 @@
             setTimeout(forceWhiteText, 100);
             setTimeout(forceWhiteText, 500);
             setTimeout(forceWhiteText, 1000);
-            
+
             // Ultra aggressive - force every second
             setInterval(ultraForceText, 1000);
             setInterval(forceWhiteText, 3000);
-            
+
             // Keep forcing it periodically
             setInterval(forceWhiteText, 2000);
         });
