@@ -3,197 +3,861 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizFlow - Modern Quiz Platform</title>
+    <title>QuizFlow - The Modern Quiz Platform</title>
+    <meta name="description" content="QuizFlow is the intelligent quiz platform for modern educators and students. Create, manage, and take quizzes with instant grading, analytics, and beautiful design.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Page-specific styles */
-        .hero-section {
-            animation: fadeUp 0.6s ease forwards;
+        /* ── Landing Page Layout ── */
+        body { overflow-x: hidden; }
+
+        .landing { position: relative; z-index: 1; }
+
+        /* ── Navbar ── */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 2.5rem;
+            background: rgba(5, 5, 7, 0.6);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.3s ease;
         }
-        
-        .logo-box {
-            animation: scaleIn 0.8s ease forwards;
+        .navbar.scrolled { background: rgba(5, 5, 7, 0.92); }
+        .nav-brand {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 1.25rem; font-weight: 800; color: var(--text);
+            letter-spacing: -0.03em; text-decoration: none;
         }
-        
-        .hero-title {
-            animation: fadeUp 0.8s ease 0.1s forwards;
-            opacity: 0;
+        .nav-brand svg { flex-shrink: 0; }
+        .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+        .nav-links a {
+            font-size: 0.875rem; font-weight: 500; color: var(--text-muted);
+            text-decoration: none; transition: color 0.2s;
         }
-        
-        .hero-subtitle {
-            animation: fadeUp 0.8s ease 0.2s forwards;
-            opacity: 0;
-        }
-        
-        .button-group {
-            animation: fadeUp 0.8s ease 0.3s forwards;
-            opacity: 0;
-        }
-        
-        .footer-text {
-            animation: fadeUp 0.8s ease 0.4s forwards;
-            opacity: 0;
+        .nav-links a:hover { color: var(--text); }
+        .nav-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .nav-actions .btn { padding: 0.6rem 1.25rem; font-size: 0.8125rem; }
+        .mobile-menu-btn {
+            display: none; background: none; border: none; color: var(--text);
+            cursor: pointer; padding: 0.25rem;
         }
 
-        /* Enhanced logo glow effect */
-        .logo-box {
-            transition: all 0.4s ease;
+        /* ── Hero ── */
+        .lp-hero {
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 8rem 1.5rem 5rem; position: relative;
         }
-        
-        .logo-box:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        .hero-glow {
+            position: absolute; top: 50%; left: 50%;
+            width: 900px; height: 600px;
+            transform: translate(-50%, -55%);
+            background: radial-gradient(ellipse, rgba(139,92,246,0.15) 0%, rgba(99,102,241,0.08) 40%, transparent 70%);
+            pointer-events: none; z-index: 0;
         }
-
-        /* Feature highlights */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-top: 3rem;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 1rem 0.4rem 0.6rem;
+            background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.25);
+            border-radius: 999px; font-size: 0.8125rem; font-weight: 500;
+            color: var(--accent); margin-bottom: 2rem;
+            animation: fadeUp 0.6s ease forwards; opacity: 0;
         }
-
-        .feature-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 1.5rem;
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            transition: all var(--transition);
+        .hero-badge .pulse-ring {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent); position: relative;
         }
-
-        .feature-item:hover {
-            border-color: var(--border-hover);
-            transform: translateY(-4px);
-            box-shadow: var(--card-shadow-hover);
+        .hero-badge .pulse-ring::after {
+            content: ''; position: absolute; inset: -4px;
+            border-radius: 50%; border: 2px solid var(--accent);
+            animation: ping 2s cubic-bezier(0,0,0.2,1) infinite; opacity: 0;
         }
-
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--accent-grad);
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            color: #fff;
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 0.75; }
+            100% { transform: scale(2.2); opacity: 0; }
         }
-
-        .feature-title {
-            font-size: 0.9375rem;
-            font-weight: 600;
+        .lp-hero h1 {
+            font-size: clamp(2.75rem, 6vw, 5rem); font-weight: 900;
+            letter-spacing: -0.045em; line-height: 1.05;
+            margin-bottom: 1.5rem; position: relative; z-index: 1;
+            animation: fadeUp 0.7s ease 0.1s forwards; opacity: 0;
+        }
+        .lp-hero h1 .gradient-text {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 30%, #818cf8 60%, #c084fc 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .lp-hero .hero-desc {
+            font-size: clamp(1rem, 1.5vw, 1.25rem); color: var(--text-muted);
+            max-width: 620px; margin: 0 auto 2.5rem; line-height: 1.7;
+            position: relative; z-index: 1;
+            animation: fadeUp 0.7s ease 0.2s forwards; opacity: 0;
+        }
+        .hero-cta {
+            display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+            position: relative; z-index: 1;
+            animation: fadeUp 0.7s ease 0.3s forwards; opacity: 0;
+        }
+        .hero-cta .btn-primary { padding: 1rem 2.25rem; font-size: 1rem; }
+        .hero-cta .btn-secondary { padding: 1rem 2rem; font-size: 1rem; }
+        .hero-visual {
+            margin-top: 4rem; position: relative; z-index: 1; width: 100%; max-width: 900px;
+            animation: fadeUp 0.8s ease 0.5s forwards; opacity: 0;
+        }
+        .hero-mockup {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 60px rgba(139,92,246,0.1);
+        }
+        .mockup-topbar {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.875rem 1.25rem; background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border);
+        }
+        .mockup-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+        }
+        .mockup-dot:nth-child(1) { background: #f87171; }
+        .mockup-dot:nth-child(2) { background: #fbbf24; }
+        .mockup-dot:nth-child(3) { background: #34d399; }
+        .mockup-url {
+            flex: 1; text-align: center; font-size: 0.75rem;
+            color: var(--text-dim); font-family: 'SF Mono', monospace;
+        }
+        .mockup-body {
+            padding: 2rem; display: grid;
+            grid-template-columns: 1fr 280px; gap: 1.5rem; min-height: 300px;
+        }
+        .mockup-question {
+            background: var(--bg-elevated); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 1.5rem;
+        }
+        .mockup-q-label {
+            font-size: 0.6875rem; font-weight: 600; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;
+        }
+        .mockup-q-text {
+            font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 1.25rem; line-height: 1.5;
+        }
+        .mockup-option {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); font-size: 0.875rem; color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .mockup-option.selected {
+            border-color: var(--accent); background: rgba(139,92,246,0.08);
             color: var(--text);
-            margin-bottom: 0.25rem;
+        }
+        .mockup-radio {
+            width: 16px; height: 16px; border-radius: 50%;
+            border: 2px solid var(--border); flex-shrink: 0;
+        }
+        .mockup-option.selected .mockup-radio {
+            border-color: var(--accent); background: var(--accent);
+            box-shadow: inset 0 0 0 3px var(--bg-elevated);
+        }
+        .mockup-sidebar {
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        .mockup-timer-card {
+            background: var(--bg-elevated); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 1.25rem; text-align: center;
+        }
+        .mockup-timer-label {
+            font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); margin-bottom: 0.5rem;
+        }
+        .mockup-timer-value {
+            font-size: 2rem; font-weight: 800; color: var(--accent);
+            font-variant-numeric: tabular-nums;
+        }
+        .mockup-progress {
+            background: var(--bg-elevated); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 1.25rem;
+        }
+        .mockup-progress-label {
+            font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); margin-bottom: 0.75rem;
+        }
+        .mockup-progress-bar {
+            height: 6px; background: var(--surface-active); border-radius: 999px; overflow: hidden;
+        }
+        .mockup-progress-fill {
+            height: 100%; width: 65%; background: var(--accent-grad); border-radius: 999px;
+            animation: progressGrow 2s ease 1s forwards;
+        }
+        @keyframes progressGrow { from { width: 0; } to { width: 65%; } }
+        .mockup-progress-text {
+            font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;
+            text-align: right;
+        }
+        .mockup-nav-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.375rem;
+        }
+        .mockup-nav-dot {
+            aspect-ratio: 1; border-radius: var(--radius-sm);
+            background: var(--surface); border: 1px solid var(--border);
+            font-size: 0.625rem; display: flex; align-items: center;
+            justify-content: center; color: var(--text-dim);
+        }
+        .mockup-nav-dot.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .mockup-nav-dot.done { background: rgba(52,211,153,0.15); border-color: rgba(52,211,153,0.3); color: var(--success); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap;
+            padding: 4rem 1.5rem; position: relative; z-index: 1;
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+        }
+        .stat-item { text-align: center; }
+        .stat-number {
+            font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em;
+            background: var(--accent-grad); -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .stat-label {
+            font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;
         }
 
-        .feature-desc {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-            margin: 0;
+        /* ── Section Styles ── */
+        .lp-section {
+            padding: 6rem 1.5rem; position: relative; z-index: 1;
+            max-width: 1200px; margin: 0 auto;
+        }
+        .section-header {
+            text-align: center; max-width: 600px; margin: 0 auto 4rem;
+        }
+        .section-label {
+            display: inline-block; font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.15em;
+            color: var(--accent); margin-bottom: 1rem;
+        }
+        .section-title {
+            font-size: clamp(2rem, 3.5vw, 2.75rem); font-weight: 800;
+            letter-spacing: -0.03em; margin-bottom: 1rem;
+        }
+        .section-desc {
+            font-size: 1.0625rem; color: var(--text-muted); line-height: 1.7;
         }
 
+        /* ── Features Grid ── */
+        .features-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+        }
+        .feature-card {
+            background: var(--surface); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 2rem; transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 2px; background: var(--accent-grad); opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .feature-card:hover {
+            border-color: var(--border-hover); transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(139,92,246,0.08);
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card-icon {
+            width: 52px; height: 52px; display: flex; align-items: center;
+            justify-content: center; background: var(--accent-grad);
+            border-radius: 14px; margin-bottom: 1.25rem; color: #fff;
+            box-shadow: 0 8px 24px rgba(139,92,246,0.25);
+        }
+        .feature-card h3 {
+            font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;
+        }
+        .feature-card p {
+            font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin: 0;
+        }
+
+        /* ── How It Works ── */
+        .steps-container {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;
+            position: relative;
+        }
+        .steps-container::before {
+            content: ''; position: absolute; top: 40px; left: 16.66%;
+            right: 16.66%; height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+            opacity: 0.3;
+        }
+        .step-card { text-align: center; position: relative; }
+        .step-number {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: var(--surface); border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem; font-size: 1.5rem; font-weight: 800;
+            color: var(--accent); position: relative; z-index: 1;
+            transition: all 0.3s;
+        }
+        .step-card:hover .step-number {
+            border-color: var(--accent); background: rgba(139,92,246,0.1);
+            box-shadow: 0 0 30px rgba(139,92,246,0.2);
+        }
+        .step-card h3 {
+            font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;
+        }
+        .step-card p {
+            font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;
+            max-width: 280px; margin: 0 auto;
+        }
+
+        /* ── Bento Grid ── */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: auto auto;
+            gap: 1.5rem;
+        }
+        .bento-item {
+            background: var(--surface); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 2rem; transition: all 0.3s ease; overflow: hidden;
+            position: relative;
+        }
+        .bento-item:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .bento-item:nth-child(1) { grid-column: span 7; }
+        .bento-item:nth-child(2) { grid-column: span 5; }
+        .bento-item:nth-child(3) { grid-column: span 4; }
+        .bento-item:nth-child(4) { grid-column: span 8; }
+        .bento-label {
+            font-size: 0.6875rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.75rem;
+        }
+        .bento-item h3 {
+            font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;
+        }
+        .bento-item p { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+        .bento-visual {
+            margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .bento-tag {
+            padding: 0.375rem 0.75rem; background: rgba(139,92,246,0.08);
+            border: 1px solid rgba(139,92,246,0.2); border-radius: 999px;
+            font-size: 0.75rem; color: var(--accent); font-weight: 500;
+        }
+        .bento-chart {
+            display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-top: 1.5rem;
+        }
+        .bento-bar {
+            flex: 1; border-radius: 4px 4px 0 0; background: var(--accent-grad);
+            min-width: 0; opacity: 0.7; transition: opacity 0.2s;
+        }
+        .bento-bar:hover { opacity: 1; }
+        .bento-email-preview {
+            margin-top: 1.5rem; padding: 1rem; background: var(--bg-elevated);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+        }
+        .bento-email-header {
+            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;
+        }
+        .bento-email-dot {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--accent-grad); display: flex; align-items: center;
+            justify-content: center; font-size: 0.75rem; font-weight: 700; color: #fff;
+        }
+        .bento-email-meta { font-size: 0.75rem; }
+        .bento-email-meta strong { color: var(--text); font-weight: 600; }
+        .bento-email-meta span { color: var(--text-dim); }
+        .bento-email-body {
+            font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6;
+        }
+        .bento-score-ring {
+            width: 100px; height: 100px; margin: 1.5rem auto 0; position: relative;
+        }
+        .bento-score-ring svg { transform: rotate(-90deg); }
+        .bento-score-ring circle {
+            fill: none; stroke-width: 6; stroke-linecap: round;
+        }
+        .bento-score-ring .ring-bg { stroke: var(--surface-active); }
+        .bento-score-ring .ring-fill {
+            stroke: url(#scoreGrad); stroke-dasharray: 282.6;
+            stroke-dashoffset: 70; transition: stroke-dashoffset 1.5s ease;
+        }
+        .bento-score-value {
+            position: absolute; inset: 0; display: flex; align-items: center;
+            justify-content: center; font-size: 1.5rem; font-weight: 800; color: var(--text);
+        }
+
+        /* ── CTA Section ── */
+        .cta-section {
+            text-align: center; padding: 6rem 1.5rem; position: relative; z-index: 1;
+        }
+        .cta-card {
+            max-width: 700px; margin: 0 auto; padding: 4rem 3rem;
+            background: var(--surface); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: var(--radius-lg);
+            position: relative; overflow: hidden;
+        }
+        .cta-card::before {
+            content: ''; position: absolute; inset: -1px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, rgba(139,92,246,0.3), transparent 50%, rgba(99,102,241,0.3));
+            z-index: -1;
+        }
+        .cta-card h2 {
+            font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem;
+            letter-spacing: -0.03em;
+        }
+        .cta-card p { font-size: 1.0625rem; color: var(--text-muted); margin-bottom: 2rem; }
+        .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+        /* ── Footer ── */
+        .lp-footer {
+            border-top: 1px solid var(--border); padding: 3rem 2.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            max-width: 1200px; margin: 0 auto; position: relative; z-index: 1;
+        }
+        .lp-footer-brand {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-weight: 700; color: var(--text-muted); font-size: 0.9rem;
+        }
+        .lp-footer-links {
+            display: flex; gap: 2rem; list-style: none;
+        }
+        .lp-footer-links a {
+            font-size: 0.8125rem; color: var(--text-dim); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .lp-footer-links a:hover { color: var(--text-muted); }
+        .lp-footer-copy {
+            font-size: 0.75rem; color: var(--text-dim);
+        }
+
+        /* ── Scroll Animations ── */
+        .reveal {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.35s; }
+
+        /* ── Responsiveness ── */
+        @media (max-width: 1024px) {
+            .mockup-body { grid-template-columns: 1fr; }
+            .mockup-sidebar { display: none; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .bento-item:nth-child(1),
+            .bento-item:nth-child(2),
+            .bento-item:nth-child(3),
+            .bento-item:nth-child(4) { grid-column: span 6; }
+        }
         @media (max-width: 768px) {
-            .features {
-                grid-template-columns: 1fr;
-            }
+            .navbar { padding: 0.875rem 1.25rem; }
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+            .lp-hero { padding: 7rem 1.25rem 3rem; min-height: auto; }
+            .hero-visual { margin-top: 2.5rem; }
+            .stats-bar { gap: 2rem; padding: 3rem 1.5rem; }
+            .stat-number { font-size: 2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .steps-container { grid-template-columns: 1fr; gap: 2.5rem; }
+            .steps-container::before { display: none; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-item:nth-child(1),
+            .bento-item:nth-child(2),
+            .bento-item:nth-child(3),
+            .bento-item:nth-child(4) { grid-column: span 1; }
+            .lp-footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+            .cta-card { padding: 3rem 1.5rem; }
+            .cta-card h2 { font-size: 1.75rem; }
         }
     </style>
 </head>
 <body>
-    <div class="live-badge">
-        <div class="live-dot"></div>
-        ✦ Now Live
-    </div>
+    <div class="landing">
 
-    <div class="center-screen">
-        <div class="hero-section">
-            <div class="logo-wrap">
-                <div class="logo-box">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" 
-                              fill="url(#lg)" stroke="url(#lg)" stroke-width="1.2" stroke-linejoin="round"/>
-                        <defs>
-                            <linearGradient id="lg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#8b5cf6"/>
-                                <stop offset="1" stop-color="#6366f1"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
+        <!-- ═══ Navbar ═══ -->
+        <nav class="navbar" id="navbar">
+            <a href="#" class="nav-brand">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="url(#nlg)" stroke="url(#nlg)" stroke-width="1.2" stroke-linejoin="round"/>
+                    <defs><linearGradient id="nlg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+                </svg>
+                QuizFlow
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#highlights">Highlights</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="admin-login.html" class="btn btn-secondary">Admin</a>
+                <a href="login.html" class="btn btn-primary">Start Quiz →</a>
             </div>
-            
-            <h1 class="hero-title">QuizFlow</h1>
-            <p class="hero-subtitle">
-                The intelligent quiz platform designed for modern educators and students.
-                Create, manage, and take quizzes with seamless ease.
+            <button class="mobile-menu-btn" onclick="document.querySelector('.nav-links').classList.toggle('show')" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+        </nav>
+
+        <!-- ═══ Hero ═══ -->
+        <section class="lp-hero">
+            <div class="hero-glow"></div>
+            <div class="hero-badge">
+                <span class="pulse-ring"></span>
+                Now live — Start quizzing today
+            </div>
+            <h1>
+                Quizzes that feel<br><span class="gradient-text">effortless to create,<br>inspiring to take.</span>
+            </h1>
+            <p class="hero-desc">
+                QuizFlow is the modern quiz platform built for educators and students.
+                Timed assessments, instant grading, detailed analytics — all wrapped in a
+                beautiful interface your students will love.
             </p>
-            
-            <div class="button-group">
+            <div class="hero-cta">
                 <a href="login.html" class="btn btn-primary btn-lg">
-                    <span>Take a Quiz</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
+                    Start a Quiz
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
                 <a href="admin-login.html" class="btn btn-secondary btn-lg">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                    Admin Access
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Admin Dashboard
                 </a>
             </div>
-            
-            <div class="features">
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
+
+            <!-- Interactive Mockup -->
+            <div class="hero-visual">
+                <div class="hero-mockup">
+                    <div class="mockup-topbar">
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-url">quizflow.vercel.app/quiz</span>
                     </div>
-                    <span class="feature-title">Timed Quizzes</span>
-                    <p class="feature-desc">Built-in timer with flexible limits</p>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                            <polyline points="22 4 12 14.01 9 11.01"/>
-                        </svg>
+                    <div class="mockup-body">
+                        <div class="mockup-question">
+                            <div class="mockup-q-label">Question 7 of 15</div>
+                            <div class="mockup-q-text">Which factor of production refers to the natural resources used in the production process?</div>
+                            <div class="mockup-option">
+                                <span class="mockup-radio"></span> Capital
+                            </div>
+                            <div class="mockup-option selected">
+                                <span class="mockup-radio"></span> Land
+                            </div>
+                            <div class="mockup-option">
+                                <span class="mockup-radio"></span> Labour
+                            </div>
+                            <div class="mockup-option">
+                                <span class="mockup-radio"></span> Entrepreneurship
+                            </div>
+                        </div>
+                        <div class="mockup-sidebar">
+                            <div class="mockup-timer-card">
+                                <div class="mockup-timer-label">Time Remaining</div>
+                                <div class="mockup-timer-value" id="mockupTimer">18:42</div>
+                            </div>
+                            <div class="mockup-progress">
+                                <div class="mockup-progress-label">Progress</div>
+                                <div class="mockup-progress-bar"><div class="mockup-progress-fill"></div></div>
+                                <div class="mockup-progress-text">7 / 15 answered</div>
+                            </div>
+                            <div>
+                                <div class="mockup-nav-grid">
+                                    <span class="mockup-nav-dot done">1</span>
+                                    <span class="mockup-nav-dot done">2</span>
+                                    <span class="mockup-nav-dot done">3</span>
+                                    <span class="mockup-nav-dot done">4</span>
+                                    <span class="mockup-nav-dot done">5</span>
+                                    <span class="mockup-nav-dot done">6</span>
+                                    <span class="mockup-nav-dot active">7</span>
+                                    <span class="mockup-nav-dot">8</span>
+                                    <span class="mockup-nav-dot">9</span>
+                                    <span class="mockup-nav-dot">10</span>
+                                    <span class="mockup-nav-dot">11</span>
+                                    <span class="mockup-nav-dot">12</span>
+                                    <span class="mockup-nav-dot">13</span>
+                                    <span class="mockup-nav-dot">14</span>
+                                    <span class="mockup-nav-dot">15</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <span class="feature-title">Instant Results</span>
-                    <p class="feature-desc">Automatic grading & feedback</p>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                    </div>
-                    <span class="feature-title">Secure Access</span>
-                    <p class="feature-desc">Protected quiz codes</p>
                 </div>
             </div>
-            
-            <p class="footer-text">
-                ✦ Secure · Fast · Reliable ✦
-            </p>
-        </div>
+        </section>
+
+        <!-- ═══ Stats ═══ -->
+        <section class="stats-bar">
+            <div class="stat-item reveal">
+                <div class="stat-number" data-count="500">0+</div>
+                <div class="stat-label">Quizzes Created</div>
+            </div>
+            <div class="stat-item reveal reveal-delay-1">
+                <div class="stat-number" data-count="2000">0+</div>
+                <div class="stat-label">Students Active</div>
+            </div>
+            <div class="stat-item reveal reveal-delay-2">
+                <div class="stat-number" data-count="10000">0+</div>
+                <div class="stat-label">Submissions</div>
+            </div>
+            <div class="stat-item reveal reveal-delay-3">
+                <div class="stat-number">99%</div>
+                <div class="stat-label">Uptime</div>
+            </div>
+        </section>
+
+        <!-- ═══ Features ═══ -->
+        <section class="lp-section" id="features">
+            <div class="section-header">
+                <span class="section-label">Features</span>
+                <h2 class="section-title">Everything you need to run quizzes</h2>
+                <p class="section-desc">From creating questions to analyzing results — QuizFlow handles the entire lifecycle.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <div class="feature-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <h3>Timed Assessments</h3>
+                    <p>Set custom time limits per quiz. Students see a live countdown with automatic submission when time expires.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-1">
+                    <div class="feature-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <h3>Instant Grading</h3>
+                    <p>Answers are graded the moment a quiz is submitted. Students get immediate feedback with detailed breakdowns.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="feature-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                    </div>
+                    <h3>Rich Analytics</h3>
+                    <p>Track student performance across quizzes with visual dashboards, scores, and progress over time.</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <h3>Secure Access Codes</h3>
+                    <p>Protect your quizzes with unique access codes. Only authorized students can enter and attempt the quiz.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-1">
+                    <div class="feature-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2Z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </div>
+                    <h3>Email Notifications</h3>
+                    <p>Automated welcome emails, result reports, and admin broadcasts delivered straight to inboxes.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="feature-card-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                    </div>
+                    <h3>Mobile Responsive</h3>
+                    <p>Take quizzes anywhere. The interface adapts beautifully to any screen — desktop, tablet, or phone.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ How It Works ═══ -->
+        <section class="lp-section" id="how-it-works">
+            <div class="section-header">
+                <span class="section-label">How It Works</span>
+                <h2 class="section-title">Three steps to smarter quizzing</h2>
+                <p class="section-desc">Getting started takes less than a minute. No complicated setup required.</p>
+            </div>
+            <div class="steps-container">
+                <div class="step-card reveal">
+                    <div class="step-number">1</div>
+                    <h3>Create Your Quiz</h3>
+                    <p>Build quizzes with multiple choice and written questions from the powerful admin dashboard.</p>
+                </div>
+                <div class="step-card reveal reveal-delay-1">
+                    <div class="step-number">2</div>
+                    <h3>Share the Code</h3>
+                    <p>Give students the access code. They log in, select their quiz, and begin instantly.</p>
+                </div>
+                <div class="step-card reveal reveal-delay-2">
+                    <div class="step-number">3</div>
+                    <h3>Review Results</h3>
+                    <p>Scores are calculated instantly. View analytics, export data, and track progress over time.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ Highlights Bento Grid ═══ -->
+        <section class="lp-section" id="highlights">
+            <div class="section-header">
+                <span class="section-label">Highlights</span>
+                <h2 class="section-title">Built for real classrooms</h2>
+                <p class="section-desc">Every detail is crafted for a smooth experience — for both teachers and students.</p>
+            </div>
+            <div class="bento-grid">
+                <div class="bento-item reveal">
+                    <div class="bento-label">Question Types</div>
+                    <h3>Multiple formats, one platform</h3>
+                    <p>Support for multiple choice, true/false, and written response questions — all in one quiz.</p>
+                    <div class="bento-visual">
+                        <span class="bento-tag">Multiple Choice</span>
+                        <span class="bento-tag">Written Answer</span>
+                        <span class="bento-tag">True / False</span>
+                        <span class="bento-tag">Auto-graded</span>
+                    </div>
+                </div>
+                <div class="bento-item reveal reveal-delay-1">
+                    <div class="bento-label">Score Tracking</div>
+                    <h3>Visual performance</h3>
+                    <p>See how students perform at a glance with beautiful score rings and progress bars.</p>
+                    <div class="bento-score-ring">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <defs><linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs>
+                            <circle class="ring-bg" cx="50" cy="50" r="45"/>
+                            <circle class="ring-fill" cx="50" cy="50" r="45"/>
+                        </svg>
+                        <div class="bento-score-value">85%</div>
+                    </div>
+                </div>
+                <div class="bento-item reveal">
+                    <div class="bento-label">Performance</div>
+                    <h3>Class analytics</h3>
+                    <p>Track trends across your entire class.</p>
+                    <div class="bento-chart">
+                        <div class="bento-bar" style="height:45%"></div>
+                        <div class="bento-bar" style="height:60%"></div>
+                        <div class="bento-bar" style="height:35%"></div>
+                        <div class="bento-bar" style="height:80%"></div>
+                        <div class="bento-bar" style="height:55%"></div>
+                        <div class="bento-bar" style="height:90%"></div>
+                        <div class="bento-bar" style="height:70%"></div>
+                        <div class="bento-bar" style="height:65%"></div>
+                    </div>
+                </div>
+                <div class="bento-item reveal reveal-delay-1">
+                    <div class="bento-label">Email Notifications</div>
+                    <h3>Automatic result emails</h3>
+                    <p>Students receive beautiful HTML emails with their scores, question breakdowns, and personalized feedback.</p>
+                    <div class="bento-email-preview">
+                        <div class="bento-email-header">
+                            <div class="bento-email-dot">QF</div>
+                            <div class="bento-email-meta">
+                                <strong>QuizFlow Results</strong><br>
+                                <span>to: student@school.edu</span>
+                            </div>
+                        </div>
+                        <div class="bento-email-body">
+                            🎉 Congratulations! You scored <strong style="color:var(--success)">85%</strong> on "Commerce: Production Factors". You answered 17 out of 20 questions correctly...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ CTA ═══ -->
+        <section class="cta-section">
+            <div class="cta-card reveal">
+                <h2>Ready to transform your quizzes?</h2>
+                <p>Join hundreds of educators already using QuizFlow to create engaging, insightful assessments.</p>
+                <div class="cta-buttons">
+                    <a href="login.html" class="btn btn-primary btn-lg">
+                        Get Started Free
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="admin-login.html" class="btn btn-secondary btn-lg">Admin Dashboard</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ Footer ═══ -->
+        <footer class="lp-footer">
+            <div class="lp-footer-brand">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="url(#flg)" stroke="url(#flg)" stroke-width="1.2" stroke-linejoin="round"/>
+                    <defs><linearGradient id="flg" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+                </svg>
+                QuizFlow
+            </div>
+            <ul class="lp-footer-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="login.html">Take Quiz</a></li>
+                <li><a href="admin-login.html">Admin</a></li>
+            </ul>
+            <span class="lp-footer-copy">&copy; 2026 QuizFlow. All rights reserved.</span>
+        </footer>
     </div>
+
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 40);
+        });
+
+        // Scroll reveal
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+        reveals.forEach(el => observer.observe(el));
+
+        // Animated counter for stats
+        function animateCounters() {
+            document.querySelectorAll('.stat-number[data-count]').forEach(el => {
+                const target = parseInt(el.dataset.count);
+                let current = 0;
+                const increment = target / 60;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        el.textContent = target.toLocaleString() + '+';
+                        clearInterval(timer);
+                    } else {
+                        el.textContent = Math.floor(current).toLocaleString() + '+';
+                    }
+                }, 25);
+            });
+        }
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        const statsBar = document.querySelector('.stats-bar');
+        if (statsBar) statsObserver.observe(statsBar);
+
+        // Mockup timer animation
+        let seconds = 1122;
+        setInterval(() => {
+            seconds = Math.max(0, seconds - 1);
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            const el = document.getElementById('mockupTimer');
+            if (el) el.textContent = m + ':' + s;
+        }, 1000);
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
     <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
