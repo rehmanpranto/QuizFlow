@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizFlow - Pricing Plans</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Pricing Page Specific Styles */
+        .pricing-page {
+            min-height: 100vh;
+            padding: 120px 20px 60px;
+            background: var(--bg);
+        }
+
+        .pricing-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 60px;
+        }
+
+        .pricing-header h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+            background: var(--accent-grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .pricing-header p {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .pricing-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .pricing-toggle-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .pricing-toggle-label.active {
+            color: var(--text);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 56px;
+            height: 28px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: var(--accent);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(28px);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(139, 92, 246, 0.1);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--accent);
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+        }
+
+        .pricing-card.featured::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-grad);
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .plan-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .plan-price-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.03em;
+        }
+
+        .plan-price-currency {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .plan-price-period {
+            font-size: 0.875rem;
+            color: var(--text-dim);
+            margin-left: 0.25rem;
+        }
+
+        .plan-quiz-limit {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+            flex: 1;
+        }
+
+        .plan-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            line-height: 1.5;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-check {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            background: rgba(52, 211, 153, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--success);
+            font-size: 12px;
+        }
+
+        .plan-cta {
+            width: 100%;
+            padding: 1rem;
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .plan-cta:hover {
+            background: var(--surface-active);
+            border-color: var(--border-hover);
+        }
+
+        .pricing-card.featured .plan-cta {
+            background: var(--accent-grad);
+            border: none;
+        }
+
+        .pricing-card.featured .plan-cta:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .payment-info {
+            max-width: 700px;
+            margin: 4rem auto 0;
+            padding: 2rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: var(--radius);
+        }
+
+        .payment-info h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .payment-info ol {
+            color: var(--text-muted);
+            line-height: 1.8;
+            padding-left: 1.5rem;
+        }
+
+        .payment-info ol li {
+            margin-bottom: 0.75rem;
+        }
+
+        .bkash-number {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(236, 72, 153, 0.15);
+            color: #ec4899;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-family: 'SF Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 1rem 0;
+        }
+
+        .back-to-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .back-to-home:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .pricing-page {
+                padding-top: 100px;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .back-to-home {
+                position: static;
+                display: inline-flex;
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-to-home">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+    </a>
+
+    <div class="pricing-page">
+        <header class="pricing-header">
+            <h1>Simple, Transparent Pricing</h1>
+            <p>Choose the perfect plan for your teaching needs. All plans include a 30-day subscription with automatic renewal options.</p>
+        </header>
+
+        <div class="pricing-grid">
+            <!-- Basic Plan -->
+            <div class="pricing-card">
+                <h3 class="plan-name">Basic</h3>
+                <div class="plan-price">
+                    <span class="plan-price-amount">500</span>
+                    <span class="plan-price-currency">BDT</span>
+                    <span class="plan-price-period">/month</span>
+                </div>
+                <div class="plan-quiz-limit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    10 Quizzes / month
+                </div>
+                <ul class="plan-features">
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Create up to 10 quizzes per month
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Unlimited student submissions
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Basic analytics & results
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Email support
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Multiple choice & essay questions
+                    </li>
+                </ul>
+                <button class="plan-cta" onclick="selectPlan('Basic', 500)">
+                    Choose Basic
+                </button>
+            </div>
+
+            <!-- Standard Plan (Featured) -->
+            <div class="pricing-card featured">
+                <h3 class="plan-name">Standard</h3>
+                <div class="plan-price">
+                    <span class="plan-price-amount">1000</span>
+                    <span class="plan-price-currency">BDT</span>
+                    <span class="plan-price-period">/month</span>
+                </div>
+                <div class="plan-quiz-limit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    15 Quizzes / month
+                </div>
+                <ul class="plan-features">
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Create up to 15 quizzes per month
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Unlimited student submissions
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Advanced analytics & insights
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Priority email support
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Multiple choice & essay questions
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Custom access codes
+                    </li>
+                </ul>
+                <button class="plan-cta" onclick="selectPlan('Standard', 1000)">
+                    Choose Standard
+                </button>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="pricing-card">
+                <h3 class="plan-name">Premium</h3>
+                <div class="plan-price">
+                    <span class="plan-price-amount">1500</span>
+                    <span class="plan-price-currency">BDT</span>
+                    <span class="plan-price-period">/month</span>
+                </div>
+                <div class="plan-quiz-limit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    20 Quizzes / month
+                </div>
+                <ul class="plan-features">
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Create up to 20 quizzes per month
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Unlimited student submissions
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Premium analytics & reporting
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        24/7 priority support
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        All question types
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        Custom branding options
+                    </li>
+                    <li>
+                        <span class="feature-check">✓</span>
+                        API access (coming soon)
+                    </li>
+                </ul>
+                <button class="plan-cta" onclick="selectPlan('Premium', 1500)">
+                    Choose Premium
+                </button>
+            </div>
+        </div>
+
+        <div class="payment-info">
+            <h3>💳 How to Subscribe</h3>
+            <ol>
+                <li><strong>Select your plan</strong> - Click "Choose" on your preferred plan above</li>
+                <li><strong>Send Payment</strong> - Send money via bKash to: <div class="bkash-number">01759954385</div></li>
+                <li><strong>Submit Details</strong> - Fill in the payment form with your transaction ID and screenshot</li>
+                <li><strong>Wait for Confirmation</strong> - After sending money please wait up to 2 hours to receive your admin account in your email</li>
+                <li><strong>Start Creating</strong> - After that you can start creating quizzes</li>
+            </ol>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 1.5rem;">
+                <strong>Note:</strong> Account access is only provided after payment confirmation.
+            </p>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification" style="display: none;">
+        <svg class="notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span class="notification-content" id="notification-text"></span>
+        <button class="notification-close" onclick="hideNotification()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        function selectPlan(planName, amount) {
+            // Store plan selection in session storage
+            sessionStorage.setItem('selectedPlan', planName);
+            sessionStorage.setItem('selectedAmount', amount);
+            
+            // Redirect to payment submission page
+            window.location.href = 'payment.html';
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info', duration = 4000) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            const icon = notification.querySelector('.notification-icon');
+
+            if (!notification || !text) { alert(message); return; }
+
+            text.textContent = message;
+            
+            // Set notification type
+            notification.className = `notification ${type}`;
+            notification.style.display = 'flex';
+
+            // Update icon based on type
+            const icons = {
+                success: '<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>',
+                error: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+                warning: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+                info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
+            };
+            icon.innerHTML = icons[type] || icons.info;
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.style.display = 'none', 300);
+            }, duration);
+        }
+
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+            setTimeout(() => notification.style.display = 'none', 300);
+        }
+
+        // Check if returning from payment
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentStatus = sessionStorage.getItem('paymentStatus');
+            if (paymentStatus) {
+                sessionStorage.removeItem('paymentStatus');
+                if (paymentStatus === 'success') {
+                    showNotification('Payment submitted successfully! Please wait for confirmation.', 'success', 5000);
+                } else if (paymentStatus === 'error') {
+                    showNotification('Payment submission failed. Please try again.', 'error', 5000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

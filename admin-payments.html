@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizFlow - Payment Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Payment Management Styles */
+        .payment-management {
+            min-height: 100vh;
+            background: var(--bg);
+            padding: 80px 20px 40px;
+        }
+
+        .pm-header {
+            max-width: 1400px;
+            margin: 0 auto 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pm-title h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.25rem;
+        }
+
+        .pm-title p {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+
+        .pm-stats {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .pm-stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .pm-stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .pm-stat-label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .pm-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .pm-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .pm-tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            transition: all 0.2s;
+        }
+
+        .pm-tab:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .pm-tab.active {
+            background: var(--surface-active);
+            color: var(--accent);
+        }
+
+        .pm-tab-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .payment-table-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .payment-table th,
+        .payment-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .payment-table th {
+            background: var(--bg-elevated);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .payment-table tr:hover td {
+            background: var(--surface-hover);
+        }
+
+        .payment-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .payment-status.pending {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--warning);
+        }
+
+        .payment-status.approved {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--success);
+        }
+
+        .payment-status.rejected {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--danger);
+        }
+
+        .payment-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8125rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-sm-primary {
+            background: var(--accent-grad);
+            color: #fff;
+        }
+
+        .btn-sm-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-sm-secondary {
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-sm-secondary:hover {
+            background: var(--surface-active);
+        }
+
+        .btn-sm-success {
+            background: rgba(52, 211, 153, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .btn-sm-success:hover {
+            background: rgba(52, 211, 153, 0.3);
+        }
+
+        .btn-sm-danger {
+            background: rgba(248, 113, 113, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        .btn-sm-danger:hover {
+            background: rgba(248, 113, 113, 0.3);
+        }
+
+        .btn-sm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .payment-detail {
+            margin-bottom: 1rem;
+        }
+
+        .payment-detail-label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .payment-detail-value {
+            font-size: 0.9375rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .screenshot-preview {
+            max-width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .screenshot-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 0.9375rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner-lg {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.3);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        @media (max-width: 1024px) {
+            .payment-table {
+                font-size: 0.8125rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .payment-management {
+                padding-top: 100px;
+            }
+
+            .pm-stats {
+                width: 100%;
+            }
+
+            .pm-stat {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="admin.html" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Admin
+    </a>
+
+    <div class="payment-management">
+        <header class="pm-header">
+            <div class="pm-title">
+                <h1>Payment Management</h1>
+                <p>Review and approve subscription payments</p>
+            </div>
+            <div class="pm-stats">
+                <div class="pm-stat">
+                    <div>
+                        <div class="pm-stat-value" id="pendingCount">0</div>
+                        <div class="pm-stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="pm-stat">
+                    <div>
+                        <div class="pm-stat-value" id="approvedCount">0</div>
+                        <div class="pm-stat-label">Approved</div>
+                    </div>
+                </div>
+                <div class="pm-stat">
+                    <div>
+                        <div class="pm-stat-value" id="rejectedCount">0</div>
+                        <div class="pm-stat-label">Rejected</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="pm-content">
+            <div class="pm-tabs">
+                <button class="pm-tab active" onclick="switchTab('pending')">
+                    Pending
+                    <span class="pm-tab-badge" id="pendingBadge">0</span>
+                </button>
+                <button class="pm-tab" onclick="switchTab('all')">
+                    All Payments
+                </button>
+            </div>
+
+            <div class="payment-table-container">
+                <table class="payment-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Plan</th>
+                            <th>Amount</th>
+                            <th>Transaction ID</th>
+                            <th>Submitted</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentTableBody">
+                        <tr>
+                            <td colspan="7">
+                                <div class="loading-state">
+                                    <div class="loading-spinner-lg"></div>
+                                    <p>Loading payments...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Payment Details</h2>
+                <button class="modal-close" onclick="closeModal('detailModal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="detailModalBody">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer" id="detailModalFooter">
+                <!-- Buttons loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal-overlay" id="rejectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Reject Payment</h2>
+                <button class="modal-close" onclick="closeModal('rejectModal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-detail">
+                    <div class="payment-detail-label">Transaction ID</div>
+                    <div class="payment-detail-value" id="rejectTrxId">-</div>
+                </div>
+                <div class="payment-detail">
+                    <label class="payment-detail-label">Rejection Reason</label>
+                    <textarea class="form-textarea" id="rejectReason" placeholder="Please provide a reason for rejection..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-sm btn-sm-secondary" onclick="closeModal('rejectModal')">Cancel</button>
+                <button class="btn-sm btn-sm-danger" onclick="confirmReject()">Reject Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification" style="display: none;">
+        <svg class="notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span class="notification-content" id="notification-text"></span>
+        <button class="notification-close" onclick="hideNotification()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        let currentTab = 'pending';
+        let payments = [];
+        let selectedPayment = null;
+
+        // Check admin authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAdmin = sessionStorage.getItem('isAdmin');
+            if (!isAdmin) {
+                window.location.href = 'admin-login.html';
+                return;
+            }
+            loadPayments();
+        });
+
+        async function loadPayments() {
+            try {
+                const endpoint = currentTab === 'pending' 
+                    ? '/api/admin/payments/pending' 
+                    : '/api/admin/payments/all';
+                
+                const response = await fetch(endpoint);
+                const data = await response.json();
+
+                if (data.success) {
+                    payments = data.payments || [];
+                    renderTable();
+                    updateStats();
+                } else {
+                    showError('Failed to load payments');
+                }
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                showError('Failed to load payments');
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('paymentTableBody');
+            
+            if (payments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 1rem; opacity: 0.5;">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                    <line x1="2" y1="10" x2="22" y2="10"/>
+                                </svg>
+                                <p>No payments found</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = payments.map(payment => `
+                <tr>
+                    <td style="font-weight: 500;">${escapeHtml(payment.userEmail)}</td>
+                    <td>
+                        <span style="background: rgba(139,92,246,0.15); color: var(--accent); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
+                            ${escapeHtml(payment.planName)}
+                        </span>
+                    </td>
+                    <td style="font-weight: 600;">${payment.amount} BDT</td>
+                    <td><code style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 0.8125rem;">${escapeHtml(payment.trxId)}</code></td>
+                    <td style="color: var(--text-muted); font-size: 0.875rem;">${formatDate(payment.createdAt)}</td>
+                    <td>
+                        <span class="payment-status ${payment.status}">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: ${getStatusColor(payment.status)};"></span>
+                            ${payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="payment-actions">
+                            ${payment.status === 'pending' ? `
+                                <button class="btn-sm btn-sm-success" onclick="viewPayment(${payment.id})" title="View & Approve">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </button>
+                            ` : `
+                                <button class="btn-sm btn-sm-secondary" onclick="viewPayment(${payment.id})" title="View Details">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </button>
+                            `}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            const pending = payments.filter(p => p.status === 'pending').length;
+            const approved = payments.filter(p => p.status === 'approved').length;
+            const rejected = payments.filter(p => p.status === 'rejected').length;
+
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+            document.getElementById('pendingBadge').textContent = pending;
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.pm-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            loadPayments();
+        }
+
+        async function viewPayment(paymentId) {
+            const payment = payments.find(p => p.id === paymentId);
+            if (!payment) return;
+
+            selectedPayment = payment;
+
+            const modalBody = document.getElementById('detailModalBody');
+            const modalFooter = document.getElementById('detailModalFooter');
+
+            modalBody.innerHTML = `
+                <div class="payment-detail">
+                    <div class="payment-detail-label">Email Address</div>
+                    <div class="payment-detail-value">${escapeHtml(payment.userEmail)}</div>
+                </div>
+                <div class="payment-detail">
+                    <div class="payment-detail-label">Plan</div>
+                    <div class="payment-detail-value">${escapeHtml(payment.planName)}</div>
+                </div>
+                <div class="payment-detail">
+                    <div class="payment-detail-label">Amount</div>
+                    <div class="payment-detail-value">${payment.amount} BDT</div>
+                </div>
+                <div class="payment-detail">
+                    <div class="payment-detail-label">Transaction ID</div>
+                    <div class="payment-detail-value"><code style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px;">${escapeHtml(payment.trxId)}</code></div>
+                </div>
+                <div class="payment-detail">
+                    <div class="payment-detail-label">Submitted At</div>
+                    <div class="payment-detail-value">${formatDate(payment.createdAt)}</div>
+                </div>
+                ${payment.status === 'approved' && payment.approvedAt ? `
+                    <div class="payment-detail">
+                        <div class="payment-detail-label">Approved At</div>
+                        <div class="payment-detail-value">${formatDate(payment.approvedAt)}</div>
+                    </div>
+                ` : ''}
+                ${payment.status === 'rejected' && payment.rejectionReason ? `
+                    <div class="payment-detail">
+                        <div class="payment-detail-label">Rejection Reason</div>
+                        <div class="payment-detail-value" style="color: var(--danger);">${escapeHtml(payment.rejectionReason)}</div>
+                    </div>
+                ` : ''}
+                ${payment.hasScreenshot ? `
+                    <div class="payment-detail">
+                        <div class="payment-detail-label">Screenshot</div>
+                        <div class="screenshot-preview">
+                            <img src="/api/admin/payment/${payment.id}/screenshot" alt="Payment Screenshot" onerror="this.parentElement.parentElement.innerHTML='<p style=\'color: var(--text-muted);\'>Screenshot unavailable</p>'">
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            if (payment.status === 'pending') {
+                modalFooter.innerHTML = `
+                    <button class="btn-sm btn-sm-secondary" onclick="closeModal('detailModal')">Cancel</button>
+                    <button class="btn-sm btn-sm-danger" onclick="showRejectModal()">Reject</button>
+                    <button class="btn-sm btn-sm-success" onclick="approvePayment(${payment.id})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 4px;">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Approve Payment
+                    </button>
+                `;
+            } else {
+                modalFooter.innerHTML = `
+                    <button class="btn-sm btn-sm-secondary" onclick="closeModal('detailModal')">Close</button>
+                `;
+            }
+
+            openModal('detailModal');
+        }
+
+        function showRejectModal() {
+            closeModal('detailModal');
+            document.getElementById('rejectTrxId').textContent = selectedPayment.trxId;
+            document.getElementById('rejectReason').value = '';
+            openModal('rejectModal');
+        }
+
+        async function approvePayment(paymentId) {
+            if (!confirm('Are you sure you want to approve this payment? This will create a teacher account and send credentials.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/payment/${paymentId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Payment approved! Teacher account created and credentials sent.', 'success', 5000);
+                    closeModal('detailModal');
+                    loadPayments();
+                } else {
+                    throw new Error(data.message || 'Failed to approve payment');
+                }
+            } catch (error) {
+                console.error('Approval error:', error);
+                showNotification(error.message || 'Failed to approve payment', 'error', 5000);
+            }
+        }
+
+        async function confirmReject() {
+            const reason = document.getElementById('rejectReason').value.trim();
+            
+            if (!reason) {
+                showNotification('Please provide a rejection reason', 'warning', 3000);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/payment/${selectedPayment.id}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Payment rejected', 'success', 3000);
+                    closeModal('rejectModal');
+                    loadPayments();
+                } else {
+                    throw new Error(data.message || 'Failed to reject payment');
+                }
+            } catch (error) {
+                console.error('Rejection error:', error);
+                showNotification(error.message || 'Failed to reject payment', 'error', 5000);
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'pending': return 'var(--warning)';
+                case 'approved': return 'var(--success)';
+                case 'rejected': return 'var(--danger)';
+                default: return 'var(--text-muted)';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            const tbody = document.getElementById('paymentTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state" style="color: var(--danger);">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 1rem; opacity: 0.5;">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                            <p>${escapeHtml(message)}</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function showNotification(message, type = 'info', duration = 4000) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            
+            if (!notification || !text) { alert(message); return; }
+            
+            text.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'flex';
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.style.display = 'none', 300);
+            }, duration);
+        }
+
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+            setTimeout(() => notification.style.display = 'none', 300);
+        }
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

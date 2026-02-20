@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizFlow - Submit Payment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Payment Page Specific Styles */
+        .payment-page {
+            min-height: 100vh;
+            padding: 120px 20px 60px;
+            background: var(--bg);
+        }
+
+        .payment-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .payment-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .payment-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-header p {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+
+        .payment-instructions {
+            background: rgba(236, 72, 153, 0.1);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-instructions h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ec4899;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .bkash-number-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(236, 72, 153, 0.15);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+        }
+
+        .bkash-number-display span {
+            font-family: 'SF Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ec4899;
+        }
+
+        .copy-btn {
+            background: rgba(236, 72, 153, 0.2);
+            border: 1px solid rgba(236, 72, 153, 0.4);
+            color: #ec4899;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .copy-btn:hover {
+            background: rgba(236, 72, 153, 0.3);
+        }
+
+        .payment-steps {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+
+        .payment-steps li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            background: rgba(236, 72, 153, 0.2);
+            color: #ec4899;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .selected-plan {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .selected-plan-info h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--accent);
+        }
+
+        .selected-plan-info p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .selected-plan-price {
+            text-align: right;
+        }
+
+        .selected-plan-price .amount {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .selected-plan-price .currency {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .change-plan-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.8125rem;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .change-plan-btn:hover {
+            color: var(--text);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 0.9375rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            -webkit-text-fill-color: var(--text);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .form-hint {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-top: 0.375rem;
+        }
+
+        .file-upload {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--bg-elevated);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-upload:hover {
+            border-color: var(--border-hover);
+            background: var(--surface-hover);
+        }
+
+        .file-upload.has-file {
+            border-style: solid;
+            border-color: var(--success);
+            background: rgba(52, 211, 153, 0.05);
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-text {
+            font-size: 0.9375rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .file-upload-text strong {
+            color: var(--accent);
+        }
+
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            border-radius: var(--radius-sm);
+            color: var(--success);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .warning-box {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box p {
+            color: var(--warning);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent-grad);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        @media (max-width: 640px) {
+            .payment-page {
+                padding-top: 80px;
+            }
+
+            .payment-card {
+                padding: 1.5rem;
+            }
+
+            .selected-plan {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .selected-plan-price {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-page">
+        <div class="payment-container">
+            <a href="pricing.html" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Pricing
+            </a>
+
+            <div class="payment-card">
+                <div class="payment-header">
+                    <h1>Submit Payment</h1>
+                    <p>Complete your subscription payment via bKash</p>
+                </div>
+
+                <!-- Selected Plan Summary -->
+                <div class="selected-plan" id="selectedPlan">
+                    <div class="selected-plan-info">
+                        <h4 id="planName">Standard</h4>
+                        <p id="planQuizzes">15 Quizzes / month</p>
+                    </div>
+                    <div class="selected-plan-price">
+                        <div class="amount" id="planAmount">1000</div>
+                        <div class="currency">BDT</div>
+                    </div>
+                </div>
+
+                <!-- Payment Instructions -->
+                <div class="payment-instructions">
+                    <h3>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        Send Money via bKash
+                    </h3>
+                    <div class="bkash-number-display">
+                        <span id="bkashNumber">01759954385</span>
+                        <button class="copy-btn" onclick="copyNumber()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                    <ul class="payment-steps">
+                        <li>
+                            <span class="step-number">1</span>
+                            <span>Dial <strong>*247#</strong> from your bKash account</span>
+                        </li>
+                        <li>
+                            <span class="step-number">2</span>
+                            <span>Choose <strong>Send Money</strong></span>
+                        </li>
+                        <li>
+                            <span class="step-number">3</span>
+                            <span>Enter the bKash number above and the exact amount</span>
+                        </li>
+                        <li>
+                            <span class="step-number">4</span>
+                            <span>Take a screenshot of the payment confirmation</span>
+                        </li>
+                        <li>
+                            <span class="step-number">5</span>
+                            <span>Fill in the form below with your transaction ID and screenshot</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Warning Box -->
+                <div class="warning-box">
+                    <p>
+                        <strong>⏱️ Important:</strong> After sending money please wait up to 2 hours to receive your admin account in your email. 
+                        After that you can start creating quizzes.<br><br>
+                        <strong>Account access is only provided after payment confirmation.</strong>
+                    </p>
+                </div>
+
+                <!-- Payment Form -->
+                <form id="paymentForm" onsubmit="submitPayment(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="email">
+                            Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-input" 
+                            id="email" 
+                            name="email" 
+                            placeholder="your.email@example.com"
+                            required
+                        >
+                        <p class="form-hint">Your teacher account credentials will be sent to this email</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="trxId">
+                            Transaction ID (TrxID)
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            id="trxId" 
+                            name="trxId" 
+                            placeholder="e.g., 8THDJ29XKL"
+                            required
+                            maxlength="20"
+                            style="text-transform: uppercase; letter-spacing: 0.05em;"
+                        >
+                        <p class="form-hint">Find this in your bKash payment confirmation SMS</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Payment Screenshot
+                        </label>
+                        <div class="file-upload" id="fileUpload">
+                            <input 
+                                type="file" 
+                                id="screenshot" 
+                                name="screenshot" 
+                                accept="image/*"
+                                onchange="handleFileSelect(event)"
+                                required
+                            >
+                            <div class="file-upload-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
+                            </div>
+                            <div class="file-upload-text">
+                                <strong>Click to upload</strong> or drag and drop<br>
+                                <span style="font-size: 0.8125rem; color: var(--text-dim);">PNG, JPG up to 5MB</span>
+                            </div>
+                        </div>
+                        <div class="file-name hidden" id="fileName"></div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span>Submit Payment</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification" style="display: none;">
+        <svg class="notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span class="notification-content" id="notification-text"></span>
+        <button class="notification-close" onclick="hideNotification()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Plan data
+        const planData = {
+            'Basic': { quizzes: '10 Quizzes / month', amount: 500 },
+            'Standard': { quizzes: '15 Quizzes / month', amount: 1000 },
+            'Premium': { quizzes: '20 Quizzes / month', amount: 1500 }
+        };
+
+        // Load selected plan from session storage
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectedPlan = sessionStorage.getItem('selectedPlan');
+            const selectedAmount = sessionStorage.getItem('selectedAmount');
+
+            if (selectedPlan && planData[selectedPlan]) {
+                document.getElementById('planName').textContent = selectedPlan;
+                document.getElementById('planQuizzes').textContent = planData[selectedPlan].quizzes;
+                document.getElementById('planAmount').textContent = planData[selectedPlan].amount;
+            } else {
+                // Default to Standard
+                sessionStorage.setItem('selectedPlan', 'Standard');
+                sessionStorage.setItem('selectedAmount', '1000');
+            }
+        });
+
+        // Copy bKash number
+        function copyNumber() {
+            const number = document.getElementById('bkashNumber').textContent;
+            navigator.clipboard.writeText(number).then(() => {
+                showNotification('bKash number copied to clipboard!', 'success', 2000);
+            }).catch(() => {
+                showNotification('Failed to copy number', 'error', 2000);
+            });
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            const fileUpload = document.getElementById('fileUpload');
+            const fileName = document.getElementById('fileName');
+
+            if (file) {
+                // Validate file
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Please select an image file', 'error', 3000);
+                    event.target.value = '';
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('File size must be less than 5MB', 'error', 3000);
+                    event.target.value = '';
+                    return;
+                }
+
+                // Update UI
+                fileUpload.classList.add('has-file');
+                fileName.classList.remove('hidden');
+                fileName.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    ${file.name}
+                `;
+            }
+        }
+
+        // Convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Submit payment
+        async function submitPayment(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn.querySelector('span');
+            const originalText = btnText.textContent;
+
+            const email = document.getElementById('email').value.trim();
+            const trxId = document.getElementById('trxId').value.trim().toUpperCase();
+            const screenshotFile = document.getElementById('screenshot').files[0];
+            const planName = sessionStorage.getItem('selectedPlan');
+            const amount = sessionStorage.getItem('selectedAmount');
+
+            // Validate
+            if (!email || !trxId || !screenshotFile) {
+                showNotification('Please fill in all fields', 'warning', 3000);
+                return;
+            }
+
+            // Validate email format
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                showNotification('Please enter a valid email address', 'error', 3000);
+                return;
+            }
+
+            // Disable button
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+
+            try {
+                // Convert screenshot to base64
+                const screenshotBase64 = await fileToBase64(screenshotFile);
+
+                // Submit payment
+                const response = await fetch('/api/payment/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        trxId: trxId,
+                        planName: planName,
+                        amount: parseFloat(amount),
+                        screenshot: screenshotBase64
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showNotification('Payment submitted successfully! Please check your email for confirmation.', 'success', 5000);
+                    
+                    // Clear form
+                    document.getElementById('paymentForm').reset();
+                    document.getElementById('fileUpload').classList.remove('has-file');
+                    document.getElementById('fileName').classList.add('hidden');
+
+                    // Redirect after delay
+                    setTimeout(() => {
+                        sessionStorage.setItem('paymentStatus', 'success');
+                        window.location.href = 'pricing.html';
+                    }, 3000);
+                } else {
+                    throw new Error(data.message || 'Payment submission failed');
+                }
+            } catch (error) {
+                console.error('Payment Error:', error);
+                showNotification(error.message || 'Failed to submit payment. Please try again.', 'error', 5000);
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = originalText;
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info', duration = 4000) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            const icon = notification.querySelector('.notification-icon');
+
+            if (!notification || !text) { alert(message); return; }
+
+            text.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'flex';
+
+            const icons = {
+                success: '<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>',
+                error: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+                warning: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+                info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
+            };
+            icon.innerHTML = icons[type] || icons.info;
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.style.display = 'none', 300);
+            }, duration);
+        }
+
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+            setTimeout(() => notification.style.display = 'none', 300);
+        }
+
+        // Auto-format transaction ID to uppercase
+        document.getElementById('trxId').addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase();
+        });
+    </script>
+</body>
+</html>

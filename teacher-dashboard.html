@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizFlow - Teacher Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Teacher Dashboard Specific Styles */
+        .teacher-dashboard {
+            min-height: 100vh;
+            background: var(--bg);
+            padding: 80px 20px 40px;
+        }
+
+        .dashboard-header {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dashboard-welcome h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-welcome p {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+
+        .subscription-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 999px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .subscription-badge.active {
+            background: rgba(52, 211, 153, 0.15);
+            border-color: rgba(52, 211, 153, 0.3);
+            color: var(--success);
+        }
+
+        .subscription-badge.expired {
+            background: rgba(248, 113, 113, 0.15);
+            border-color: rgba(248, 113, 113, 0.3);
+            color: var(--danger);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+        }
+
+        .dashboard-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .card-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: var(--accent-grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-subvalue {
+            font-size: 0.875rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+
+        .progress-container {
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--surface-active);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-grad);
+            border-radius: 999px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+        }
+
+        .progress-fill.success {
+            background: linear-gradient(135deg, #34d399, #10b981);
+        }
+
+        .usage-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .subscription-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .subscription-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .subscription-detail {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .subscription-detail-label {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .subscription-detail-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--accent-grad);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-active);
+            border-color: var(--border-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quiz-list {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .quiz-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-list-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .quiz-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .quiz-table th,
+        .quiz-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .quiz-table th {
+            background: var(--bg-elevated);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .quiz-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .quiz-table tr:hover td {
+            background: var(--surface-hover);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--success);
+        }
+
+        .status-badge.inactive {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .alert-box {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-box.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: var(--warning);
+        }
+
+        .alert-box.error {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            color: var(--danger);
+        }
+
+        .alert-box.success {
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            color: var(--success);
+        }
+
+        .back-to-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .back-to-home:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .teacher-dashboard {
+                padding-top: 100px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .subscription-details {
+                grid-template-columns: 1fr;
+            }
+
+            .quiz-table {
+                font-size: 0.8125rem;
+            }
+
+            .quiz-table th,
+            .quiz-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-to-home">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+    </a>
+
+    <div class="teacher-dashboard">
+        <header class="dashboard-header">
+            <div class="dashboard-welcome">
+                <h1 id="welcomeMessage">Welcome, Teacher!</h1>
+                <p id="teacherEmail">Loading...</p>
+            </div>
+            <div class="subscription-badge" id="subscriptionBadge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span id="planName">Loading...</span>
+            </div>
+        </header>
+
+        <!-- Alert Messages -->
+        <div id="alertContainer"></div>
+
+        <!-- Subscription Overview -->
+        <div class="dashboard-grid">
+            <div class="subscription-card">
+                <div class="card-label">Subscription Overview</div>
+                <div class="subscription-details">
+                    <div class="subscription-detail">
+                        <span class="subscription-detail-label">Current Plan</span>
+                        <span class="subscription-detail-value" id="currentPlan">-</span>
+                    </div>
+                    <div class="subscription-detail">
+                        <span class="subscription-detail-label">Quizzes Remaining</span>
+                        <span class="subscription-detail-value" id="quizzesRemaining">-</span>
+                    </div>
+                    <div class="subscription-detail">
+                        <span class="subscription-detail-label">Expiry Date</span>
+                        <span class="subscription-detail-value" id="expiryDate">-</span>
+                    </div>
+                    <div class="subscription-detail">
+                        <span class="subscription-detail-label">Status</span>
+                        <span class="subscription-detail-value" id="subscriptionStatus">-</span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="createNewQuiz()" id="createQuizBtn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Create New Quiz
+                    </button>
+                    <button class="btn btn-secondary" onclick="upgradePlan()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20V10"/>
+                            <path d="M18 20V4"/>
+                            <path d="M6 20v-4"/>
+                        </svg>
+                        Upgrade Plan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Usage Card -->
+            <div class="dashboard-card">
+                <div class="card-label">Quiz Usage</div>
+                <div class="card-value" id="quizUsageValue">0/0</div>
+                <div class="card-subvalue">quizzes used this month</div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="usageProgressBar" style="width: 0%"></div>
+                    </div>
+                    <div class="usage-stats">
+                        <span id="quizzesUsed">0 used</span>
+                        <span id="quizzesLeft">0 left</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Stats Card -->
+            <div class="dashboard-card">
+                <div class="card-label">Account Stats</div>
+                <div class="card-value" id="totalQuizzes">0</div>
+                <div class="card-subvalue">total quizzes created</div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; color: var(--text-muted);">
+                        <span>Member since</span>
+                        <span id="memberSince">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz List -->
+        <div class="quiz-list">
+            <div class="quiz-list-header">
+                <h2>Your Quizzes</h2>
+                <button class="btn btn-primary" onclick="createNewQuiz()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    New Quiz
+                </button>
+            </div>
+            <table class="quiz-table" id="quizTable">
+                <thead>
+                    <tr>
+                        <th>Quiz Name</th>
+                        <th>Access Code</th>
+                        <th>Questions</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="quizTableBody">
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </div>
+                            <p>No quizzes yet. Create your first quiz to get started!</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification" style="display: none;">
+        <svg class="notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span class="notification-content" id="notification-text"></span>
+        <button class="notification-close" onclick="hideNotification()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Teacher email (set from login session)
+        let teacherEmail = sessionStorage.getItem('teacherEmail') || '';
+        let teacherData = null;
+
+        // Load dashboard data
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!teacherEmail) {
+                // Redirect to login if no email
+                window.location.href = 'admin-login.html';
+                return;
+            }
+
+            loadDashboardData();
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Fetch subscription status
+                const response = await fetch(`/api/subscription/status?email=${encodeURIComponent(teacherEmail)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    updateDashboard(data.subscription);
+                } else {
+                    showAlert('Failed to load subscription data', 'error');
+                }
+
+                // Load quizzes
+                loadQuizzes();
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showAlert('Failed to load dashboard data', 'error');
+            }
+        }
+
+        function updateDashboard(subscription) {
+            // Update welcome message
+            document.getElementById('teacherEmail').textContent = teacherEmail;
+            
+            // Update subscription info
+            const planName = subscription.plan || 'Free';
+            document.getElementById('planName').textContent = planName;
+            document.getElementById('currentPlan').textContent = planName;
+            
+            // Update quiz counts
+            const quizzesRemaining = subscription.quizzesRemaining || 0;
+            const quizLimit = subscription.quizLimit || 0;
+            const quizzesUsed = subscription.quizzesUsed || 0;
+            
+            document.getElementById('quizzesRemaining').textContent = `${quizzesRemaining} / ${quizLimit}`;
+            document.getElementById('quizUsageValue').textContent = `${quizzesUsed}/${quizLimit}`;
+            document.getElementById('quizzesUsed').textContent = `${quizzesUsed} used`;
+            document.getElementById('quizzesLeft').textContent = `${quizzesRemaining} left`;
+            
+            // Update progress bar
+            const progressPercent = quizLimit > 0 ? (quizzesUsed / quizLimit) * 100 : 0;
+            const progressBar = document.getElementById('usageProgressBar');
+            progressBar.style.width = `${progressPercent}%`;
+            
+            // Update progress bar color based on usage
+            progressBar.className = 'progress-fill';
+            if (progressPercent >= 90) {
+                progressBar.classList.add('danger');
+            } else if (progressPercent >= 70) {
+                progressBar.classList.add('warning');
+            } else {
+                progressBar.classList.add('success');
+            }
+            
+            // Update expiry date
+            if (subscription.expiryDate) {
+                const expiry = new Date(subscription.expiryDate);
+                document.getElementById('expiryDate').textContent = expiry.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } else {
+                document.getElementById('expiryDate').textContent = 'N/A';
+            }
+            
+            // Update status
+            const status = subscription.status || 'no_subscription';
+            const statusBadge = document.getElementById('subscriptionBadge');
+            const statusText = document.getElementById('subscriptionStatus');
+            
+            statusBadge.className = 'subscription-badge';
+            if (status === 'active') {
+                statusBadge.classList.add('active');
+                statusText.textContent = 'Active';
+            } else if (status === 'expired') {
+                statusBadge.classList.add('expired');
+                statusText.textContent = 'Expired';
+                showAlert('Your subscription has expired. Please renew to continue creating quizzes.', 'error');
+            } else if (status === 'limit_reached') {
+                statusBadge.classList.add('expired');
+                statusText.textContent = 'Limit Reached';
+                showAlert('You have reached your quiz limit for this month. Consider upgrading your plan.', 'warning');
+            } else {
+                statusText.textContent = status === 'no_subscription' ? 'No Subscription' : status;
+            }
+            
+            // Update create quiz button state
+            const createBtn = document.getElementById('createQuizBtn');
+            if (status !== 'active') {
+                createBtn.disabled = true;
+                createBtn.title = status === 'expired' ? 'Subscription expired' : 'Quiz limit reached';
+            }
+            
+            // Store teacher data
+            teacherData = subscription;
+        }
+
+        async function loadQuizzes() {
+            try {
+                const response = await fetch('/api/admin/quizzes');
+                const data = await response.json();
+                
+                if (data.success && data.quizzes.length > 0) {
+                    renderQuizTable(data.quizzes);
+                    document.getElementById('totalQuizzes').textContent = data.quizzes.length;
+                } else {
+                    renderEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading quizzes:', error);
+                renderEmptyState();
+            }
+        }
+
+        function renderQuizTable(quizzes) {
+            const tbody = document.getElementById('quizTableBody');
+            tbody.innerHTML = '';
+            
+            quizzes.forEach(quiz => {
+                const tr = document.createElement('tr');
+                const createdDate = quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : 'N/A';
+                
+                tr.innerHTML = `
+                    <td><strong>${escapeHtml(quiz.title)}</strong></td>
+                    <td><code style="background: rgba(139,92,246,0.1); padding: 2px 6px; border-radius: 4px;">${quiz.accessCode || 'N/A'}</code></td>
+                    <td>${quiz.questionCount || 0}</td>
+                    <td>
+                        <span class="status-badge ${quiz.isActive ? 'active' : 'inactive'}">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: ${quiz.isActive ? 'var(--success)' : 'var(--text-muted)'};"></span>
+                            ${quiz.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 0.875rem;">${createdDate}</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 0.75rem; font-size: 0.8125rem;" onclick="editQuiz(${quiz.id})">
+                            Edit
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderEmptyState() {
+            const tbody = document.getElementById('quizTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                            </div>
+                            <p>No quizzes yet. Create your first quiz to get started!</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function createNewQuiz() {
+            if (!teacherData || teacherData.status !== 'active') {
+                showAlert('You need an active subscription to create quizzes', 'error');
+                return;
+            }
+            
+            // Redirect to admin quiz editor
+            window.location.href = 'admin.html#quiz-editor';
+        }
+
+        function editQuiz(quizId) {
+            sessionStorage.setItem('editingQuizId', quizId);
+            window.location.href = 'admin.html#quiz-editor';
+        }
+
+        function upgradePlan() {
+            window.location.href = 'pricing.html';
+        }
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert-box ${type}`;
+            alert.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>${escapeHtml(message)}</span>
+            `;
+            container.appendChild(alert);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                alert.remove();
+            }, 10000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info', duration = 4000) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            
+            if (!notification || !text) { alert(message); return; }
+            
+            text.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'flex';
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.style.display = 'none', 300);
+            }, duration);
+        }
+
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+            setTimeout(() => notification.style.display = 'none', 300);
+        }
+    </script>
+</body>
+</html>
