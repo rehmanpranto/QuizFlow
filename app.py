@@ -96,6 +96,49 @@ class Submission(db.Model):
     quiz_start_time = db.Column(db.DateTime, nullable=True)  # When quiz started
     quiz_duration_seconds = db.Column(db.Integer, nullable=True)  # Time taken in seconds
 
+
+class Subscription(db.Model):
+    __tablename__ = 'subscriptions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    plan_type = db.Column(db.String(50), nullable=False, default='free')  # free, basic, pro, enterprise
+    status = db.Column(db.String(20), default='active')  # active, expired, cancelled, pending
+    stripe_subscription_id = db.Column(db.String(100), unique=True, nullable=True)
+    stripe_customer_id = db.Column(db.String(100), unique=True, nullable=True)
+    quizzes_limit = db.Column(db.Integer, default=5)  # Number of quizzes allowed
+    quizzes_used = db.Column(db.Integer, default=0)
+    students_limit = db.Column(db.Integer, default=50)  # Max students per quiz
+    start_date = db.Column(db.DateTime, default=datetime.utcnow)
+    expiry_date = db.Column(db.DateTime, nullable=True)
+    cancelled_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship with user
+    user = db.relationship('User', backref=db.backref('subscription', uselist=False))
+
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    subscription_id = db.Column(db.Integer, db.ForeignKey('subscriptions.id'), nullable=True)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), default='USD')
+    status = db.Column(db.String(20), default='pending')  # pending, completed, failed, refunded
+    payment_method = db.Column(db.String(50), nullable=True)  # stripe, paypal, etc.
+    stripe_payment_intent_id = db.Column(db.String(100), unique=True, nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    receipt_url = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = db.relationship('User', backref='payments')
+    subscription = db.relationship('Subscription', backref='payments')
+
+
 # Create tables and run migrations on startup
 with app.app_context():
     db.create_all()
@@ -1085,6 +1128,277 @@ def update_question(question_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+# ==================== Subscription & Payment API Endpoints ====================
+
+@app.route('/api/subscription', methods=['GET'])
+def get_subscription():
+    """Get current user's subscription information"""
+    try:
+        user_id = request.headers.get('X-User-Id')
+        if not user_id:
+            return jsonify({"success": False, "message": "User ID required"}), 400
+
+        subscription = Subscription.query.filter_by(user_id=int(user_id)).first()
+        
+        if not subscription:
+            # Create default free subscription
+            subscription = Subscription(
+                user_id=int(user_id),
+                plan_type='free',
+                status='active',
+                quizzes_limit=5,
+                quizzes_used=0,
+                students_limit=50
+            )
+            db.session.add(subscription)
+            db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "subscription": {
+                "id": subscription.id,
+                "plan_type": subscription.plan_type,
+                "status": subscription.status,
+                "quizzes_limit": subscription.quizzes_limit,
+                "quizzes_used": subscription.quizzes_used,
+                "quizzes_remaining": subscription.quizzes_limit - subscription.quizzes_used,
+                "students_limit": subscription.students_limit,
+                "start_date": subscription.start_date.isoformat() if subscription.start_date else None,
+                "expiry_date": subscription.expiry_date.isoformat() if subscription.expiry_date else None,
+                "created_at": subscription.created_at.isoformat() if subscription.created_at else None
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/subscription/upgrade', methods=['POST'])
+def upgrade_subscription():
+    """Upgrade user's subscription plan"""
+    try:
+        user_id = request.headers.get('X-User-Id')
+        if not user_id:
+            return jsonify({"success": False, "message": "User ID required"}), 400
+
+        data = request.get_json()
+        plan_type = data.get('plan_type', 'basic')
+        
+        # Define plan limits
+        plan_limits = {
+            'free': {'quizzes_limit': 5, 'students_limit': 50, 'price': 0},
+            'basic': {'quizzes_limit': 20, 'students_limit': 100, 'price': 9.99},
+            'pro': {'quizzes_limit': 100, 'students_limit': 500, 'price': 29.99},
+            'enterprise': {'quizzes_limit': -1, 'students_limit': -1, 'price': 99.99}  # -1 means unlimited
+        }
+        
+        if plan_type not in plan_limits:
+            return jsonify({"success": False, "message": "Invalid plan type"}), 400
+
+        subscription = Subscription.query.filter_by(user_id=int(user_id)).first()
+        
+        if not subscription:
+            subscription = Subscription(user_id=int(user_id))
+            db.session.add(subscription)
+        
+        limits = plan_limits[plan_type]
+        subscription.plan_type = plan_type
+        subscription.quizzes_limit = limits['quizzes_limit']
+        subscription.students_limit = limits['students_limit']
+        subscription.status = 'active'
+        
+        # Set expiry based on plan (30 days from now for paid plans)
+        if plan_type != 'free':
+            from datetime import timedelta
+            subscription.expiry_date = datetime.utcnow() + timedelta(days=30)
+        
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": f"Successfully upgraded to {plan_type} plan",
+            "subscription": {
+                "plan_type": subscription.plan_type,
+                "quizzes_limit": subscription.quizzes_limit,
+                "students_limit": subscription.students_limit,
+                "expiry_date": subscription.expiry_date.isoformat() if subscription.expiry_date else None
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/payment/create', methods=['POST'])
+def create_payment():
+    """Create a new payment record"""
+    try:
+        user_id = request.headers.get('X-User-Id')
+        if not user_id:
+            return jsonify({"success": False, "message": "User ID required"}), 400
+
+        data = request.get_json()
+        amount = data.get('amount', 0)
+        plan_type = data.get('plan_type', 'basic')
+        payment_method = data.get('payment_method', 'stripe')
+        stripe_payment_intent_id = data.get('stripe_payment_intent_id')
+
+        if amount <= 0:
+            return jsonify({"success": False, "message": "Invalid amount"}), 400
+
+        payment = Payment(
+            user_id=int(user_id),
+            amount=amount,
+            currency='USD',
+            status='completed',
+            payment_method=payment_method,
+            stripe_payment_intent_id=stripe_payment_intent_id,
+            description=f"Subscription upgrade to {plan_type} plan"
+        )
+        db.session.add(payment)
+        db.session.commit()
+
+        # Update subscription
+        upgrade_subscription()
+
+        return jsonify({
+            "success": True,
+            "message": "Payment processed successfully",
+            "payment": {
+                "id": payment.id,
+                "amount": payment.amount,
+                "currency": payment.currency,
+                "status": payment.status,
+                "created_at": payment.created_at.isoformat() if payment.created_at else None
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/payments', methods=['GET'])
+def get_payments():
+    """Get payment history for admin or user"""
+    try:
+        user_id = request.headers.get('X-User-Id')
+        is_admin = request.headers.get('X-Is-Admin', 'false').lower() == 'true'
+        
+        if not user_id:
+            return jsonify({"success": False, "message": "User ID required"}), 400
+
+        if is_admin:
+            # Admin can see all payments
+            payments = Payment.query.order_by(Payment.created_at.desc()).limit(100).all()
+        else:
+            # User can only see their own payments
+            payments = Payment.query.filter_by(user_id=int(user_id)).order_by(Payment.created_at.desc()).limit(50).all()
+
+        return jsonify({
+            "success": True,
+            "payments": [
+                {
+                    "id": p.id,
+                    "user_id": p.user_id,
+                    "amount": p.amount,
+                    "currency": p.currency,
+                    "status": p.status,
+                    "payment_method": p.payment_method,
+                    "description": p.description,
+                    "created_at": p.created_at.isoformat() if p.created_at else None
+                }
+                for p in payments
+            ]
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/admin/subscriptions', methods=['GET'])
+def get_all_subscriptions():
+    """Get all subscriptions (admin only)"""
+    try:
+        subscriptions = Subscription.query.order_by(Subscription.created_at.desc()).limit(100).all()
+        
+        return jsonify({
+            "success": True,
+            "subscriptions": [
+                {
+                    "id": s.id,
+                    "user_id": s.user_id,
+                    "plan_type": s.plan_type,
+                    "status": s.status,
+                    "quizzes_limit": s.quizzes_limit,
+                    "quizzes_used": s.quizzes_used,
+                    "students_limit": s.students_limit,
+                    "start_date": s.start_date.isoformat() if s.start_date else None,
+                    "expiry_date": s.expiry_date.isoformat() if s.expiry_date else None,
+                    "created_at": s.created_at.isoformat() if s.created_at else None
+                }
+                for s in subscriptions
+            ]
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/quiz/create', methods=['POST'])
+def create_quiz_endpoint():
+    """Create a new quiz (checks subscription limits)"""
+    try:
+        user_id = request.headers.get('X-User-Id')
+        if not user_id:
+            return jsonify({"success": False, "message": "User ID required"}), 400
+
+        # Check subscription limits
+        subscription = Subscription.query.filter_by(user_id=int(user_id)).first()
+        
+        if subscription and subscription.quizzes_limit > 0:
+            if subscription.quizzes_used >= subscription.quizzes_limit:
+                return jsonify({
+                    "success": False,
+                    "message": "Quiz limit reached. Please upgrade your subscription to create more quizzes."
+                }), 403
+
+        data = request.get_json()
+        title = data.get('title', '').strip()
+        description = data.get('description', '').strip()
+        time_limit = data.get('time_limit', 1200)
+        quiz_access_code = data.get('quiz_access_code')
+
+        if not title:
+            return jsonify({"success": False, "message": "Quiz title is required"}), 400
+
+        quiz = Quiz(
+            title=title,
+            description=description,
+            time_limit=time_limit,
+            quiz_access_code=quiz_access_code,
+            is_active=True
+        )
+        db.session.add(quiz)
+        db.session.commit()
+
+        # Update subscription quiz count
+        if subscription and subscription.quizzes_limit > 0:
+            subscription.quizzes_used += 1
+            db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Quiz created successfully",
+            "quiz": {
+                "id": quiz.id,
+                "title": quiz.title,
+                "description": quiz.description,
+                "quiz_access_code": quiz.quiz_access_code
+            }
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 @app.route('/api/admin/ai/generate-questions', methods=['POST'])
 def generate_ai_questions():

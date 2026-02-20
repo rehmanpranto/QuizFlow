@@ -79,4 +79,51 @@ BEGIN
     END IF;
 END $$;
 
+-- Create subscriptions table for payment/plan management
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    plan_type VARCHAR(50) NOT NULL DEFAULT 'free',
+    status VARCHAR(20) DEFAULT 'active',
+    stripe_subscription_id VARCHAR(100) UNIQUE,
+    stripe_customer_id VARCHAR(100) UNIQUE,
+    quizzes_limit INTEGER DEFAULT 5,
+    quizzes_used INTEGER DEFAULT 0,
+    students_limit INTEGER DEFAULT 50,
+    start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expiry_date TIMESTAMP,
+    cancelled_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create payments table for transaction history
+CREATE TABLE IF NOT EXISTS payments (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    subscription_id INTEGER REFERENCES subscriptions(id) ON DELETE SET NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'USD',
+    status VARCHAR(20) DEFAULT 'pending',
+    payment_method VARCHAR(50),
+    stripe_payment_intent_id VARCHAR(100) UNIQUE,
+    description TEXT,
+    receipt_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for faster lookups
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_payments_subscription_id ON payments(subscription_id);
+
+-- Insert default free subscription for existing users
+INSERT INTO subscriptions (user_id, plan_type, status, quizzes_limit, quizzes_used, students_limit)
+SELECT id, 'free', 'active', 5, 0, 50
+FROM users
+WHERE NOT EXISTS (
+    SELECT 1 FROM subscriptions WHERE subscriptions.user_id = users.id
+);
+
 SELECT 'Database migration completed successfully!' as final_status;
